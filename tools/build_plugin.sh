@@ -55,6 +55,7 @@ cp -r "$OUT/data" "$OUT/vendor" "$NPM/"
 cat > "$NPM/package.json" <<JSON
 {
   "name": "rocket-launcher-mcp",
+  "mcpName": "io.github.JaeTaekOh/rocket-launcher",
   "version": "$VER",
   "description": "Rocket Launcher MCP server: from a finished app to launched on Google Play / App Store. You only pick and approve. Free, no API keys.",
   "type": "module",

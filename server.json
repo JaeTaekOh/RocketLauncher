@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.JaeTaekOh/rocket-launcher",
+  "title": "Rocket Launcher",
+  "description": "Free MCP server that guides an Android/iOS app through Google Play and App Store submission.",
+  "repository": {
+    "url": "https://github.com/JaeTaekOh/RocketLauncher",
+    "source": "github"
+  },
+  "websiteUrl": "https://jaetaekoh.github.io/RocketLauncher/",
+  "version": "0.2.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "rocket-launcher-mcp",
+      "version": "0.2.1",
+      "transport": { "type": "stdio" }
+    }
+  ]
+}
