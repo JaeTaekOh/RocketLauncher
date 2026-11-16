@@ -1,19 +1,50 @@
-# Connecting Rocket Launcher (Grok Bot · Claude · Cursor · other MCP apps)
+# Connecting Rocket Launcher (Grok Bot · Claude · Cursor · Gemini CLI · other MCP apps)
 
-Rocket Launcher runs as **one MCP server**. Connect it once to an AI such as Grok Bot, Claude or Cursor, and the user never has to open a website. They just tell the AI:
+Rocket Launcher runs as **one MCP server**. Connect it once to an AI such as Grok Bot, Claude, Cursor or Gemini CLI, and the user never has to open a website. They just tell the AI:
 
 > "Help me launch my app with Rocket Launcher: https://github.com/me/my-app"
 > "Show me Rocket Launcher with the sample app"
 
 From then on the user only **picks, approves or rejects** the options the AI shows. Store submission is pressed by the user in the console after they approve; Rocket Launcher never submits anything by itself.
 
-- Contact: https://github.com/JaeTaekOh/rocketlauncher/issues · Free · No API keys or tokens
+- Homepage: https://jaetaekoh.github.io/RocketLauncher/
+- Web version: https://jaetaekoh.github.io/RocketLauncher/app/
+- Contact: https://github.com/JaeTaekOh/RocketLauncher/issues · Free · No API keys or tokens
 - Languages: tool texts in English (default), Korean, Thai, Simplified Chinese and Hindi via the `lang` argument (`en`, `ko`, `th`, `zh`, `hi`); store listings default to English
-- npm package: [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp), run with `npx -y rocket-launcher-mcp`
-- Source: https://github.com/JaeTaekOh/rocketlauncher (MIT)
+- Source: https://github.com/JaeTaekOh/RocketLauncher (MIT)
 - Requires: Node.js 20 or newer
 
+> [!NOTE]
+> The npm package [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp) is **not published yet** (coming soon). Do not run `npx -y rocket-launcher-mcp` until it is. Until then, run the server from a clone of this repository.
+
 ✅ = connection verified on a real client for this flow. 📄 = based on official docs only, not clicked through.
+
+---
+
+## Install from a clone (current)
+
+```bash
+git clone https://github.com/JaeTaekOh/RocketLauncher.git
+cd RocketLauncher/mcp
+npm install
+```
+
+Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone in every config below.
+
+**Standard config** (works in most MCP clients):
+
+```json
+{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "node",
+      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
+    }
+  }
+}
+```
+
+When the npm package is published, the command will be `npx -y rocket-launcher-mcp`. That does not work today.
 
 ---
 
@@ -22,15 +53,15 @@ From then on the user only **picks, approves or rejects** the options the AI sho
 ### 1-1. Add it as a "Command" server 📄
 
 **Option A: ask your Bot**
-> "Add an MCP server. Name Rocket Launcher, command `npx`, arguments `-y rocket-launcher-mcp`"
+> "Add an MCP server. Name Rocket Launcher, command `node`, arguments `/ABS/PATH/TO/RocketLauncher/mcp/server.mjs`"
 
 **Option B: in the desktop app**
 1. Open **Connect apps** in the left sidebar.
 2. Click **Add a custom connector** at the bottom.
 3. Name: `Rocket Launcher`
 4. Type: **Command**
-5. Command: `npx`
-6. Arguments: `-y rocket-launcher-mcp`
+5. Command: `node`
+6. Arguments: `/ABS/PATH/TO/RocketLauncher/mcp/server.mjs`
 7. Click **Add plugin**.
 8. From the next message on, the Bot can use the `rocketlauncher_…` tools.
 
@@ -42,7 +73,7 @@ Grok Bot also accepts MCP servers at a public HTTPS address. Rocket Launcher has
 
 ### 1-3. Marketplace listing (not submitted)
 
-A marketplace listing needs a homepage and a contact email. Until a dedicated site and address are chosen, the homepage is this GitHub repository and contact is GitHub issues. Do not reuse a previous product's domain or email.
+A marketplace listing needs a homepage and a contact email. The homepage is https://jaetaekoh.github.io/RocketLauncher/ and contact is GitHub issues.
 
 | Item | What we found | Source |
 |---|---|---|
@@ -57,26 +88,20 @@ A marketplace listing needs a homepage and a contact email. Until a dedicated si
 
 ### Claude Code (terminal)
 ```bash
-claude mcp add rocket-launcher -- npx -y rocket-launcher-mcp
+claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs
 claude mcp list        # → rocket-launcher: ... ✔ Connected
 ```
-Local HTTP mode:
+Local HTTP mode (from the clone, after `npm install` in `mcp/`):
 ```bash
-npx -y rocket-launcher-mcp --http          # http://127.0.0.1:5181/mcp
+node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs --http          # http://127.0.0.1:5181/mcp
 claude mcp add --transport http rocket-launcher-http http://127.0.0.1:5181/mcp
 ```
 
 **As a local plugin:** `claude --plugin-dir plugin-package/rocketlauncher` after `bash tools/build_plugin.sh`.
 
 ### Claude Desktop 📄
-Settings → Developer → **Edit Config** opens `claude_desktop_config.json`. Add the block below, then fully quit and reopen the app.
-```json
-{
-  "mcpServers": {
-    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
-  }
-}
-```
+Settings → Developer → **Edit Config** opens `claude_desktop_config.json`. Add the standard config above, then fully quit and reopen the app.
+
 File location: macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`.
 Source: [MCP docs](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
 
@@ -84,14 +109,8 @@ Source: [MCP docs](https://modelcontextprotocol.io/docs/develop/connect-local-se
 
 ## 3. Cursor ✅ (verified in Cursor CLI for this style of server)
 
-Project `.cursor/mcp.json` or `~/.cursor/mcp.json`:
-```json
-{
-  "mcpServers": {
-    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
-  }
-}
-```
+Project `.cursor/mcp.json` or `~/.cursor/mcp.json`: use the standard config above.
+
 With the Cursor CLI, `mcp enable rocket-launcher` → `mcp list` should show the server as ready and `mcp list-tools rocket-launcher` should list the tools. HTTP mode (`"url": "http://127.0.0.1:5181/mcp"`) is also supported.
 Cursor IDE asks you to approve the server the first time.
 
@@ -99,37 +118,40 @@ Cursor IDE asks you to approve the server the first time.
 
 ## 4. Gemini CLI 📄
 
-`~/.gemini/settings.json` (all projects) or `.gemini/settings.json` (one project):
-```json
-{
-  "mcpServers": {
-    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
-  }
-}
-```
+`~/.gemini/settings.json` (all projects) or `.gemini/settings.json` (one project): use the standard config above.
+
 Restart Gemini CLI and run `/mcp` to see the tools. Source: [Gemini CLI MCP servers](https://geminicli.com/docs/tools/mcp-server/).
 
 ---
 
 ## 5. Other MCP apps ✅
 
-- **stdio:** command `npx -y rocket-launcher-mcp` (or `node mcp/server.mjs` from a checkout). Example with the MCP Inspector CLI:
+- **stdio:** command `node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs` (after `npm install` in `mcp/`). Example with the MCP Inspector CLI:
   ```bash
-  npx @modelcontextprotocol/inspector --cli npx -y rocket-launcher-mcp --method tools/list
+  npx @modelcontextprotocol/inspector --cli node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs --method tools/list
   ```
-- **Streamable HTTP:** `npx -y rocket-launcher-mcp --http [--port 5181] [--host 127.0.0.1]` → endpoint `http://127.0.0.1:5181/mcp` (POST, stateless).
+  (`npx` here starts the Inspector, not Rocket Launcher.)
+- **Streamable HTTP:** `node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs --http [--port 5181] [--host 127.0.0.1]` → endpoint `http://127.0.0.1:5181/mcp` (POST, stateless).
   - Host and Origin headers are checked; other Origins get 403.
   - In HTTP mode, reading paths on the server's disk (`source: "path"`) is off by default (turn on with `ROCKETLAUNCHER_ALLOW_PATH=1`), and the result ZIP is returned inline.
+
+From a checkout you can also run:
+
+```bash
+cd mcp && npm start          # stdio
+npm run http                 # http://127.0.0.1:5181/mcp
+npm test                     # automated tests
+```
 
 ## Environment variables
 
 | Name | Default | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | `ROCKETLAUNCHER_HOME` | `~/.rocketlauncher` | Folder for progress and generated materials |
 | `ROCKETLAUNCHER_ALLOW_PATH` | on for stdio / off for HTTP | Allow connecting local folders and ZIPs |
 | `ROCKETLAUNCHER_ALLOWED_ORIGINS` | none | Origins allowed in HTTP mode (comma separated) |
 | `ROCKETLAUNCHER_ALLOWED_HOSTS` | localhost port | Hosts allowed in HTTP mode |
-| `ROCKETLAUNCHER_LESSONS_API` | `lessonsApiUrl` in `js/config.js` (`https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons`) | Shared review-lessons API base URL |
+| `ROCKETLAUNCHER_LESSONS_API` | `lessonsApiUrl` in `js/config.js` (`https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons`) | Shared review-lessons API base URL. Set it to an empty value to keep lessons only on this computer. If the variable is omitted, the default URL is used. |
 
 Tool texts come in `en` (default), `ko`, `th`, `zh` (Simplified Chinese) and `hi` (Hindi). The AI passes the user's language as the optional `lang` argument on each call; when it is left out, texts are in English. Store listings for the user's app default to English (`langs: ["en"]`, recommended); Korean, Thai, Chinese and Hindi listings can be added if the user picks them.
 

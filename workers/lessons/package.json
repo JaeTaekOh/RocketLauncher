@@ -1,0 +1,6 @@
+{
+  "name": "rocket-launcher-lessons",
+  "private": true,
+  "description": "Shared review-lessons Worker. Wrangler is a local dev dependency so deploy does not write under a system node_modules cache.",
+  "devDependencies": { "wrangler": "^4.45.0" }
+}

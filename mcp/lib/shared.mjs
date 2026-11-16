@@ -11,7 +11,15 @@ import { Lessons } from './runtime.mjs';
 import os from 'node:os';
 
 /* Endpoint override exists only for tests and local development (point it at a mock server). */
-export const API = (process.env.ROCKETLAUNCHER_LESSONS_API || Lessons.SHARE_URL || '').trim();
+/* An explicitly set ROCKETLAUNCHER_LESSONS_API, even when empty, wins over js/config.js.
+   Empty or whitespace disables the shared feed; omit the variable to use the default URL. */
+export function resolveLessonsApi(env = process.env, fallback = Lessons.SHARE_URL) {
+  if (env && Object.prototype.hasOwnProperty.call(env, 'ROCKETLAUNCHER_LESSONS_API')) {
+    return String(env.ROCKETLAUNCHER_LESSONS_API || '').trim();
+  }
+  return String(fallback || '').trim();
+}
+export const API = resolveLessonsApi();
 const LHOME = process.env.ROCKETLAUNCHER_HOME || path.join(os.homedir(), '.rocketlauncher');
 export const SHARED_FILE = path.join(LHOME, 'shared-lessons.json');
 const TTL = 12 * 3600e3, RETRY_AFTER_FAIL = 15 * 60e3, TIMEOUT = 5000;

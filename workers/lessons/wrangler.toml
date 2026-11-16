@@ -2,6 +2,7 @@
 # Deployed on the project owner's Cloudflare account (Prezentree).
 # Public URL is set in js/config.js lessonsApiUrl (and/or ROCKETLAUNCHER_LESSONS_API).
 name = "rocket-launcher-lessons"
+account_id = "58982c9fa31e0d6ecb5a509ddc128394"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 workers_dev = true
@@ -9,3 +10,6 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "LESSONS"
 id = "262973ba4e6c4a9e9d8478a630a69870"
+
+[vars]
+CORS_ORIGINS = "https://jaetaekoh.github.io"

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rocket Launcher — From a finished app to the stores</title>
+  <meta name="description" content="Rocket Launcher helps you get an Android or iOS app onto Google Play and the App Store. You only pick, approve, or reject. Nothing is submitted automatically.">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="color-scheme" content="light">
+  <link rel="canonical" href="https://jaetaekoh.github.io/RocketLauncher/">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icon.jpg" type="image/jpeg" sizes="512x512">
+  <link rel="apple-touch-icon" href="assets/icon.jpg">
+  <meta property="og:title" content="Rocket Launcher">
+  <meta property="og:description" content="From a finished app to Google Play and the App Store. You only pick, approve, or reject.">
+  <meta property="og:url" content="https://jaetaekoh.github.io/RocketLauncher/">
+  <meta property="og:image" content="https://jaetaekoh.github.io/RocketLauncher/assets/og.png">
+  <meta property="og:image:width" content="2672">
+  <meta property="og:image:height" content="1032">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rocket Launcher">
+  <meta name="twitter:description" content="From a finished app to Google Play and the App Store. You only pick, approve, or reject.">
+  <meta name="twitter:image" content="https://jaetaekoh.github.io/RocketLauncher/assets/og.png">
+  <link rel="preload" href="fonts/Geist.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="in">
+      <a class="mark" href="./"><img src="assets/icon.jpg" width="32" height="32" alt="">Rocket Launcher</a>
+      <nav class="nav" aria-label="Site">
+        <a href="#connect">Connect</a>
+        <a href="#tools">Tools</a>
+        <a href="app/">Web version</a>
+        <a href="https://github.com/JaeTaekOh/RocketLauncher">GitHub</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="wrap">
+      <section class="hero">
+        <img class="icon" src="assets/icon.jpg" width="128" height="128" alt="Rocket Launcher icon">
+        <div>
+          <p class="kicker">MCP server · web tool</p>
+          <h1>Rocket Launcher</h1>
+          <div class="rule"></div>
+          <p class="lead">From a finished app to Google Play and the App Store.<br><strong>You only pick, approve, or reject.</strong> Nothing is submitted automatically.</p>
+          <div class="hero-btns">
+            <a class="pbtn pbtn-primary" href="app/">Open the web version</a>
+            <a class="pbtn" href="#connect">How to connect</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="connect">
+        <h2>How to connect</h2>
+        <p class="note"><strong>The npm package is not published yet</strong> (coming soon). Do not run <code class="i">npx -y rocket-launcher-mcp</code> until it is. Until then, clone the repository and run the server with Node.js 20 or later.</p>
+
+        <div class="code">
+          <pre id="clone"><span class="p">$ </span>git clone https://github.com/JaeTaekOh/RocketLauncher.git
+<span class="p">$ </span>cd RocketLauncher/mcp
+<span class="p">$ </span>npm install</pre>
+          <button class="copy" type="button" data-copy="clone" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8c0-.7-.6-1.3-1.3-1.3H3.8c-.7 0-1.3.6-1.3 1.3v5.4c0 .7.6 1.3 1.3 1.3h1.7"/></svg><span class="t">Copy</span></button>
+        </div>
+        <p class="hint">In every config below, replace <code class="i">/ABS/PATH/TO/RocketLauncher</code> with the real path of your clone.</p>
+
+        <div class="tabs" role="tablist" aria-label="AI app">
+          <button class="tab" role="tab" id="tab-grok" data-tab="grok" aria-controls="panel-grok" aria-selected="true" tabindex="0">Grok Bot</button>
+          <button class="tab" role="tab" id="tab-claude" data-tab="claude" aria-controls="panel-claude" aria-selected="false" tabindex="-1">Claude</button>
+          <button class="tab" role="tab" id="tab-cursor" data-tab="cursor" aria-controls="panel-cursor" aria-selected="false" tabindex="-1">Cursor</button>
+          <button class="tab" role="tab" id="tab-gemini" data-tab="gemini" aria-controls="panel-gemini" aria-selected="false" tabindex="-1">Gemini CLI</button>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-grok" aria-labelledby="tab-grok">
+          <div class="opt">
+            <h3 class="opt-h">Ask in a chat <span class="tag">Easiest</span></h3>
+            <div class="code"><pre id="g-ask">Add an MCP server. Name Rocket Launcher, command node, arguments /ABS/PATH/TO/RocketLauncher/mcp/server.mjs</pre><button class="copy" type="button" data-copy="g-ask" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8c0-.7-.6-1.3-1.3-1.3H3.8c-.7 0-1.3.6-1.3 1.3v5.4c0 .7.6 1.3 1.3 1.3h1.7"/></svg><span class="t">Copy</span></button></div>
+          </div>
+          <div class="opt">
+            <h3 class="opt-h">Or add it yourself</h3>
+            <ol class="steps">
+              <li><span class="path">Connect apps<span class="sep">→</span>Add a custom connector</span></li>
+              <li>
+                <dl class="fields">
+                  <dt>Type</dt><dd><code class="i">Command</code></dd>
+                  <dt>Command</dt><dd><code class="i">node</code></dd>
+                  <dt>Arguments</dt><dd><code class="i">/ABS/PATH/TO/RocketLauncher/mcp/server.mjs</code></dd>
+                </dl>
+              </li>
+            </ol>
+          </div>
+          <div class="opt">
+            <h3 class="opt-h">Then</h3>
+            <p>Tell the Bot <strong>“Help me launch my app with Rocket Launcher”</strong> and give it a public GitHub URL — or try the sample.</p>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-claude" aria-labelledby="tab-claude" hidden>
+          <div class="opt">
+            <h3 class="opt-h">Claude Code <span class="tag">Terminal</span></h3>
+            <div class="code"><pre id="c-code"><span class="p">$ </span>claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs</pre><button class="copy" type="button" data-copy="c-code" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8c0-.7-.6-1.3-1.3-1.3H3.8c-.7 0-1.3.6-1.3 1.3v5.4c0 .7.6 1.3 1.3 1.3h1.7"/></svg><span class="t">Copy</span></button></div>
+          </div>
+          <div class="opt">
+            <h3 class="opt-h">Claude Desktop <span class="tag">Mac · Windows</span></h3>
+            <ol class="steps">
+              <li><span class="path">Settings<span class="sep">→</span>Developer<span class="sep">→</span>Edit Config</span>, then add this to <code class="i">claude_desktop_config.json</code>:
+                <div class="code"><pre id="c-desk" data-raw='{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "node",
+      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
+    }
+  }
+}'>{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"rocket-launcher"</span>: {
+      <span class="k">"command"</span>: <span class="s">"node"</span>,
+      <span class="k">"args"</span>: [<span class="s">"/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"</span>]
+    }
+  }
+}</pre><button class="copy" type="button" data-copy="c-desk" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8c0-.7-.6-1.3-1.3-1.3H3.8c-.7 0-1.3.6-1.3 1.3v5.4c0 .7.6 1.3 1.3 1.3h1.7"/></svg><span class="t">Copy</span></button></div>
+              </li>
+              <li>Fully quit Claude and open it again.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-cursor" aria-labelledby="tab-cursor" hidden>
+          <div class="opt">
+            <h3 class="opt-h">mcp.json</h3>
+            <ol class="steps">
+              <li>Add this to <code class="i">.cursor/mcp.json</code> in your project, or to <code class="i">~/.cursor/mcp.json</code> for all projects:
+                <div class="code"><pre id="cu-json" data-raw='{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "node",
+      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
+    }
+  }
+}'>{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"rocket-launcher"</span>: {
+      <span class="k">"command"</span>: <span class="s">"node"</span>,
+      <span class="k">"args"</span>: [<span class="s">"/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"</span>]
+    }
+  }
+}</pre><button class="copy" type="button" data-copy="cu-json" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8c0-.7-.6-1.3-1.3-1.3H3.8c-.7 0-1.3.6-1.3 1.3v5.4c0 .7.6 1.3 1.3 1.3h1.7"/></svg><span class="t">Copy</span></button></div>
+              </li>
+              <li>Approve the server the first time Cursor asks.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="panel-gemini" aria-labelledby="tab-gemini" hidden>
+          <div class="opt">
+            <h3 class="opt-h">settings.json</h3>
+            <ol class="steps">
+              <li>Add this to <code class="i">~/.gemini/settings.json</code> (all projects) or <code class="i">.gemini/settings.json</code> in one project:
+                <div class="code"><pre id="ge-json" data-raw='{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "node",
+      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
+    }
+  }
+}'>{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"rocket-launcher"</span>: {
+      <span class="k">"command"</span>: <span class="s">"node"</span>,
+      <span class="k">"args"</span>: [<span class="s">"/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"</span>]
+    }
+  }
+}</pre><button class="copy" type="button" data-copy="ge-json" aria-label="Copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.8c0-.7-.6-1.3-1.3-1.3H3.8c-.7 0-1.3.6-1.3 1.3v5.4c0 .7.6 1.3 1.3 1.3h1.7"/></svg><span class="t">Copy</span></button></div>
+              </li>
+              <li>Restart Gemini CLI and run <code class="i">/mcp</code> to see the tools.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="opt" style="margin-top:28px;padding-top:22px;border-top:1px solid var(--hair)">
+          <h3 class="opt-h">When the npm package is published <span class="tag">Coming soon</span></h3>
+          <p class="hint">The command will be <code class="i">npx -y rocket-launcher-mcp</code>. That does not work today.</p>
+        </div>
+
+        <div class="after">After that, just talk to your AI. <b>You only pick and approve.</b> You press Submit yourself in Play Console or App Store Connect. Prefer not to install anything? Use the <a href="app/">web version</a>.</div>
+      </section>
+
+      <section class="sec" id="tools">
+        <h2>Twenty-one tools</h2>
+        <div class="tools">
+          <div class="tg">
+            <h3>Connect and decide</h3>
+            <dl>
+              <dt>rocketlauncher_connect_app</dt><dd>Connect an app once (public GitHub URL, folder, ZIP, or the sample) and analyze it.</dd>
+              <dt>rocketlauncher_get_report</dt><dd>Show launch readiness and issues that can block review.</dd>
+              <dt>rocketlauncher_get_decisions</dt><dd>List choices with ready-made options and a recommendation.</dd>
+              <dt>rocketlauncher_decide</dt><dd>Record what you actually picked or approved.</dd>
+              <dt>rocketlauncher_status</dt><dd>Show the current step, the next action, and lessons learned on this computer.</dd>
+            </dl>
+          </div>
+          <div class="tg">
+            <h3>Check before you submit</h3>
+            <dl>
+              <dt>rocketlauncher_check_requirements</dt><dd>Check current store technical requirements and deadlines, with official sources.</dd>
+              <dt>rocketlauncher_privacy_check</dt><dd>Cross-check privacy labels, permission texts, and the policy, and draft what is missing.</dd>
+              <dt>rocketlauncher_play_policy_audit</dt><dd>A quick Google Play policy scan with Play Policy Insights.</dd>
+              <dt>rocketlauncher_account_deletion_check</dt><dd>Check in-app and web account-deletion paths when the app has sign-up.</dd>
+              <dt>rocketlauncher_version_sync</dt><dd>Check version and build numbers across platforms, including force-update safety.</dd>
+              <dt>rocketlauncher_country_check</dt><dd>Korea, EU, and Thailand rules that apply to the app. Summaries, not legal advice.</dd>
+              <dt>rocketlauncher_closed_test</dt><dd>Track Google Play’s 12 testers × 14 days closed-test rule.</dd>
+              <dt>rocketlauncher_reviewer_notes</dt><dd>Draft notes for store reviewers, with placeholders only — never real passwords.</dd>
+            </dl>
+          </div>
+          <div class="tg">
+            <h3>Make store materials</h3>
+            <dl>
+              <dt>rocketlauncher_preview_graphics</dt><dd>Show icon, feature-graphic, and screenshot options so you can pick.</dd>
+              <dt>rocketlauncher_generate_store_materials</dt><dd>Build the full launch kit: listings, privacy pages, form answers, graphics, and a ZIP.</dd>
+            </dl>
+          </div>
+          <div class="tg">
+            <h3>Submit — you press the button</h3>
+            <dl>
+              <dt>rocketlauncher_submission_guide</dt><dd>Walk through each store console, with the value for every field. The last step stays locked until you approve.</dd>
+              <dt>rocketlauncher_approve_submission</dt><dd>Record your approval. This does not submit anything.</dd>
+            </dl>
+          </div>
+          <div class="tg">
+            <h3>After review</h3>
+            <dl>
+              <dt>rocketlauncher_report_review</dt><dd>Record submitted, rejected, resubmitted, or approved. Returns a fix plan and a reply draft when needed.</dd>
+              <dt>rocketlauncher_forget_lesson</dt><dd>Remove one review lesson learned on this computer, only when you ask.</dd>
+            </dl>
+          </div>
+          <div class="tg">
+            <h3>Move or remove an app</h3>
+            <dl>
+              <dt>rocketlauncher_move_app_plan</dt><dd>Compare transferring an app with registering it again. AdMob is optional.</dd>
+              <dt>rocketlauncher_remove_app_guide</dt><dd>How to unpublish or delete an app on each store. Guide only; nothing is removed.</dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="in">
+      <p>© Prezentree · MIT License</p>
+      <div class="foot-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/JaeTaekOh/RocketLauncher">Source</a>
+        <a href="https://github.com/JaeTaekOh/RocketLauncher/issues">Issues</a>
+      </div>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

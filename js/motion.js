@@ -1,5 +1,5 @@
 /* ======================================================================================================
-   AA 앱 공통 모션 표준 — motion.js  (v1, 2026-10-30, 가이드: /workspace/shared/motion-guide.md)
+   Rocket Launcher motion helpers.
    프레임워크 없음 · 앱 전용 코드 없음 · motion.css 와 한 쌍. window.Motion 으로 노출(앱이 원하면 별칭을 단다).
    데이터 속성 훅(마크업만으로 동작):
      data-ripple            누르면 터치 지점에서 퍼지는 리플 (data-ripple 는 컨트롤 자신에게)

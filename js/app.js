@@ -106,8 +106,8 @@
     $('#top').innerHTML = `
       <div class="top-in">
         <button class="brand" data-go="home" aria-label="Rocket Launcher ${esc(t('home'))}">
-          <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="var(--brand)"/><path d="M9 22.5 15 8.5h2l6 14" fill="none" stroke="var(--on-brand)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 17h8" stroke="var(--on-brand)" stroke-width="2.6" stroke-linecap="round"/><circle cx="24.5" cy="8" r="2.4" fill="var(--on-brand)"/></svg></span>
-          <span class="brand-t">Rocket Launcher <b>2</b></span>
+          <span class="logo" aria-hidden="true"><img src="assets/icon.jpg" width="32" height="32" alt=""></span>
+          <span class="brand-t">Rocket Launcher</span>
         </button>
         ${S.step !== 'home' && S.A ? `<ol class="stepper" aria-label="${esc(t('progress'))}">${steps}</ol><span class="step-mini">${idx}/${STEPS.length - 1} · ${t('step.' + S.step)}</span>` : '<span class="flex1"></span>'}
         <div class="lang">
@@ -154,7 +154,7 @@
     return `
     <section class="home">
       <div class="home-hero m-rise">
-        <p class="kicker">${ic('sparkle')}${esc(t('home.kicker'))}</p>
+        <p class="kicker">${esc(t('home.kicker'))}</p>
         <h1>${t('home.h1')}</h1>
         <p class="lead">${esc(t('home.lead'))}</p>
         <ol class="flow">

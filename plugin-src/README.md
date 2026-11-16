@@ -53,31 +53,32 @@ Rocket Launcher is for apps at every stage, per store: **not submitted yet** (fi
 
 ## Set up
 
-Node.js 20+. The server runs with `npx -y rocket-launcher-mcp` (stdio).
+Node.js 20+. The npm package `rocket-launcher-mcp` is **not published yet** (coming soon). Until then, clone this repository, run `npm install` in `mcp/`, and point your client at the server file. Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone.
+
+```bash
+git clone https://github.com/JaeTaekOh/RocketLauncher.git
+cd RocketLauncher/mcp && npm install
+```
 
 **Claude Code**
 ```bash
-claude mcp add rocket-launcher -- npx -y rocket-launcher-mcp
+claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs
 ```
 
-**Claude Desktop** (`claude_desktop_config.json`) and **Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`)
+**Claude Desktop** (`claude_desktop_config.json`), **Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`), and **Gemini CLI** (`~/.gemini/settings.json`, or `.gemini/settings.json` in a project):
+
 ```json
 {
   "mcpServers": {
-    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
+    "rocket-launcher": {
+      "command": "node",
+      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
+    }
   }
 }
 ```
 
-**Gemini CLI** (`~/.gemini/settings.json`, or `.gemini/settings.json` in a project)
-```json
-{
-  "mcpServers": {
-    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
-  }
-}
-```
-Then run `/mcp` in Gemini CLI to see the Rocket Launcher tools.
+In Gemini CLI, restart and run `/mcp` to see the tools. Connection details for every client are in PLUGIN.md in the source repository. Homepage: https://jaetaekoh.github.io/RocketLauncher/
 
 ## Try it
 
@@ -89,7 +90,7 @@ Ask your assistant: *"Use Rocket Launcher with the sample app."* or *"My app is 
 - App files are read only on that computer. Public GitHub repos are read through the GitHub public API. Apart from the optional anonymized review-lesson record below, nothing is uploaded. No telemetry, no accounts.
 - Store rules are in `data/store-requirements.json` (official source and verified date for every rule). The only network calls in the release checks are an optional public App Store lookup (`rocketlauncher_version_sync` with `check_store`) and an optional tester page you ask it to open.
 - Progress is saved in `~/.rocketlauncher` (change it with `ROCKETLAUNCHER_HOME`).
-- Review results you report are learned locally: an unknown rejection becomes a generalized lesson in `~/.rocketlauncher/lessons.json` (no original store message, app names or emails) and is reused as warnings, pre-submit checks and review-note lines for your later apps. When a lessons API is configured (`lessonsApiUrl` or `ROCKETLAUNCHER_LESSONS_API`), an anonymized record (store, guideline / ITMS / Play policy codes, a fixed advice id; never the store message, app name or ids) is sent there, and other users' combined lessons are shown as "From other reviews" reminders. The demo never sends; if the API is unset or unreachable, the plugin works normally on this computer only.
+- Review results you report are learned locally: an unknown rejection becomes a generalized lesson in `~/.rocketlauncher/lessons.json` (no original store message, app names or emails) and is reused as warnings, pre-submit checks and review-note lines for your later apps. When a lessons API is configured (`lessonsApiUrl` or `ROCKETLAUNCHER_LESSONS_API`), an anonymized record (store, guideline / ITMS / Play policy codes, a fixed advice id; never the store message, app name or ids) is sent there, and other users' combined lessons are shown as "From other reviews" reminders. The demo never sends. Set `ROCKETLAUNCHER_LESSONS_API` to an empty value to keep lessons only on this computer; if the variable is omitted, `lessonsApiUrl` in `js/config.js` is used. If the API is empty or unreachable, the plugin works normally on this computer only.
 - Graphics need the optional `@napi-rs/canvas` package. Run `npm install` in `mcp/` to turn graphics on. Without it, everything else still works.
 
 - Languages: tool texts come in English (default), Korean, Thai, Simplified Chinese and Hindi (`lang`: `en`, `ko`, `th`, `zh`, `hi`); without `lang` they are in English. Store listings default to English.
@@ -98,4 +99,4 @@ Ask your assistant: *"Use Rocket Launcher with the sample app."* or *"My app is 
 
 `vendor/play-policy-insights/` is Google's Play Policy Insights skill from https://github.com/android/skills (Apache License 2.0, © Google LLC / The Android Open Source Project), included unmodified with its `LICENSE.txt` and a `NOTICE`. Rocket Launcher reads its rule files for the quick scan and points to its `SKILL.md` for the full offline audit.
 
-See PRIVACY.md. Source: https://github.com/JaeTaekOh/rocketlauncher · MIT License (see LICENSE). © Prezentree
+See PRIVACY.md. Source: https://github.com/JaeTaekOh/RocketLauncher · MIT License (see LICENSE). © Prezentree

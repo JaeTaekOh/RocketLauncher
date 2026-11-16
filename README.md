@@ -13,6 +13,8 @@ You connect the app once. From then on you only **pick, approve, or reject**. No
 [![License: MIT](https://img.shields.io/badge/license-MIT-171717?style=flat-square)](LICENSE)
 [![Languages](https://img.shields.io/badge/languages-en%20·%20ko%20·%20th%20·%20zh%20·%20hi-6B6B6B?style=flat-square)](#languages)
 
+**Website:** [jaetaekoh.github.io/RocketLauncher](https://jaetaekoh.github.io/RocketLauncher/) · **Web app:** [Open the web version](https://jaetaekoh.github.io/RocketLauncher/app/)
+
 - [Who it is for](#who-it-is-for)
 - [The one rule](#the-one-rule)
 - [Any store stage](#any-store-stage)
@@ -261,7 +263,7 @@ This README is in English. The web app also opens in English; use the globe butt
 - Progress for the MCP server is saved in `~/.rocketlauncher` (override with `ROCKETLAUNCHER_HOME`). The web app saves progress in this browser’s `localStorage`.
 - When you report a store review result, a generalized lesson is stored on this computer in `~/.rocketlauncher/lessons.json`. It does not keep the original store message, app names, or emails.
 - **Shared lessons (optional).** When a lessons API is configured, a real (non-demo) learned result may send one anonymized record: `store`, `codes` (guideline / ITMS / Play policy codes), `advice_id` (a key from Rocket Launcher’s fixed table), and `event`. **Never sent:** the store’s message, app name, bundle or package id, project id, paths, emails, or any other free text. The built-in demo never sends. Combined counts may be shown as “From other reviews” reminders; they never become must-fix items.
-- The default API URL is `https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons` (`lessonsApiUrl` in `js/config.js`, overridable with `ROCKETLAUNCHER_LESSONS_API`). To keep lessons only on this computer, clear `lessonsApiUrl` and leave `ROCKETLAUNCHER_LESSONS_API` unset. If the API is empty or unreachable, everything still works locally.
+- The default API URL is `https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons` (`lessonsApiUrl` in `js/config.js`). Set `ROCKETLAUNCHER_LESSONS_API` to an empty value to keep lessons only on this computer — an empty value wins over the default. If the variable is omitted, the default URL is used. If the API is empty or unreachable, everything still works locally.
 
 See [privacy.html](privacy.html) and [plugin-src/PRIVACY.md](plugin-src/PRIVACY.md).
 
@@ -269,7 +271,9 @@ See [privacy.html](privacy.html) and [plugin-src/PRIVACY.md](plugin-src/PRIVACY.
 
 ## Web app
 
-A local web app is included in this repository. It is not hosted on a public site.
+The web app is at **[https://jaetaekoh.github.io/RocketLauncher/app/](https://jaetaekoh.github.io/RocketLauncher/app/)**. How-to-connect instructions are on the [homepage](https://jaetaekoh.github.io/RocketLauncher/).
+
+You can also run it locally from this repository:
 
 ```bash
 # from the repository root — Node.js 18 or later
@@ -277,7 +281,7 @@ npm start
 # open http://127.0.0.1:5180/
 ```
 
-Change the port with `PORT=8080 npm start`. Opening `index.html` directly (`file://`) works for the built-in sample and for ZIP or folder connections. Public GitHub connections call the GitHub API from the browser and fall back to the local server’s `/gh` proxy when blocked.
+Change the port with `PORT=8080 npm start`. Opening `index.html` directly (`file://`) works for the built-in sample and for ZIP or folder connections. Public GitHub connections call the GitHub API from the browser and, on the local preview server only, fall back to `/gh` if blocked.
 
 ## Configuration
 
@@ -287,9 +291,9 @@ Change the port with `PORT=8080 npm start`. Opening `index.html` directly (`file
 | `ROCKETLAUNCHER_ALLOW_PATH` | on for stdio / off for HTTP | Allow connecting local folders and ZIPs |
 | `ROCKETLAUNCHER_ALLOWED_ORIGINS` | none | Origins allowed in HTTP mode (comma-separated) |
 | `ROCKETLAUNCHER_ALLOWED_HOSTS` | localhost port | Hosts allowed in HTTP mode |
-| `ROCKETLAUNCHER_LESSONS_API` | `lessonsApiUrl` in `js/config.js` | Shared review-lessons API base URL |
+| `ROCKETLAUNCHER_LESSONS_API` | `lessonsApiUrl` in `js/config.js` | Shared review-lessons API base URL. An empty value disables sharing; omit the variable to use the default. |
 
-`js/config.js` also has `feedbackUrl` (GitHub Issues until a dedicated site exists) and `showAdSlotPlaceholder` (a placeholder only, not a real ad).
+`js/config.js` also has `feedbackUrl` (GitHub Issues).
 
 Graphics in the MCP server need the optional `@napi-rs/canvas` package (`npm install` in `mcp/`). Without it, everything else still works.
 
@@ -308,7 +312,7 @@ Not yet. The npm package is coming soon. Use a clone, as in [Install](#install).
 Yes. Stage is a required choice per store. See [Any store stage](#any-store-stage).
 
 **What if I do not want shared review lessons?**  
-Clear `lessonsApiUrl` in `js/config.js` and leave `ROCKETLAUNCHER_LESSONS_API` unset. Local lessons and the rest of the flow keep working. You can also remove one local lesson with `rocketlauncher_forget_lesson`.
+Set `ROCKETLAUNCHER_LESSONS_API` to an empty value (for example `ROCKETLAUNCHER_LESSONS_API=` in the environment). That disables the shared feed even if `js/config.js` has a default URL. Local lessons and the rest of the flow keep working. You can also remove one local lesson with `rocketlauncher_forget_lesson`.
 
 **Where do I ask a question or report a problem?**  
 [GitHub Issues](https://github.com/JaeTaekOh/RocketLauncher/issues).

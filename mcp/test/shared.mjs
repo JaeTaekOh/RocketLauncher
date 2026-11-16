@@ -128,6 +128,13 @@ try {
   check(!Lessons.validShare({ store: 'apple', codes: [LETTER], advice_id: '4.8' }), 'letter as a code → invalid');
   check(Lessons.sharePayload({ store: 'play', codes: ['play-impersonation'], area: 'play-impersonation', title: 'Impersonation policy' }) === null, 'Play policy name read from a letter is not shared');
   check(Lessons.sharePayload({ store: 'apple', codes: ['9.9'], area: null, title: 'App Review 9.9' }).advice_id === 'apple-codes', 'unknown Apple guideline → generic advice id + code only');
+
+  console.log('\n[8] Empty ROCKETLAUNCHER_LESSONS_API disables the shared feed');
+  const def = 'https://example.invalid/api/lessons';
+  check(S.resolveLessonsApi({}, def) === def, 'omitted variable uses the default URL');
+  check(S.resolveLessonsApi({ ROCKETLAUNCHER_LESSONS_API: '' }, def) === '', 'empty variable disables sharing');
+  check(S.resolveLessonsApi({ ROCKETLAUNCHER_LESSONS_API: '  ' }, def) === '', 'whitespace variable disables sharing');
+  check(S.resolveLessonsApi({ ROCKETLAUNCHER_LESSONS_API: 'http://mock/api' }, def) === 'http://mock/api', 'set variable wins');
 } catch (e) { failN++; console.error('test crashed:', e); }
 finally { srv.closeAllConnections && srv.closeAllConnections(); srv.close(); fs.rmSync(HOME, { recursive: true, force: true }); }
 console.log(`\n${pass} passed, ${failN} failed`);
