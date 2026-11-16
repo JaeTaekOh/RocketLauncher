@@ -1,7 +1,12 @@
 # Rocket Launcher
 
 **From "my app is done" to "launched" on Google Play and the App Store — first submit, waiting in review, rejected, or a live app update. You only pick and approve.**
-Free · no API keys · English (default) + 한국어 · ภาษาไทย · 中文 · हिन्दी · feedback: https://github.com/JaeTaekOh/rocketlauncher/issues
+Free · no API keys · English (default) + 한국어 · ภาษาไทย · 中文 · हिन्दी · feedback: https://github.com/JaeTaekOh/RocketLauncher/issues
+
+## Two ways to use it
+
+- **Connect the MCP server** to Grok Bot, Claude, Cursor, or Gemini CLI. Step-by-step instructions are on the [connect page](https://jaetaekoh.github.io/RocketLauncher/). The usual install is `npx -y rocket-launcher-mcp`.
+- **Use the web version** in your browser, with no install: [jaetaekoh.github.io/RocketLauncher/app](https://jaetaekoh.github.io/RocketLauncher/app/).
 
 Rocket Launcher is an MCP server (plus a skill) for people who built an Android and/or iOS app with AI. Connect the app once, and your AI assistant can:
 
@@ -53,19 +58,37 @@ Rocket Launcher is for apps at every stage, per store: **not submitted yet** (fi
 
 ## Set up
 
-Node.js 20+. The npm package `rocket-launcher-mcp` is **not published yet** (coming soon). Until then, clone this repository, run `npm install` in `mcp/`, and point your client at the server file. Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone.
+Node.js 20+. The usual install is the npm package [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp).
+
+**Claude Code**
+```bash
+claude mcp add rocket-launcher -- npx -y rocket-launcher-mcp
+```
+
+**Claude Desktop** (`claude_desktop_config.json`), **Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`), and **Gemini CLI** (`~/.gemini/settings.json`, or `.gemini/settings.json` in a project):
+
+```json
+{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "npx",
+      "args": ["-y", "rocket-launcher-mcp"]
+    }
+  }
+}
+```
+
+In Gemini CLI, restart and run `/mcp` to see the tools. Connection details for every client are in PLUGIN.md in the source repository. Homepage: https://jaetaekoh.github.io/RocketLauncher/
+
+<details>
+<summary>From a clone (alternative)</summary>
 
 ```bash
 git clone https://github.com/JaeTaekOh/RocketLauncher.git
 cd RocketLauncher/mcp && npm install
 ```
 
-**Claude Code**
-```bash
-claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs
-```
-
-**Claude Desktop** (`claude_desktop_config.json`), **Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`), and **Gemini CLI** (`~/.gemini/settings.json`, or `.gemini/settings.json` in a project):
+Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone:
 
 ```json
 {
@@ -78,7 +101,7 @@ claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mj
 }
 ```
 
-In Gemini CLI, restart and run `/mcp` to see the tools. Connection details for every client are in PLUGIN.md in the source repository. Homepage: https://jaetaekoh.github.io/RocketLauncher/
+</details>
 
 ## Try it
 

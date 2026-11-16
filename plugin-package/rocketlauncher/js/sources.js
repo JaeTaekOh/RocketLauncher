@@ -129,17 +129,40 @@
     if (!m) return null;
     return { owner: m[1], repo: m[2], branch: m[3] || null, sub: (m[4] || '').replace(/\/$/, '') };
   }
-  /* 브라우저에서 바로 시도 → 막히면 같은 출처의 로컬 프록시(/gh/...)로 재시도 (server.mjs 로 열었을 때만 존재) */
+  /* Try the URL directly. On the local preview server only, retry through /gh. On a static host
+     (GitHub Pages), /gh does not exist; raw file fetches that fail CORS fall back to the GitHub contents API. */
+  function onLocalPreview() {
+    try { return location.protocol.startsWith('http') && /^(localhost|127\.0\.0\.1)$/.test(location.hostname); } catch (e) { return false; }
+  }
+  function rawToContentsApi(url) {
+    const m = String(url).match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/);
+    if (!m) return null;
+    return 'https://api.github.com/repos/' + m[1] + '/' + m[2] + '/contents/' + m[4] + '?ref=' + encodeURIComponent(m[3]);
+  }
+  function b64ToU8(b64) {
+    const bin = atob(String(b64).replace(/\s/g, ''));
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return u8;
+  }
   async function ghFetch(url, as) {
     const tries = [url];
-    if (location.protocol.startsWith('http')) tries.push('/gh?u=' + encodeURIComponent(url));
+    if (onLocalPreview()) tries.push('/gh?u=' + encodeURIComponent(url));
+    const viaApi = as === 'bin' ? rawToContentsApi(url) : null;
+    if (viaApi) tries.push(viaApi);
     let lastErr;
     for (const u of tries) {
       try {
-        const r = await fetch(u, { headers: as === 'json' ? { Accept: 'application/vnd.github+json' } : {} });
+        const contents = u.indexOf('api.github.com') !== -1 && u.indexOf('/contents/') !== -1;
+        const r = await fetch(u, { headers: (as === 'json' || contents) ? { Accept: 'application/vnd.github+json' } : {} });
         if (r.status === 403 || r.status === 429) { lastErr = new Error('rate'); continue; }
         if (r.status === 404) throw Object.assign(new Error('notfound'), { fatal: true });
         if (!r.ok) { lastErr = new Error('http ' + r.status); continue; }
+        if (contents && as === 'bin') {
+          const meta = await r.json();
+          if (!meta || meta.encoding !== 'base64' || typeof meta.content !== 'string') { lastErr = new Error('contents'); continue; }
+          return b64ToU8(meta.content);
+        }
         return as === 'json' ? r.json() : new Uint8Array(await r.arrayBuffer());
       } catch (e) { if (e.fatal) throw e; lastErr = e; }
     }

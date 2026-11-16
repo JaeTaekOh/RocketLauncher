@@ -12,16 +12,34 @@ From then on the user only **picks, approves or rejects** the options the AI sho
 - Contact: https://github.com/JaeTaekOh/RocketLauncher/issues · Free · No API keys or tokens
 - Languages: tool texts in English (default), Korean, Thai, Simplified Chinese and Hindi via the `lang` argument (`en`, `ko`, `th`, `zh`, `hi`); store listings default to English
 - Source: https://github.com/JaeTaekOh/RocketLauncher (MIT)
+- npm package: [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp), run with `npx -y rocket-launcher-mcp`
 - Requires: Node.js 20 or newer
 
-> [!NOTE]
-> The npm package [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp) is **not published yet** (coming soon). Do not run `npx -y rocket-launcher-mcp` until it is. Until then, run the server from a clone of this repository.
+There are two ways to use Rocket Launcher: connect this MCP server to Grok Bot, Claude, Cursor, or Gemini CLI (this page), or open the [web version](https://jaetaekoh.github.io/RocketLauncher/app/) in a browser with no install. A shorter connect guide is also on the [homepage](https://jaetaekoh.github.io/RocketLauncher/).
 
 ✅ = connection verified on a real client for this flow. 📄 = based on official docs only, not clicked through.
 
 ---
 
-## Install from a clone (current)
+## Install
+
+**Standard config** (works in most MCP clients):
+
+```json
+{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "npx",
+      "args": ["-y", "rocket-launcher-mcp"]
+    }
+  }
+}
+```
+
+That runs the [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp) package on Node.js 20 or later.
+
+<details>
+<summary>From a clone (alternative)</summary>
 
 ```bash
 git clone https://github.com/JaeTaekOh/RocketLauncher.git
@@ -29,9 +47,7 @@ cd RocketLauncher/mcp
 npm install
 ```
 
-Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone in every config below.
-
-**Standard config** (works in most MCP clients):
+Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone:
 
 ```json
 {
@@ -44,7 +60,7 @@ Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone in every 
 }
 ```
 
-When the npm package is published, the command will be `npx -y rocket-launcher-mcp`. That does not work today.
+</details>
 
 ---
 
@@ -53,15 +69,15 @@ When the npm package is published, the command will be `npx -y rocket-launcher-m
 ### 1-1. Add it as a "Command" server 📄
 
 **Option A: ask your Bot**
-> "Add an MCP server. Name Rocket Launcher, command `node`, arguments `/ABS/PATH/TO/RocketLauncher/mcp/server.mjs`"
+> "Add an MCP server. Name Rocket Launcher, command `npx`, arguments `-y rocket-launcher-mcp`"
 
 **Option B: in the desktop app**
 1. Open **Connect apps** in the left sidebar.
 2. Click **Add a custom connector** at the bottom.
 3. Name: `Rocket Launcher`
 4. Type: **Command**
-5. Command: `node`
-6. Arguments: `/ABS/PATH/TO/RocketLauncher/mcp/server.mjs`
+5. Command: `npx`
+6. Arguments: `-y rocket-launcher-mcp`
 7. Click **Add plugin**.
 8. From the next message on, the Bot can use the `rocketlauncher_…` tools.
 
@@ -88,12 +104,12 @@ A marketplace listing needs a homepage and a contact email. The homepage is http
 
 ### Claude Code (terminal)
 ```bash
-claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs
+claude mcp add rocket-launcher -- npx -y rocket-launcher-mcp
 claude mcp list        # → rocket-launcher: ... ✔ Connected
 ```
-Local HTTP mode (from the clone, after `npm install` in `mcp/`):
+Local HTTP mode:
 ```bash
-node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs --http          # http://127.0.0.1:5181/mcp
+npx -y rocket-launcher-mcp --http          # http://127.0.0.1:5181/mcp
 claude mcp add --transport http rocket-launcher-http http://127.0.0.1:5181/mcp
 ```
 
@@ -126,12 +142,11 @@ Restart Gemini CLI and run `/mcp` to see the tools. Source: [Gemini CLI MCP serv
 
 ## 5. Other MCP apps ✅
 
-- **stdio:** command `node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs` (after `npm install` in `mcp/`). Example with the MCP Inspector CLI:
+- **stdio:** command `npx -y rocket-launcher-mcp` (or `node mcp/server.mjs` from a checkout). Example with the MCP Inspector CLI:
   ```bash
-  npx @modelcontextprotocol/inspector --cli node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs --method tools/list
+  npx @modelcontextprotocol/inspector --cli npx -y rocket-launcher-mcp --method tools/list
   ```
-  (`npx` here starts the Inspector, not Rocket Launcher.)
-- **Streamable HTTP:** `node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs --http [--port 5181] [--host 127.0.0.1]` → endpoint `http://127.0.0.1:5181/mcp` (POST, stateless).
+- **Streamable HTTP:** `npx -y rocket-launcher-mcp --http [--port 5181] [--host 127.0.0.1]` → endpoint `http://127.0.0.1:5181/mcp` (POST, stateless).
   - Host and Origin headers are checked; other Origins get 403.
   - In HTTP mode, reading paths on the server's disk (`source: "path"`) is off by default (turn on with `ROCKETLAUNCHER_ALLOW_PATH=1`), and the result ZIP is returned inline.
 

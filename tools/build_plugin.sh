@@ -45,11 +45,12 @@ for d,_,fs in os.walk('rocketlauncher'):
 z.close()"
 echo "built $OUT ($(du -sh "$OUT" | cut -f1)) + plugin-package/rocket-launcher-plugin-$VER.zip"
 
-# npm 패키지 준비본 (공개하지 않음: npm publish 는 소유자 승인 뒤). npx -y rocket-launcher-mcp 로 실행되는 형태.
+# npm 패키지 준비본. publish 는 소유자 승인 뒤에만. npx -y rocket-launcher-mcp 로 실행되는 형태.
 NPM="$ROOT/plugin-package/npm/rocket-launcher-mcp"
 rm -rf "$ROOT/plugin-package/npm" && mkdir -p "$NPM"/{js,fonts,mcp/dist,mcp/fonts}
 cp "$OUT"/js/*.js "$NPM/js/"; cp -r "$OUT"/fonts/* "$NPM/fonts/"; cp "$OUT/mcp/dist/rocket-launcher-mcp.mjs" "$NPM/mcp/dist/"; cp "$OUT"/mcp/fonts/* "$NPM/mcp/fonts/"
 cp "$OUT/README.md" "$OUT/PRIVACY.md" "$OUT/CHANGELOG.md" "$OUT/LICENSE" "$NPM/"
+cp "$ROOT/PLUGIN.md" "$NPM/"
 cp -r "$OUT/data" "$OUT/vendor" "$NPM/"
 cat > "$NPM/package.json" <<JSON
 {
@@ -58,15 +59,15 @@ cat > "$NPM/package.json" <<JSON
   "description": "Rocket Launcher MCP server: from a finished app to launched on Google Play / App Store. You only pick and approve. Free, no API keys.",
   "type": "module",
   "bin": { "rocket-launcher-mcp": "mcp/dist/rocket-launcher-mcp.mjs" },
-  "files": ["mcp", "js", "fonts", "data", "vendor", "README.md", "PRIVACY.md", "CHANGELOG.md", "LICENSE"],
+  "files": ["mcp", "js", "fonts", "data", "vendor", "README.md", "PLUGIN.md", "PRIVACY.md", "CHANGELOG.md", "LICENSE"],
   "engines": { "node": ">=20" },
   "optionalDependencies": { "@napi-rs/canvas": "^1.1.0" },
   "keywords": ["mcp", "mcp-server", "google-play", "app-store", "app-launch", "privacy-policy", "data-safety"],
   "author": "Prezentree",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/JaeTaekOh/rocketlauncher.git" },
-  "bugs": { "url": "https://github.com/JaeTaekOh/rocketlauncher/issues" },
-  "homepage": "https://github.com/JaeTaekOh/rocketlauncher"
+  "repository": { "type": "git", "url": "git+https://github.com/JaeTaekOh/RocketLauncher.git" },
+  "bugs": { "url": "https://github.com/JaeTaekOh/RocketLauncher/issues" },
+  "homepage": "https://jaetaekoh.github.io/RocketLauncher/"
 }
 JSON
 # 확인: 다섯 언어 UI 문구 파일과 LICENSE 가 모두 들어갔는지 (빠지면 실패), npm 메타데이터
@@ -78,7 +79,7 @@ for d in "$OUT" "$NPM"; do
 done
 node -e "
 const p=require('$NPM/package.json');
-const ok=p.license==='MIT'&&p.files.includes('LICENSE')&&p.files.includes('data')&&p.files.includes('vendor')&&p.repository.url==='git+https://github.com/JaeTaekOh/rocketlauncher.git'&&p.bugs&&p.homepage&&p.author==='Prezentree'&&!/ by /i.test(p.description)&&p.version==='$VER';
+const ok=p.name==='rocket-launcher-mcp'&&p.private!==true&&p.license==='MIT'&&p.bin&&p.bin['rocket-launcher-mcp']&&p.files.includes('LICENSE')&&p.files.includes('data')&&p.files.includes('vendor')&&p.files.includes('PLUGIN.md')&&p.repository.url==='git+https://github.com/JaeTaekOh/RocketLauncher.git'&&p.bugs&&p.homepage==='https://jaetaekoh.github.io/RocketLauncher/'&&p.author==='Prezentree'&&!/ by /i.test(p.description)&&p.version==='$VER';
 if(!ok){console.error('ERROR: npm package.json metadata regressed');process.exit(1);}"
 
 (cd "$ROOT/plugin-package/npm" && npm pack ./rocket-launcher-mcp --silent >/dev/null && ls rocket-launcher-mcp-*.tgz)

@@ -9,11 +9,15 @@ A free **MCP server** and **web tool** that helps people who already built an An
 You connect the app once. From then on you only **pick, approve, or reject**. Nothing is submitted to a store automatically. The final step of the guide unlocks only after you approve, and you press the store’s Submit button yourself.
 
 [![Version 0.2.0](https://img.shields.io/badge/version-0.2.0-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
+[![npm](https://img.shields.io/npm/v/rocket-launcher-mcp?style=flat-square&color=F4A261)](https://www.npmjs.com/package/rocket-launcher-mcp)
 [![MCP](https://img.shields.io/badge/MCP-server-171717?style=flat-square)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/license-MIT-171717?style=flat-square)](LICENSE)
 [![Languages](https://img.shields.io/badge/languages-en%20·%20ko%20·%20th%20·%20zh%20·%20hi-6B6B6B?style=flat-square)](#languages)
 
-**Website:** [jaetaekoh.github.io/RocketLauncher](https://jaetaekoh.github.io/RocketLauncher/) · **Web app:** [Open the web version](https://jaetaekoh.github.io/RocketLauncher/app/)
+## Two ways to use it
+
+- **Connect the MCP server** to Grok Bot, Claude, Cursor, or Gemini CLI. Step-by-step instructions are on the [connect page](https://jaetaekoh.github.io/RocketLauncher/). The usual install is `npx -y rocket-launcher-mcp`.
+- **Use the web version** in your browser, with no install: [jaetaekoh.github.io/RocketLauncher/app](https://jaetaekoh.github.io/RocketLauncher/app/).
 
 - [Who it is for](#who-it-is-for)
 - [The one rule](#the-one-rule)
@@ -139,18 +143,13 @@ There is also a prompt, `launch_my_app`, that starts this flow.
 
 ## Install
 
-> [!NOTE]
-> The npm package [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp) is **not published yet** (coming soon). Do not run `npx -y rocket-launcher-mcp` until it is. Until then, run the server from a clone of this repository.
-
 **Requirements:** [Node.js](https://nodejs.org/) 20 or later, and an MCP client such as Claude Desktop, Claude Code, Cursor, or Gemini CLI.
 
-```bash
-git clone https://github.com/JaeTaekOh/RocketLauncher.git
-cd RocketLauncher/mcp
-npm install
-```
+Install and run the server with the npm package [`rocket-launcher-mcp`](https://www.npmjs.com/package/rocket-launcher-mcp):
 
-Then point your client at the server file. Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone.
+```bash
+npx -y rocket-launcher-mcp
+```
 
 **Standard config** (works in most MCP clients):
 
@@ -158,8 +157,8 @@ Then point your client at the server file. Replace `/ABS/PATH/TO/RocketLauncher`
 {
   "mcpServers": {
     "rocket-launcher": {
-      "command": "node",
-      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
+      "command": "npx",
+      "args": ["-y", "rocket-launcher-mcp"]
     }
   }
 }
@@ -199,7 +198,7 @@ Source: [Gemini CLI MCP servers](https://geminicli.com/docs/tools/mcp-server/).
 <summary>Claude Code</summary>
 
 ```bash
-claude mcp add rocket-launcher -- node /ABS/PATH/TO/RocketLauncher/mcp/server.mjs
+claude mcp add rocket-launcher -- npx -y rocket-launcher-mcp
 claude mcp list
 ```
 
@@ -212,32 +211,36 @@ claude --plugin-dir plugin-package/rocketlauncher
 </details>
 
 <details>
-<summary>When the npm package is published</summary>
+<summary>From a clone (alternative)</summary>
 
-The intended command will be `npx -y rocket-launcher-mcp` (stdio). Example:
+```bash
+git clone https://github.com/JaeTaekOh/RocketLauncher.git
+cd RocketLauncher/mcp
+npm install
+```
+
+Then point your client at the server file. Replace `/ABS/PATH/TO/RocketLauncher` with the real path of your clone:
 
 ```json
 {
   "mcpServers": {
     "rocket-launcher": {
-      "command": "npx",
-      "args": ["-y", "rocket-launcher-mcp"]
+      "command": "node",
+      "args": ["/ABS/PATH/TO/RocketLauncher/mcp/server.mjs"]
     }
   }
 }
 ```
 
-That command does not work today. This section is here so the switch is obvious later.
-
-</details>
-
-From a checkout you can also run:
+From the checkout you can also run:
 
 ```bash
 cd mcp && npm start          # stdio
 npm run http                 # http://127.0.0.1:5181/mcp
 npm test                     # automated tests
 ```
+
+</details>
 
 More client notes, HTTP mode, and environment variables are in [PLUGIN.md](PLUGIN.md).
 
@@ -306,7 +309,7 @@ No. You approve, then you press Submit in the store console.
 No. Never put passwords or keys into chat. Reviewer-account fields stay as placeholders; you type them only in the console.
 
 **Can I install it with `npx` today?**  
-Not yet. The npm package is coming soon. Use a clone, as in [Install](#install).
+Yes. Use `npx -y rocket-launcher-mcp` (Node.js 20 or later). See [Install](#install). A clone of this repository is an alternative.
 
 **My app is already in review, rejected, or live. Can I still use this?**  
 Yes. Stage is a required choice per store. See [Any store stage](#any-store-stage).

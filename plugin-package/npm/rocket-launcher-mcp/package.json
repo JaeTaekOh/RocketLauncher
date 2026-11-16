@@ -4,13 +4,13 @@
   "description": "Rocket Launcher MCP server: from a finished app to launched on Google Play / App Store. You only pick and approve. Free, no API keys.",
   "type": "module",
   "bin": { "rocket-launcher-mcp": "mcp/dist/rocket-launcher-mcp.mjs" },
-  "files": ["mcp", "js", "fonts", "data", "vendor", "README.md", "PRIVACY.md", "CHANGELOG.md", "LICENSE"],
+  "files": ["mcp", "js", "fonts", "data", "vendor", "README.md", "PLUGIN.md", "PRIVACY.md", "CHANGELOG.md", "LICENSE"],
   "engines": { "node": ">=20" },
   "optionalDependencies": { "@napi-rs/canvas": "^1.1.0" },
   "keywords": ["mcp", "mcp-server", "google-play", "app-store", "app-launch", "privacy-policy", "data-safety"],
   "author": "Prezentree",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/JaeTaekOh/rocketlauncher.git" },
-  "bugs": { "url": "https://github.com/JaeTaekOh/rocketlauncher/issues" },
-  "homepage": "https://github.com/JaeTaekOh/rocketlauncher"
+  "repository": { "type": "git", "url": "git+https://github.com/JaeTaekOh/RocketLauncher.git" },
+  "bugs": { "url": "https://github.com/JaeTaekOh/RocketLauncher/issues" },
+  "homepage": "https://jaetaekoh.github.io/RocketLauncher/"
 }

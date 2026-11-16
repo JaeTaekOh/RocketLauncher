@@ -249,7 +249,12 @@
      come from this file's own tables, never from the server. Shared lessons are reminders or warnings, never must-fix. */
   /* Single source for the lessons API URL: config.lessonsApiUrl, overridable by ROCKETLAUNCHER_LESSONS_API. */
   function lessonsApiUrl() {
-    try { if (typeof process !== 'undefined' && process.env && process.env.ROCKETLAUNCHER_LESSONS_API) return String(process.env.ROCKETLAUNCHER_LESSONS_API).trim(); } catch (e) { }
+    /* An explicitly set, even empty, ROCKETLAUNCHER_LESSONS_API wins: empty disables the shared feed. */
+    try {
+      if (typeof process !== 'undefined' && process.env && Object.prototype.hasOwnProperty.call(process.env, 'ROCKETLAUNCHER_LESSONS_API')) {
+        return String(process.env.ROCKETLAUNCHER_LESSONS_API || '').trim();
+      }
+    } catch (e) { }
     try { if (typeof window !== 'undefined' && window.RL_CONFIG && window.RL_CONFIG.lessonsApiUrl) return String(window.RL_CONFIG.lessonsApiUrl).trim(); } catch (e) { }
     return '';
   }

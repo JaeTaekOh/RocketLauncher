@@ -14,7 +14,7 @@ cp -f "$ROOT/fonts/geist/Geist.woff2" "$DOC/fonts/Geist.woff2"
 cp -f "$ROOT/fonts/gothic-a1/GothicA1-Regular.woff2" "$DOC/fonts/GothicA1-Regular.woff2"
 cp -f "$ROOT/fonts/gothic-a1/GothicA1-Medium.woff2" "$DOC/fonts/GothicA1-Medium.woff2"
 cp -f "$ROOT/assets/icon.jpg" "$DOC/assets/icon.jpg"
-cp -f "$ROOT/assets/favicon.svg" "$DOC/assets/favicon.svg"
+cp -f "$ROOT/assets/favicon.svg" "$ROOT/assets/favicon-48.png" "$ROOT/assets/apple-touch-icon.png" "$DOC/assets/"
 if [[ -f "$ROOT/assets/readme/hero.png" ]]; then
   cp -f "$ROOT/assets/readme/hero.png" "$DOC/assets/og.png"
 fi
@@ -27,7 +27,7 @@ mkdir -p "$APP/css" "$APP/js" "$APP/assets" \
 cp -f "$ROOT/index.html" "$ROOT/privacy.html" "$APP/"
 cp -f "$ROOT/css/"*.css "$APP/css/"
 cp -f "$ROOT/js/"*.js "$APP/js/"
-cp -f "$ROOT/assets/icon.jpg" "$ROOT/assets/favicon.svg" "$APP/assets/"
+cp -f "$ROOT/assets/icon.jpg" "$ROOT/assets/favicon.svg" "$ROOT/assets/favicon-48.png" "$ROOT/assets/apple-touch-icon.png" "$APP/assets/"
 cp -f "$ROOT/fonts/geist/"*.woff2 "$APP/fonts/geist/"
 cp -f "$ROOT/fonts/gothic-a1/"*.woff2 "$APP/fonts/gothic-a1/"
 cp -f "$ROOT/fonts/plex-thai/"*.woff2 "$APP/fonts/plex-thai/"
@@ -57,5 +57,5 @@ echo "Built $APP"
 V="$(date +%Y%m%d%H%M%S)"
 for f in "$DOC/index.html" "$APP/index.html" "$DOC/privacy.html" "$APP/privacy.html"; do
   [[ -f "$f" ]] || continue
-  sed -i -E "s#((href|src)=\"[^\"?:]+\.(css|js))(\?v=[0-9]+)?\"#\1?v=$V\"#g" "$f"
+  sed -i -E "s#((href|src)=\"[^\"?:]+\.(css|js|svg|png))(\?v=[0-9]+)?\"#\1?v=$V\"#g" "$f"
 done
