@@ -4,6 +4,7 @@ import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'
 const HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'rocketlauncher-release-'));
 process.env.ROCKETLAUNCHER_HOME = HOME;
 process.env.ROCKETLAUNCHER_TODAY = '2026-11-17';
+process.env.ROCKETLAUNCHER_LESSONS_API = process.env.ROCKETLAUNCHER_LESSONS_API || '';
 const E = await import('../lib/engine.mjs');
 const RL = await import('../lib/release.mjs');
 let pass = 0, failN = 0;
@@ -190,6 +191,114 @@ console.log('\n[data] rule table');
 check(RL.REQ.verified_on && RL.REQ.requirements.every(r => r.source && r.verified_on && r.rule), 'every rule has rule text, source, verified_on');
 const all = JSON.stringify(RL.REQ);
 check(!/13628312|9888072|9898842/.test(all), 'unresolved Play help links dropped');
+
+
+console.log('\n[0.2.2] hybrid web assets, deletion, location, firebase, corrections');
+const HYB = path.join(HOME, 'hybridapp');
+const WH = (p, c) => { fs.mkdirSync(path.dirname(path.join(HYB, p)), { recursive: true }); fs.writeFileSync(path.join(HYB, p), c); };
+WH('app/src/main/AndroidManifest.xml', `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.nearby">
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+  <application android:label="Nearby Places"><activity android:name=".MainActivity" android:exported="true"/></application>
+</manifest>
+`);
+WH('app/src/main/assets/capacitor.config.json', '{"appId":"com.example.nearby","appName":"Nearby Places","webDir":"public"}');
+WH('app/src/main/assets/capacitor.plugins.json', `[
+  {"pkg":"@capacitor-firebase/authentication","classpath":"io.example.FirebaseAuthenticationPlugin"},
+  {"pkg":"@capacitor/geolocation","classpath":"com.capacitorjs.plugins.geolocation.GeolocationPlugin"}
+]`);
+WH('app/src/main/assets/public/auth.js', `
+function deleteAuthUser() { return prov.deleteUser(); }
+function currentName() { return auth.currentUser && auth.currentUser.displayName; }
+function currentEmail() { return auth.currentUser && auth.currentUser.email; }
+`);
+WH('app/src/main/assets/public/account.js', `
+function runDelete() {
+  return D.deleteAccount(env).then(function () { return U.deleteRemote(env, u, auth.getToken); }).then(function () { return auth.deleteAuthUser(); }).then(wipeLocalAll);
+}
+`);
+WH('app/src/main/assets/public/data.js', `
+function deleteAccount(env) {
+  return env.fetch('api/account', { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+}
+function nearby(env, loc) {
+  var path = 'api/places/nearby?lat=' + encodeURIComponent(loc.lat) + '&lng=' + encodeURIComponent(loc.lng);
+  return getJson(env, path);
+}
+function getJson(env, path) { return env.fetch(path).then(function (r) { return r.json(); }); }
+`);
+WH('app/src/main/assets/public/locate.js', `
+function here() {
+  if (plugin && plugin.getCurrentPosition) return plugin.getCurrentPosition({ enableHighAccuracy: true });
+  return navigator.geolocation.getCurrentPosition(function (p) { return p; });
+}
+`);
+WH('app/src/main/assets/public/i18n.js', `var STR = { 'acct.delete': '내 계정 삭제', 'acct.title': 'My account' };`);
+WH('app/src/main/assets/public/sync.js', `
+var fb = (cfg.firebase || {});
+var base = (fb.firestoreBase || 'https://firestore.googleapis.com/v1').replace(/\\/+$/, '');
+function pull(uid) { return env.fetch(base + '/projects/' + fb.projectId + '/databases/(default)/documents/users/' + uid); }
+`);
+WH('server/places-proxy.mjs', `export function handle(req) { if (req.url.startsWith('/api/places/nearby')) return nearby(req); }\n`);
+WH('README.md', '# Nearby Places\nSign in to save favourites. Location is used to list places nearby.\n');
+
+const hyb = await E.connect({ source: 'path', path: HYB, store_stage: 'not_submitted' }, { allowPath: true });
+const hid = hyb.st.id, HA = hyb.st.A, HX = hyb.st.X;
+check(HA.framework === 'capacitor', 'hybrid: capacitor framework', HA.framework);
+check(HA.sdk.auth, 'hybrid: Firebase Auth detected from web JS / plugins', HA.sdk);
+check(HA.sdk.cloudDb, 'hybrid: Firestore detected from web JS', HA.sdk);
+check(HA.sdk.location, 'hybrid: location SDK detected');
+check(HA.review.deletionInApp === true, 'hybrid: in-app deletion found', HA.review);
+check(HA.review.locationSent === true && HA.review.locationConfidence === 'certain', 'hybrid: location sent to server (certain)', HA.review);
+check((HA.review.locationKinds || []).includes('query_string') && (HA.review.locationKinds || []).includes('wrapper_fetch'), 'hybrid: lat/lng query string + wrapper fetch', HA.review.locationKinds);
+check(!HA.issues.some(i => i.id === 'accountDeletion' && i.sev === 'block'), 'hybrid: no false missing-deletion block');
+const hd = await E.release('deletion', hid, {}, 'en');
+check(hd.rows.find(r => r.id === 'in_app').severity === 'ok', 'hybrid deletion check: in-app ok', hd.rows);
+const hp = await E.release('privacy', hid, {}, 'en');
+const locRow = hp.rows.find(r => r.id === 'loc.ok' || r.id === 'loc.precise' || r.id === 'loc.confirm');
+check(locRow && locRow.id !== 'loc.confirm' && /sent to the server/i.test(locRow.finding || hp.rows.map(x => x.finding).join(' ') + JSON.stringify(hp.drafts && hp.drafts.data_safety)), 'hybrid privacy: location treated as sent', locRow);
+check(hp.drafts.data_safety.rows.some(r => /location/i.test(JSON.stringify(r))), 'hybrid Data safety draft includes location');
+check(hp.drafts.data_safety.rows.some(r => /email|user id|name/i.test(JSON.stringify(r).toLowerCase())), 'hybrid Data safety draft includes Firebase Auth types', hp.drafts.data_safety.rows);
+
+/* correction: start from an app that looks like device-only, then override */
+const COR = path.join(HOME, 'corrapp');
+const WC = (p, c) => { fs.mkdirSync(path.dirname(path.join(COR, p)), { recursive: true }); fs.writeFileSync(path.join(COR, p), c); };
+WC('app/src/main/AndroidManifest.xml', `<?xml version="1.0" encoding="utf-8"?>
+<manifest package="com.example.corr"><uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35"/>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <application android:label="Corr"><activity android:name=".MainActivity" android:exported="true"/></application>
+</manifest>`);
+WC('app/build.gradle.kts', 'dependencies { implementation("com.google.firebase:firebase-auth") }\nandroid { defaultConfig { applicationId = "com.example.corr"; minSdk = 24; targetSdk = 35 } }\n');
+WC('app/src/main/java/com/example/corr/MainActivity.kt', 'class MainActivity { fun locate() { fusedClient.lastLocation } }\n');
+const cor = await E.connect({ source: 'path', path: COR, store_stage: 'not_submitted' }, { allowPath: true });
+const cid = cor.st.id;
+check(cor.st.A.sdk.auth && !cor.st.A.review.deletionInApp, 'correction fixture: auth without deletion');
+check(cor.st.A.sdk.location && !cor.st.A.review.locationSent, 'correction fixture: location not sent', cor.st.A.review);
+const beforeReady = cor.st.A.readiness;
+const dMiss = await E.release('deletion', cid, {}, 'en');
+check(dMiss.rows.find(r => r.id === 'in_app').severity === 'block', 'correction: deletion starts as missing');
+const got = E.reportCorrection(E.load(cid), { check_id: 'account_deletion', actual: 'present', evidence: 'src/settings.kt:40' }, 'en');
+check(got.applied && got.actual === 'present' && got.previous === 'missing', 'correction applied locally', got);
+check(got.shared === false, 'correction not sent when lessons API is unset', got.shared);
+const dAfter = await E.release('deletion', cid, {}, 'en');
+check(dAfter.rows.find(r => r.id === 'in_app').severity === 'ok', 'correction: in-app deletion now ok');
+check(typeof got.readiness === 'number' && got.readiness >= beforeReady, 'correction recalculated readiness', { before: beforeReady, after: got.readiness });
+const locC = E.reportCorrection(E.load(cid), { check_id: 'location_sharing', actual: 'server', evidence: 'src/net.kt:12' }, 'en');
+check(locC.applied && locC.previous === 'device', 'location correction previous was device', locC);
+const pAfter = await E.release('privacy', cid, {}, 'en');
+check(pAfter.drafts.data_safety.rows.some(r => /location/i.test(JSON.stringify(r))), 'location correction flows into Data safety draft');
+/* evidence must not appear in a share payload even when API is on */
+process.env.ROCKETLAUNCHER_LESSONS_API = 'http://127.0.0.1:9/api/lessons';
+const { shareCorrection, correctionsApi } = await import('../lib/shared.mjs');
+const payload = shareCorrection({ check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', pattern_kinds: ['function_name', 'i18n', 'http://evil', 'src/app.js'] });
+check(payload && payload.check_id === 'account_deletion' && payload.corrected_verdict === 'present', 'share payload built');
+check(payload && JSON.stringify(payload).indexOf('src/') === -1 && JSON.stringify(payload).indexOf('evil') === -1 && JSON.stringify(payload).indexOf('Corr') === -1, 'share payload has no paths, no dropped kinds, no app name', payload);
+check(correctionsApi({ ROCKETLAUNCHER_LESSONS_API: 'https://example.test/api/lessons' }) === 'https://example.test/api/corrections', 'corrections URL derived from lessons URL');
+check(correctionsApi({ ROCKETLAUNCHER_LESSONS_API: '' }) === '', 'empty lessons API disables correction sharing');
+process.env.ROCKETLAUNCHER_LESSONS_API = '';
 
 fs.rmSync(HOME, { recursive: true, force: true });
 console.log(`\nrelease: ${pass} passed, ${failN} failed`);

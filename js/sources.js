@@ -7,7 +7,7 @@
     /(^|\/)AndroidManifest\.xml$/i, /\.gradle(\.kts)?$/i, /(^|\/)gradle\.properties$/i, /(^|\/)libs\.versions\.toml$/i,
     /(^|\/)res\/values[^/]*\/(strings|colors|themes)\.xml$/i,
     /(^|\/)Info\.plist$/i, /project\.pbxproj$/i, /PrivacyInfo\.xcprivacy$/i, /\.entitlements$/i, /(^|\/)Podfile$/i, /(^|\/)Package\.swift$/i,
-    /(^|\/)pubspec\.yaml$/i, /(^|\/)package\.json$/i, /(^|\/)app\.json$/i, /(^|\/)app\.config\.(js|ts)$/i, /(^|\/)capacitor\.config\.(json|ts|js)$/i,
+    /(^|\/)pubspec\.yaml$/i, /(^|\/)package\.json$/i, /(^|\/)app\.json$/i, /(^|\/)app\.config\.(js|ts)$/i, /(^|\/)capacitor\.config\.(json|ts|js)$/i, /(^|\/)capacitor\.plugins\.json$/i,
     /(^|\/)eas\.json$/i, /(^|\/)README(\.[a-z]+)?$/i, /(^|\/)LICENSE(\.[a-z]+)?$/i, /(^|\/)privacy[^/]*\.(md|html)$/i,
     /fastlane\/metadata\/.*\.txt$/i, /(^|\/)fastlane\/(Appfile|Deliverfile)$/i, /(^|\/)variables\.gradle$/i, /AppIcon\.appiconset\/Contents\.json$/i, /(^|\/)lib\/l10n\/.*\.arb$/i,
     /(^|\/)(support|contact)[^/]*\.(md|html?)$/i, /(^|\/)(support|contact)\/index\.(md|html?)$/i,
@@ -17,9 +17,12 @@
   ];
   /* App source code: read a limited number of files so review checks can see runtime behavior
      (ad request settings, ATT prompt, secret storage, login gate, user-supplied API keys). */
-  const CODE_RE = /\.(dart|kt|java|swift|m|mm|ts|tsx|js|jsx)$/i;
+  const CODE_RE = /\.(dart|kt|java|swift|m|mm|ts|tsx|js|jsx|mjs|cjs)$/i;
   const CODE_SKIP_RE = /(^|\/)(test|tests|__tests__|__mocks__|androidTest|spec|e2e|integration_test|third_party|vendor|dist|web|public|scripts|\.expo|\.next)\/|\.(min|test|spec|d)\.[jt]sx?$|(^|\/)[\w.-]+\.config\.[jt]s$/i;
-  const CODE_HINT_RE = /main|app|ad|auth|login|sign|secure|storage|keychain|key|track|privacy|remote|config|setting|account|ai|gemini|llm|chat|location|car/i;
+  /* Capacitor / Cordova / Ionic packaged web assets hold the real app logic (often under assets/public or www). */
+  const HYBRID_WEB_RE = /(^|\/)(src\/main\/assets(?:\/public)?|android\/app\/src\/main\/assets(?:\/public)?|(?:ios\/)?App\/App\/public|(^|\/)www)\//i;
+  const HYBRID_INNER_SKIP = /(^|\/)(test|tests|__tests__|__mocks__|third_party|vendor)\/|\.(min|test|spec|d)\.[jt]sx?$/i;
+  const CODE_HINT_RE = /main|app|ad|auth|login|sign|secure|storage|keychain|key|track|privacy|remote|config|setting|account|acct|ai|gemini|llm|chat|location|locate|geo|data|i18n|user|fire|delete|delet|fetch|nearby|car/i;
   const MAX_CODE = 150, MAX_CODE_SIZE = 200 * 1024;
   const IMG_RE = [
     /ic_launcher(_round|_foreground)?\.(png|webp)$/i, /ic_launcher-playstore\.png$/i, /playstore[^/]*\.png$/i,
@@ -66,7 +69,10 @@
     if (SKIP_RE.test(path)) return null;
     if (TEXT_RE.some(r => r.test(path))) return 'text';
     if (IMG_RE.some(r => r.test(path))) return 'img';
-    if (CODE_RE.test(path) && !CODE_SKIP_RE.test(path)) return 'code';
+    if (CODE_RE.test(path)) {
+      if (HYBRID_WEB_RE.test(path)) return HYBRID_INNER_SKIP.test(path) ? null : 'code';
+      if (!CODE_SKIP_RE.test(path)) return 'code';
+    }
     return null;
   }
   function mime(path) { return /\.webp$/i.test(path) ? 'image/webp' : /\.jpe?g$/i.test(path) ? 'image/jpeg' : 'image/png'; }

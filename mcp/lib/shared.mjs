@@ -68,3 +68,32 @@ export async function ensureShared() {
 export function sharedItems() { const c = mem || readCache(); mem = c; return c ? c.items : []; }
 /* Tests only. */
 export function _resetShared() { mem = null; lastFail = 0; }
+
+
+const CHECK_OK = { account_deletion: ['present', 'missing'], location_sharing: ['server', 'device'], auth: ['present', 'missing'], cloud_db: ['present', 'missing'] };
+const FW_OK = new Set(['capacitor', 'cordova', 'ionic', 'flutter', 'react-native', 'expo', 'android', 'ios', 'unknown']);
+const LANG_OK = new Set(['dart', 'kotlin', 'java', 'swift', 'js', 'ts', 'unknown']);
+const KIND_OK = new Set(['function_name','http_delete','i18n','ui_text','query_string','wrapper_fetch','geolocation_plugin','same_file','co_occur','sdk_api','user_report','device_only']);
+
+export function correctionsApi(env = process.env, fallback) {
+  const api = resolveLessonsApi(env, fallback);
+  if (!api) return '';
+  return api.replace(/\/api\/lessons\/?$/, '/api/corrections');
+}
+
+/* Anonymized correction event. Never includes code, app names, paths, or free text. */
+export function shareCorrection(input) {
+  const check_id = input && input.check_id, actual = input && input.corrected_verdict, wrong = input && input.wrong_verdict;
+  if (!CHECK_OK[check_id] || !CHECK_OK[check_id].includes(actual) || !CHECK_OK[check_id].includes(wrong)) return null;
+  const framework = FW_OK.has(input.framework) ? input.framework : 'unknown';
+  const language = LANG_OK.has(input.language) ? input.language : 'unknown';
+  const pattern_kinds = [...new Set((input.pattern_kinds || []).filter(k => KIND_OK.has(k)))].slice(0, 8);
+  const payload = { v: 1, check_id, wrong_verdict: wrong, corrected_verdict: actual, framework, language, pattern_kinds };
+  const url = correctionsApi();
+  if (!url) return null;
+  try {
+    track(fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': 'rocket-launcher-mcp' }, body: JSON.stringify(payload), signal: timeoutSignal(TIMEOUT) })
+      .then(r => { try { r.body && r.body.cancel && r.body.cancel(); } catch { } }));
+  } catch { /* ignore */ }
+  return payload;
+}

@@ -69,11 +69,11 @@ if (canvasLib) {
   g.document = { createElement() { throw new Error('graphics unavailable'); }, fonts: { load: async () => [] } };
 }
 
-const ORDER = ['config.js', 'i18n-en.js', 'i18n-ko.js', 'i18n-th.js', 'i18n-zh.js', 'i18n-hi.js', 'i18n-stage.js', 'i18n.js', 'zip.js', 'sample-data.js', 'sources.js', 'analyzer.js', 'generator.js', 'graphics.js', 'flow.js', 'lessons.js'];
+const ORDER = ['config.js', 'i18n-en.js', 'i18n-ko.js', 'i18n-th.js', 'i18n-zh.js', 'i18n-hi.js', 'i18n-stage.js', 'i18n.js', 'zip.js', 'sample-data.js', 'sources.js', 'detect.js', 'analyzer.js', 'generator.js', 'graphics.js', 'flow.js', 'lessons.js'];
 for (const f of ORDER) {
   const file = path.join(JS, f);
   vm.runInThisContext(fs.readFileSync(file, 'utf8'), { filename: file });
 }
 
-export const CFG = g.RL_CONFIG, Analyzer = g.RLAnalyzer, Gen = g.RLGen, Gfx = g.RLGfx, Flow = g.RLFlow, Sources = g.RLSources, Zip = g.RLZip, Lessons = g.RLLessons;
+export const CFG = g.RL_CONFIG, Analyzer = g.RLAnalyzer, Detect = g.RLDetect, Gen = g.RLGen, Gfx = g.RLGfx, Flow = g.RLFlow, Sources = g.RLSources, Zip = g.RLZip, Lessons = g.RLLessons;
 export const tr = (lang, k, v) => g.RLi18n.t(lang, k, v);

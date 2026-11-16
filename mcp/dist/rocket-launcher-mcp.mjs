@@ -58957,13 +58957,14 @@ if (canvasLib) {
     throw new Error("graphics unavailable");
   }, fonts: { load: async () => [] } };
 }
-var ORDER = ["config.js", "i18n-en.js", "i18n-ko.js", "i18n-th.js", "i18n-zh.js", "i18n-hi.js", "i18n-stage.js", "i18n.js", "zip.js", "sample-data.js", "sources.js", "analyzer.js", "generator.js", "graphics.js", "flow.js", "lessons.js"];
+var ORDER = ["config.js", "i18n-en.js", "i18n-ko.js", "i18n-th.js", "i18n-zh.js", "i18n-hi.js", "i18n-stage.js", "i18n.js", "zip.js", "sample-data.js", "sources.js", "detect.js", "analyzer.js", "generator.js", "graphics.js", "flow.js", "lessons.js"];
 for (const f of ORDER) {
   const file2 = path.join(JS, f);
   vm.runInThisContext(fs.readFileSync(file2, "utf8"), { filename: file2 });
 }
 var CFG = g.RL_CONFIG;
 var Analyzer = g.RLAnalyzer;
+var Detect = g.RLDetect;
 var Gen = g.RLGen;
 var Gfx = g.RLGfx;
 var Flow = g.RLFlow;
@@ -58983,7 +58984,7 @@ var M = {
     lessonNotFound: "\uAD50\uD6C8\uC744 \uCC3E\uC9C0 \uBABB\uD588\uC5B4\uC694: {id}. rocketlauncher_status \uC758 lessons \uBAA9\uB85D\uC744 \uD655\uC778\uD558\uC138\uC694.",
     infoNeeded: 'App Store Connect\uC5D0\uC11C\uB294 "\uC815\uBCF4 \uD544\uC694(Information Needed)"\uB3C4 "\uAC70\uBD80\uB428"\uC73C\uB85C \uBCF4\uC5EC\uC694. \uB300\uBD80\uBD84 \uC0C8 \uBE4C\uB4DC \uBC18\uB824\uAC00 \uC544\uB2C8\uB77C \uB2F5\uC7A5(\uB54C\uB85C\uB294 \uC2EC\uC0AC\uC6A9 \uD0A4\uB098 \uC124\uBA85)\uC744 \uB2EC\uB77C\uB294 \uC694\uCCAD\uC774\uC5D0\uC694. \uB2F5\uC7A5\uC740 \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uBCF4\uB0B4\uC694. Rocket Launcher\uB294 Apple\uC5D0 \uC790\uB3D9\uC73C\uB85C \uB2F5\uD558\uC9C0 \uC54A\uC544\uC694.',
     connected: "{name} \uC571\uC744 \uC5F0\uACB0\uD558\uACE0 \uBD84\uC11D\uD588\uC5B4\uC694. \uCD9C\uC2DC \uC900\uBE44\uB3C4 {ready}%.",
-    counts: "\uAF2D \uACE0\uCE60 \uAC83 {block}\uAC1C \xB7 \uD655\uC778 \uAD8C\uC7A5 {warn}\uAC1C \xB7 \uCC38\uACE0 {tip}\uAC1C",
+    counts: "\uAF2D \uACE0\uCE60 \uAC83 {block}\uAC1C \xB7 \uD655\uC778 \uAD8C\uC7A5 {warn}\uAC1C \xB7 \uD655\uC778 \uD544\uC694 {check}\uAC1C \xB7 \uCC38\uACE0 {tip}\uAC1C",
     nextDecide: "\uB2E4\uC74C: rocketlauncher_get_decisions \uB85C \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uACE0\uB97C \uAC83 {n}\uAC1C\uB97C \uBCF4\uC5EC \uC8FC\uC138\uC694. \uC0AC\uC6A9\uC790\uB294 \uACE0\uB974\uAC70\uB098 \uC2B9\uC778\xB7\uAC70\uC808\uB9CC \uD558\uBA74 \uB3FC\uC694.",
     openLeft: "\uC544\uC9C1 \uC815\uD558\uC9C0 \uC54A\uC740 \uD56D\uBAA9\uC774 {n}\uAC1C \uC788\uC5B4\uC694.",
     allDecided: "\uBAA8\uB4E0 \uD56D\uBAA9\uC744 \uC815\uD588\uC5B4\uC694. \uB2E4\uC74C: rocketlauncher_generate_store_materials",
@@ -59019,7 +59020,7 @@ var M = {
     lessonNotFound: "Lesson not found: {id}. See the lessons list in rocketlauncher_status.",
     infoNeeded: 'In App Store Connect an "Information Needed" request also shows as Rejected. It usually asks for a reply (sometimes a sample key or a clarification), not a new binary. The user sends the reply; Rocket Launcher never replies to Apple automatically.',
     connected: "Connected and analyzed {name}. Launch readiness {ready}%.",
-    counts: "{block} must-fix \xB7 {warn} worth checking \xB7 {tip} notes",
+    counts: "{block} must-fix \xB7 {warn} worth checking \xB7 {check} to confirm \xB7 {tip} notes",
     nextDecide: "Next: call rocketlauncher_get_decisions and show the user the {n} choices. The user only picks, approves or rejects.",
     openLeft: "{n} items are still undecided.",
     allDecided: "Everything is decided. Next: rocketlauncher_generate_store_materials",
@@ -59055,7 +59056,7 @@ var M = {
     lessonNotFound: "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E1A\u0E17\u0E40\u0E23\u0E35\u0E22\u0E19: {id} \u0E14\u0E39\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23 lessons \u0E43\u0E19 rocketlauncher_status",
     infoNeeded: '\u0E43\u0E19 App Store Connect \u0E04\u0E33\u0E02\u0E2D "Information Needed" \u0E08\u0E30\u0E41\u0E2A\u0E14\u0E07\u0E40\u0E1B\u0E47\u0E19 "\u0E16\u0E39\u0E01\u0E1B\u0E0F\u0E34\u0E40\u0E2A\u0E18" \u0E14\u0E49\u0E27\u0E22 \u0E2A\u0E48\u0E27\u0E19\u0E43\u0E2B\u0E0D\u0E48\u0E40\u0E1B\u0E47\u0E19\u0E01\u0E32\u0E23\u0E02\u0E2D\u0E43\u0E2B\u0E49\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A (\u0E1A\u0E32\u0E07\u0E04\u0E23\u0E31\u0E49\u0E07\u0E02\u0E2D\u0E04\u0E35\u0E22\u0E4C\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E2B\u0E23\u0E37\u0E2D\u0E04\u0E33\u0E2D\u0E18\u0E34\u0E1A\u0E32\u0E22) \u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E01\u0E32\u0E23\u0E1B\u0E0F\u0E34\u0E40\u0E2A\u0E18\u0E1A\u0E34\u0E25\u0E14\u0E4C \u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E40\u0E1B\u0E47\u0E19\u0E04\u0E19\u0E2A\u0E48\u0E07\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E40\u0E2D\u0E07 Rocket Launcher \u0E44\u0E21\u0E48\u0E15\u0E2D\u0E1A Apple \u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34',
     connected: "\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E41\u0E25\u0E30\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C {name} \u0E41\u0E25\u0E49\u0E27 \u0E04\u0E27\u0E32\u0E21\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E40\u0E1B\u0E34\u0E14\u0E15\u0E31\u0E27 {ready}%",
-    counts: "\u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49 {block} \xB7 \u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08 {warn} \xB7 \u0E02\u0E49\u0E2D\u0E2A\u0E31\u0E07\u0E40\u0E01\u0E15 {tip}",
+    counts: "\u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49 {block} \xB7 \u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08 {warn} \xB7 \u0E15\u0E49\u0E2D\u0E07\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19 {check} \xB7 \u0E02\u0E49\u0E2D\u0E2A\u0E31\u0E07\u0E40\u0E01\u0E15 {tip}",
     nextDecide: "\u0E16\u0E31\u0E14\u0E44\u0E1B: \u0E40\u0E23\u0E35\u0E22\u0E01 rocketlauncher_get_decisions \u0E41\u0E25\u0E49\u0E27\u0E43\u0E2B\u0E49\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E40\u0E25\u0E37\u0E2D\u0E01 {n} \u0E02\u0E49\u0E2D \u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E41\u0E04\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01 \u0E2D\u0E19\u0E38\u0E21\u0E31\u0E15\u0E34 \u0E2B\u0E23\u0E37\u0E2D\u0E1B\u0E0F\u0E34\u0E40\u0E2A\u0E18",
     openLeft: "\u0E22\u0E31\u0E07\u0E40\u0E2B\u0E25\u0E37\u0E2D {n} \u0E02\u0E49\u0E2D\u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E15\u0E31\u0E14\u0E2A\u0E34\u0E19\u0E43\u0E08",
     allDecided: "\u0E15\u0E31\u0E14\u0E2A\u0E34\u0E19\u0E43\u0E08\u0E04\u0E23\u0E1A\u0E41\u0E25\u0E49\u0E27 \u0E16\u0E31\u0E14\u0E44\u0E1B: rocketlauncher_generate_store_materials",
@@ -59091,7 +59092,7 @@ var M = {
     lessonNotFound: "\u627E\u4E0D\u5230\u7ECF\u9A8C\uFF1A{id}\u3002\u8BF7\u67E5\u770B rocketlauncher_status \u4E2D\u7684 lessons \u5217\u8868\u3002",
     infoNeeded: "\u5728 App Store Connect \u4E2D\uFF0C\u201C\u9700\u8981\u66F4\u591A\u4FE1\u606F\uFF08Information Needed\uFF09\u201D\u4E5F\u4F1A\u663E\u793A\u4E3A\u201C\u88AB\u62D2\u7EDD\u201D\u3002\u5B83\u901A\u5E38\u662F\u8BF7\u4F60\u56DE\u590D\uFF08\u6709\u65F6\u9700\u8981\u793A\u4F8B\u5BC6\u94A5\u6216\u8BF4\u660E\uFF09\uFF0C\u800C\u4E0D\u662F\u8981\u6C42\u65B0\u6784\u5EFA\u3002\u56DE\u590D\u7531\u7528\u6237\u672C\u4EBA\u53D1\u9001\uFF0CRocket Launcher \u4E0D\u4F1A\u81EA\u52A8\u56DE\u590D Apple\u3002",
     connected: "\u5DF2\u8FDE\u63A5\u5E76\u5206\u6790 {name}\u3002\u4E0A\u67B6\u51C6\u5907\u5EA6 {ready}%\u3002",
-    counts: "\u5FC5\u987B\u4FEE\u6539 {block} \u9879 \xB7 \u5EFA\u8BAE\u68C0\u67E5 {warn} \u9879 \xB7 \u503C\u5F97\u4E86\u89E3 {tip} \u9879",
+    counts: "\u5FC5\u987B\u4FEE\u6539 {block} \u9879 \xB7 \u5EFA\u8BAE\u68C0\u67E5 {warn} \u9879 \xB7 \u9700\u8981\u786E\u8BA4 {check} \u9879 \xB7 \u503C\u5F97\u4E86\u89E3 {tip} \u9879",
     nextDecide: "\u4E0B\u4E00\u6B65\uFF1A\u8C03\u7528 rocketlauncher_get_decisions\uFF0C\u5411\u7528\u6237\u5C55\u793A {n} \u4E2A\u9009\u9879\u3002\u7528\u6237\u53EA\u9700\u9009\u62E9\u3001\u6279\u51C6\u6216\u62D2\u7EDD\u3002",
     openLeft: "\u8FD8\u6709 {n} \u9879\u5C1A\u672A\u51B3\u5B9A\u3002",
     allDecided: "\u5168\u90E8\u51B3\u5B9A\u5B8C\u6210\u3002\u4E0B\u4E00\u6B65\uFF1Arocketlauncher_generate_store_materials",
@@ -59127,7 +59128,7 @@ var M = {
     lessonNotFound: "\u0938\u092C\u0915 \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u093E: {id}. rocketlauncher_status \u092E\u0947\u0902 lessons \u0938\u0942\u091A\u0940 \u0926\u0947\u0916\u0947\u0902\u0964",
     infoNeeded: "App Store Connect \u092E\u0947\u0902 \u201CInformation Needed\u201D \u0905\u0928\u0941\u0930\u094B\u0927 \u092D\u0940 Rejected \u0926\u093F\u0916\u0924\u093E \u0939\u0948\u0964 \u0906\u092E\u0924\u094C\u0930 \u092A\u0930 \u092F\u0939 \u091C\u0935\u093E\u092C (\u0915\u092D\u0940-\u0915\u092D\u0940 \u0938\u0948\u0902\u092A\u0932 \u0915\u0941\u0902\u091C\u0940 \u092F\u093E \u0938\u094D\u092A\u0937\u094D\u091F\u0940\u0915\u0930\u0923) \u092E\u093E\u0901\u0917\u0924\u093E \u0939\u0948, \u0928\u092F\u093E \u092C\u093F\u0932\u094D\u0921 \u0928\u0939\u0940\u0902\u0964 \u091C\u0935\u093E\u092C \u092F\u0942\u091C\u093C\u0930 \u0916\u0941\u0926 \u092D\u0947\u091C\u0924\u093E \u0939\u0948; Rocket Launcher \u0915\u092D\u0940 Apple \u0915\u094B \u0905\u092A\u0928\u0947-\u0906\u092A \u091C\u0935\u093E\u092C \u0928\u0939\u0940\u0902 \u0926\u0947\u0924\u093E\u0964",
     connected: "{name} \u0915\u0928\u0947\u0915\u094D\u091F \u0914\u0930 \u0935\u093F\u0936\u094D\u0932\u0947\u0937\u0923 \u0939\u094B \u0917\u092F\u093E\u0964 \u0932\u0949\u0928\u094D\u091A \u0915\u0940 \u0924\u0948\u092F\u093E\u0930\u0940 {ready}%\u0964",
-    counts: "{block} \u0920\u0940\u0915 \u0915\u0930\u0928\u093E \u091C\u093C\u0930\u0942\u0930\u0940 \xB7 {warn} \u091C\u093E\u0901\u091A\u0928\u093E \u092C\u0947\u0939\u0924\u0930 \xB7 {tip} \u091C\u093E\u0928\u0928\u0947 \u0932\u093E\u092F\u0915",
+    counts: "{block} \u0920\u0940\u0915 \u0915\u0930\u0928\u093E \u091C\u093C\u0930\u0942\u0930\u0940 \xB7 {warn} \u091C\u093E\u0901\u091A\u0928\u093E \u092C\u0947\u0939\u0924\u0930 \xB7 {check} \u092A\u0941\u0937\u094D\u091F\u093F \u0915\u0930\u0947\u0902 \xB7 {tip} \u091C\u093E\u0928\u0928\u0947 \u0932\u093E\u092F\u0915",
     nextDecide: "\u0906\u0917\u0947: rocketlauncher_get_decisions \u0915\u0949\u0932 \u0915\u0930\u0947\u0902 \u0914\u0930 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0915\u094B {n} \u0935\u093F\u0915\u0932\u094D\u092A \u0926\u093F\u0916\u093E\u090F\u0901\u0964 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0915\u094B \u092C\u0938 \u091A\u0941\u0928\u0928\u093E, \u092E\u0902\u091C\u093C\u0942\u0930 \u092F\u093E \u0905\u0938\u094D\u0935\u0940\u0915\u093E\u0930 \u0915\u0930\u0928\u093E \u0939\u0948\u0964",
     openLeft: "{n} \u0906\u0907\u091F\u092E \u0905\u092D\u0940 \u0924\u092F \u0928\u0939\u0940\u0902 \u0939\u0941\u090F \u0939\u0948\u0902\u0964",
     allDecided: "\u0938\u092C \u0924\u092F \u0939\u094B \u0917\u092F\u093E\u0964 \u0906\u0917\u0947: rocketlauncher_generate_store_materials",
@@ -59303,6 +59304,35 @@ function sharedItems() {
   mem = c;
   return c ? c.items : [];
 }
+var CHECK_OK = { account_deletion: ["present", "missing"], location_sharing: ["server", "device"], auth: ["present", "missing"], cloud_db: ["present", "missing"] };
+var FW_OK = /* @__PURE__ */ new Set(["capacitor", "cordova", "ionic", "flutter", "react-native", "expo", "android", "ios", "unknown"]);
+var LANG_OK = /* @__PURE__ */ new Set(["dart", "kotlin", "java", "swift", "js", "ts", "unknown"]);
+var KIND_OK = /* @__PURE__ */ new Set(["function_name", "http_delete", "i18n", "ui_text", "query_string", "wrapper_fetch", "geolocation_plugin", "same_file", "co_occur", "sdk_api", "user_report", "device_only"]);
+function correctionsApi(env = process.env, fallback) {
+  const api = resolveLessonsApi(env, fallback);
+  if (!api) return "";
+  return api.replace(/\/api\/lessons\/?$/, "/api/corrections");
+}
+function shareCorrection(input2) {
+  const check_id = input2 && input2.check_id, actual = input2 && input2.corrected_verdict, wrong = input2 && input2.wrong_verdict;
+  if (!CHECK_OK[check_id] || !CHECK_OK[check_id].includes(actual) || !CHECK_OK[check_id].includes(wrong)) return null;
+  const framework = FW_OK.has(input2.framework) ? input2.framework : "unknown";
+  const language = LANG_OK.has(input2.language) ? input2.language : "unknown";
+  const pattern_kinds = [...new Set((input2.pattern_kinds || []).filter((k) => KIND_OK.has(k)))].slice(0, 8);
+  const payload = { v: 1, check_id, wrong_verdict: wrong, corrected_verdict: actual, framework, language, pattern_kinds };
+  const url2 = correctionsApi();
+  if (!url2) return null;
+  try {
+    track(fetch(url2, { method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "rocket-launcher-mcp" }, body: JSON.stringify(payload), signal: timeoutSignal(TIMEOUT) }).then((r) => {
+      try {
+        r.body && r.body.cancel && r.body.cancel();
+      } catch {
+      }
+    }));
+  } catch {
+  }
+  return payload;
+}
 
 // lib/lessons.mjs
 var LHOME2 = process.env.ROCKETLAUNCHER_HOME || path3.join(os2.homedir(), ".rocketlauncher");
@@ -59425,8 +59455,6 @@ var RR = {
   NSPrivacyAccessedAPICategoryDiskSpace: { reason: "E174.1", code: /\b(volumeAvailableCapacity\w*|NSFileSystemFreeSize|NSFileSystemSize|statfs|statvfs)\b/, deps: /\bdisk_space\b|react-native-device-info/ },
   NSPrivacyAccessedAPICategoryActiveKeyboards: { reason: "54BD.1", code: /\bactiveInputModes\b/ }
 };
-var DELETE_CODE = /\b(deleteAccount|delete_account|deleteUser|accountDeletion|DeleteAccount|purgeUserData|closeAccount|requestDelete|delete_profile|destroy_account)\b|currentUser\??(!)?\.delete\(|\buser\??(!)?\.delete\(/;
-var DELETE_TEXT = /delete (my |your )?account|account deletion|계정 ?삭제|회원 ?탈퇴|ลบบัญชี|删除(账号|帐户|账户)|खाता (हटाएं|हटाएँ|डिलीट)/i;
 var FORCE_UPDATE = /\b(min_?version|minimum_?version|min_supported_version|force_?update|forceUpdate|latest_?version|latestVersion|required_?version|minVersion|minimumVersion)\b/i;
 var UPDATE_LIBS = /\bupgrader\b|\bin_app_update\b|react-native-version-check|sp-react-native-in-app-updates|com\.google\.android\.play:app-update|AppUpdateManager|new_version_plus/;
 var REMOTE_FLAGS = /firebase_remote_config|firebase-config|RemoteConfig|remoteConfig|launchdarkly|growthbook|statsig/;
@@ -59501,13 +59529,17 @@ function scanProject(project, A) {
   }
   const xp = P.filter((p) => /PrivacyInfo\.xcprivacy$/.test(p));
   X.manifestApis = [...new Set(xp.flatMap((p) => text(p).match(/NSPrivacyAccessedAPICategory\w+/g) || []))];
-  const strHay = JSON.stringify(A.strings || {});
+  const del = Detect && Detect.deletion(codeP, F, A.strings) || { found: false, kinds: [], files: [], confidence: null };
   X.deletion = {
-    code: codeP.filter((p) => DELETE_CODE.test(stripComments(text(p)))).slice(0, 5),
-    text: DELETE_TEXT.test(strHay) || codeP.some((p) => DELETE_TEXT.test(text(p))),
+    code: (del.files || []).slice(0, 8),
+    text: !!(del.found || (del.kinds || []).some((k) => k === "ui_text" || k === "i18n")),
+    kinds: del.kinds || [],
+    confidence: del.confidence,
     pages: textP.filter((p) => /\.(html?|md)$/i.test(p) && /delet/i.test(p)).slice(0, 5),
     urls: [...urls].filter((u) => /delet/i.test(u)).slice(0, 5)
   };
+  const loc = Detect && Detect.locationFlow(codeP, F, "") || { sent: false, confidence: null, kinds: [] };
+  X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
   const pol = textP.filter((p) => POLICY_FILE.test(p.split("/").pop()) && /\.(html?|md)$/i.test(p)), polTxt = pol.map(text).join("\n");
   X.policy = {
     files: pol.slice(0, 5),
@@ -59624,23 +59656,43 @@ function requirements(st, L, opts = {}) {
   };
 }
 function deletionStatus(st) {
-  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [] };
+  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [], kinds: [], confidence: null };
   const generated = !!(st.generated && A.sdk.auth);
-  const inApp = D.code.length > 0 || D.text;
+  const R = A.review || {}, corr = (st.corrections || {}).account_deletion;
+  let inApp = D.code.length > 0 || D.text || !!R.deletionInApp;
+  let confidence = D.confidence || R.deletionConfidence || (inApp ? "certain" : null);
+  if (corr && corr.actual === "present") {
+    inApp = true;
+    confidence = "certain";
+  }
+  if (corr && corr.actual === "missing") {
+    inApp = false;
+    confidence = "certain";
+  }
   const web = D.pages.length > 0 || D.urls.length > 0 || generated;
   const missing = [!inApp && 'no in-app "Delete account" path found', !web && "no web deletion page or URL found"].filter(Boolean);
-  return { inApp, web, generated, D, missing, summary: missing.length ? `Missing: ${missing.join("; ")}.` : "In-app path and web page found." };
+  return {
+    inApp,
+    web,
+    generated,
+    D,
+    missing,
+    confidence,
+    corrected: !!(corr && corr.actual),
+    summary: missing.length ? `Missing: ${missing.join("; ")}.` : "In-app path and web page found."
+  };
 }
 function deletionCheck(st, L) {
   const A = st.A, X = st.X, sig = X && X.signals || {};
   const accountSignals = !!(sig.USER_ACCOUNT || sig.ACCOUNT_DELETION);
   if (!A.sdk.auth && !accountSignals) return { title: rx(L, "del.title"), summary: rx(L, "del.notNeeded"), required: false };
   const d = deletionStatus(st), rows = [];
+  const inSev = d.inApp ? "ok" : d.confidence === "uncertain" ? "check" : "block";
   rows.push({
     id: "in_app",
-    severity: d.inApp ? "ok" : "block",
+    severity: inSev,
     what: "Delete account inside the app (Play + App Store 5.1.1(v)).",
-    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : ""].filter(Boolean).join(", ")}` : "Not found.",
+    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : "", ...(d.D.kinds || []).map((k) => "pattern:" + k), d.corrected ? "overridden by a correction report" : ""].filter(Boolean).join(", ")}` : d.confidence === "uncertain" ? "Not certain \u2014 please confirm there is an in-app Delete account path." : "Not found.",
     action: d.inApp ? void 0 : "Add Settings > Delete account. It must delete the account and its data (not just sign out), ask once for confirmation and say how long deletion takes.",
     source: "https://developer.apple.com/support/offering-account-deletion-in-your-app/"
   });
@@ -59693,7 +59745,18 @@ function privacyCheck(st, L) {
   const add2 = (id, severity, finding, action, source) => rows.push({ id, severity, finding, action: action || void 0, source: source || void 0 });
   const perms = an && an.permissions || [], usage = io && io.usage || {};
   const fine = perms.some((p) => /ACCESS_FINE_LOCATION/.test(p)), coarse = perms.some((p) => /ACCESS_COARSE_LOCATION/.test(p)), bg = perms.some((p) => /ACCESS_BACKGROUND_LOCATION/.test(p));
-  const po = Flow.privacyOpts(A, st.dec), sent = R.locationSent || po.location === "server";
+  const po = Flow.privacyOpts(A, st.dec);
+  const locCorr = (st.corrections || {}).location_sharing;
+  let sent = !!(R.locationSent || X && X.location && X.location.sent || po.location === "server");
+  let locConf = R.locationConfidence || X && X.location && X.location.confidence || null;
+  if (locCorr && locCorr.actual === "server") {
+    sent = true;
+    locConf = "certain";
+  }
+  if (locCorr && locCorr.actual === "device") {
+    sent = false;
+    locConf = "certain";
+  }
   if (A.sdk.location) {
     if (io && !usage.NSLocationWhenInUseUsageDescription && !usage.NSLocationAlwaysAndWhenInUseUsageDescription) add2("loc.ios_string", "block", "Location is used but Info.plist has no NSLocationWhenInUseUsageDescription.", 'Add a purpose string that says why (for example "Shows fuel stations near you.").', "https://developer.apple.com/documentation/bundleresources/information-property-list/nslocationwheninuseusagedescription");
     if (io && usage.NSLocationAlwaysAndWhenInUseUsageDescription && !bg && an) add2("loc.always_mismatch", "warn", "iOS asks for Always location, Android does not ask for background location.", "Use When In Use on iOS unless the feature really needs background location.");
@@ -59701,7 +59764,11 @@ function privacyCheck(st, L) {
     if (sent && st.dec.location === "device") add2("loc.datasafety_device", "block", "The code sends location to a server, but the Data safety answer says it stays on the device.", "Answer that location is collected (app functionality) in Data safety and App Privacy.", "https://support.google.com/googleplay/android-developer/answer/10787469");
     if (sent && fine) add2("loc.precise", "warn", "ACCESS_FINE_LOCATION is declared and location is sent to the server.", 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', "https://support.google.com/googleplay/android-developer/answer/10787469");
     if (X && !X.policy.location) add2("loc.policy", "warn", "The privacy policy does not mention location.", "Say what location is used for, whether it is sent and how long it is kept.");
-    if (!X || X && !rows.some((r) => r.id.startsWith("loc."))) add2("loc.ok", "ok", `Location: ${sent ? "sent to the server" : "used on the device"}; permission texts and declarations line up.`);
+    if (sent && locConf === "uncertain" && !locCorr) {
+      add2("loc.confirm", "check", "Location looks like it may leave the device (coordinates appear near a network call), but this is not certain.", "Confirm whether coordinates are sent off the device. If they are, declare location as collected in Data safety and App Privacy; if they stay on the device, confirm that.");
+    } else if (!rows.some((r) => r.id.startsWith("loc."))) {
+      add2("loc.ok", "ok", `Location: ${sent ? "sent to the server" : "used on the device"}${locCorr ? " (from a correction report)" : locConf === "certain" ? "" : " (please confirm)"}; permission texts and declarations line up.`);
+    }
   }
   if (io) {
     const tr2 = Analyzer.tracking(A);
@@ -60206,6 +60273,7 @@ function releaseChecks(st, L) {
     rules_verified_on: REQ.verified_on,
     must_fix: all.filter((r) => r.severity === "block").map((r) => ({ id: r.id, finding: r.finding, action: r.action, source: r.source })),
     to_check: all.filter((r) => r.severity === "warn").map((r) => ({ id: r.id, finding: r.finding, action: r.action })),
+    needs_confirmation: all.filter((r) => r.severity === "check").map((r) => ({ id: r.id, finding: r.finding, action: r.action })),
     rescan_needed: !st.X || void 0
   };
 }
@@ -60215,11 +60283,72 @@ function guideStep(st, L) {
     id: "release-checks",
     title: rx(L, "rc.step.t"),
     detail: rx(L, "rc.step.d"),
-    status: r.counts.block ? "todo" : "done",
+    status: r.counts.block || r.counts.check ? "todo" : "done",
     counts: r.counts,
     items: r.must_fix.map((x) => `${x.finding}${x.action ? " \u2192 " + x.action : ""}`),
     tools: ["rocketlauncher_check_requirements", "rocketlauncher_privacy_check", "rocketlauncher_account_deletion_check", "rocketlauncher_reviewer_notes"]
   };
+}
+var CHECK_ACTUAL = {
+  account_deletion: ["present", "missing"],
+  location_sharing: ["server", "device"],
+  auth: ["present", "missing"],
+  cloud_db: ["present", "missing"]
+};
+var CORRECTION_CHECKS = CHECK_ACTUAL;
+function inferredVerdict(st, check_id) {
+  const A = st.A || {}, R = A.review || {}, d = deletionStatus(st);
+  if (check_id === "account_deletion") return d.inApp ? "present" : "missing";
+  if (check_id === "location_sharing") {
+    const sent = !!(R.locationSent || st.X && st.X.location && st.X.location.sent || (st.dec || {}).location === "server");
+    return sent ? "server" : "device";
+  }
+  if (check_id === "auth") return A.sdk && A.sdk.auth ? "present" : "missing";
+  if (check_id === "cloud_db") return A.sdk && A.sdk.cloudDb ? "present" : "missing";
+  return "unknown";
+}
+function applyCorrections(st) {
+  const A = st.A;
+  if (!A) return st;
+  A.review = A.review || {};
+  for (const [id, c] of Object.entries(st.corrections || {})) {
+    if (!c || !CHECK_ACTUAL[id] || !CHECK_ACTUAL[id].includes(c.actual)) continue;
+    if (id === "account_deletion") {
+      A.review.deletionInApp = c.actual === "present";
+      A.review.deletionConfidence = "certain";
+      A.review.deletionOverridden = true;
+    }
+    if (id === "location_sharing") {
+      A.review.locationSent = c.actual === "server";
+      A.review.locationConfidence = "certain";
+      A.review.locationOverridden = true;
+      st.dec = st.dec || {};
+      st.dec.location = c.actual;
+    }
+    if (id === "auth" && A.sdk) A.sdk.auth = c.actual === "present";
+    if (id === "cloud_db" && A.sdk) A.sdk.cloudDb = c.actual === "present";
+  }
+  if (Analyzer.refreshIssues) Analyzer.refreshIssues(A);
+  return st;
+}
+function patternKindsOf(st, check_id) {
+  const R = st.A && st.A.review || {}, X = st.X || {};
+  if (check_id === "account_deletion") return [.../* @__PURE__ */ new Set([...R.deletionKinds || [], ...X.deletion && X.deletion.kinds || []])];
+  if (check_id === "location_sharing") return [.../* @__PURE__ */ new Set([...R.locationKinds || [], ...X.location && X.location.kinds || []])];
+  return [];
+}
+function langKindOf(st) {
+  const files = Object.keys(st.projectFiles || st.A && st.A._files || {});
+  const code = (st.X && st.X.deletion && st.X.deletion.code || []).join(" ") + " " + files.join(" ");
+  if (/\.dart(\b|$)/i.test(code)) return "dart";
+  if (/\.(kt|java)(\b|$)/i.test(code)) return "kotlin";
+  if (/\.(swift|m|mm)(\b|$)/i.test(code)) return "swift";
+  if (/\.(tsx|ts)(\b|$)/i.test(code)) return "ts";
+  if (/\.(jsx|js|mjs)(\b|$)/i.test(code)) return "js";
+  const fw = st.A && st.A.framework || "";
+  if (fw === "flutter") return "dart";
+  if (fw === "react-native" || fw === "capacitor" || fw === "cordova" || fw === "ionic") return "js";
+  return "unknown";
 }
 
 // lib/engine.mjs
@@ -60249,7 +60378,9 @@ function load(id, lang2) {
   if (!idOk(id)) throw new UserError(msg(normLang(lang2), "noProject", { id }), "noProject");
   const f = path5.join(dirOf(id), "state.json");
   if (!fs5.existsSync(f)) throw new UserError(msg(normLang(lang2), "noProject", { id }), "noProject");
-  return JSON.parse(fs5.readFileSync(f, "utf8"));
+  const st = JSON.parse(fs5.readFileSync(f, "utf8"));
+  if (st.corrections) applyCorrections(st);
+  return st;
 }
 var T = (lang2) => (k, v) => tr(lang2, k, v);
 var appName = (st, lang2) => Gen.nameOf(st.A, lang2);
@@ -60389,7 +60520,7 @@ function stageNext(st, L) {
 }
 function report(st, lang2) {
   const L = normLang(lang2 || st.lang), t = T(L), A = st.A, issues = Flow.issuesFor(A, st.dec);
-  const c = { block: 0, warn: 0, tip: 0 };
+  const c = { block: 0, warn: 0, check: 0, tip: 0 };
   issues.forEach((i) => c[i.sev]++);
   return {
     project_id: st.id,
@@ -60935,6 +61066,44 @@ function status(id, lang2) {
   }).filter(Boolean).sort((a, b) => String(b.updated).localeCompare(String(a.updated)));
   return { projects: list, data_dir: HOME, lessons: listLessons() };
 }
+var KIND_OK2 = /* @__PURE__ */ new Set(["function_name", "http_delete", "i18n", "ui_text", "query_string", "wrapper_fetch", "geolocation_plugin", "same_file", "co_occur", "sdk_api", "user_report", "device_only"]);
+function cleanKinds(arr) {
+  return [...new Set((arr || []).filter((k) => typeof k === "string" && KIND_OK2.has(k)))].slice(0, 8);
+}
+function reportCorrection(st, { check_id, actual, evidence, wrong_verdict, pattern_kinds }, lang2) {
+  const L = normLang(lang2 || st.lang);
+  const allowed = CORRECTION_CHECKS[check_id];
+  if (!allowed) throw new UserError("check_id must be one of " + Object.keys(CORRECTION_CHECKS).join(", "), "badValue");
+  if (!allowed.includes(actual)) throw new UserError("actual must be one of " + allowed.join(", "), "badValue");
+  const wrong = wrong_verdict && allowed.includes(wrong_verdict) ? wrong_verdict : inferredVerdict(st, check_id);
+  const kinds = cleanKinds(pattern_kinds && pattern_kinds.length ? pattern_kinds : patternKindsOf(st, check_id));
+  if (!kinds.length) kinds.push("user_report");
+  st.corrections = st.corrections || {};
+  st.corrections[check_id] = { actual, wrong, at: (/* @__PURE__ */ new Date()).toISOString(), evidence: String(evidence || "").slice(0, 200), kinds };
+  applyCorrections(st);
+  save(st);
+  const sharedPayload = !st.sample ? shareCorrection({
+    check_id,
+    wrong_verdict: wrong,
+    corrected_verdict: actual,
+    framework: String(st.A && st.A.framework || "unknown").slice(0, 32),
+    language: langKindOf(st),
+    pattern_kinds: kinds
+  }) : null;
+  const rep = report(st, L);
+  return {
+    project_id: st.id,
+    check_id,
+    previous: wrong,
+    actual,
+    applied: true,
+    readiness: st.A.readiness,
+    shared: sharedPayload || false,
+    message: "This check is overridden for this app. Readiness was recalculated.",
+    issues: rep.issues,
+    release_checks: rep.release_checks
+  };
+}
 function forgetLesson(id, lang2) {
   const L = normLang(lang2);
   const r = withLessons((db) => Lessons.forget(db, String(id || "")));
@@ -61044,7 +61213,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.1";
+var VERSION = "0.2.2";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.
@@ -61055,7 +61224,7 @@ How to use it:
 5. The final submit step stays locked until the user explicitly approves; then call rocketlauncher_approve_submission. Rocket Launcher never submits to any store itself: the user presses the submit button in Play Console / App Store Connect.
 6. When the user reports the review result, call rocketlauncher_report_review (submitted / rejected with the store's message / resubmitted / approved). When every chosen store is live, the job is done. In App Store Connect an "Information Needed" request also shows as Rejected; it asks for a reply, not always a new build. Never reply to Apple or Google yourself: draft the reply and let the user send it.
 7. Reported review results are learned automatically: an unknown rejection becomes a generalized lesson (store, guideline/ITMS codes, short advice from a fixed table) saved on this computer, and known ones are counted. To improve checks for every user, when a lessons API is configured (js/config.js lessonsApiUrl, or the ROCKETLAUNCHER_LESSONS_API environment variable) each real (non-demo) learned result also sends an anonymized event to that lessons API containing only the store, guideline/ITMS/Play policy codes and a fixed advice id (field lesson.shared shows the exact payload); the store message, app name, bundle/package id, project id, e-mail and any free text are never sent. The aggregated feed from other users is fetched and cached on this computer. Reports, choices, submission guides and review notes show relevant lessons as warnings or pre-submit checks (field learned_lessons): source "local" = from the user's own reviews, "shared" = from other Rocket Launcher users' reviews; tell the user which is which. Lessons never become must-fix items and never override the default checks (for example they never mean "add ATT because of ads"). If the lessons API is not configured or cannot be reached, everything still works locally. An explicitly empty ROCKETLAUNCHER_LESSONS_API disables the shared feed (lessons stay on this computer); if the variable is omitted, lessonsApiUrl in js/config.js is used. rocketlauncher_status lists the local lessons; rocketlauncher_forget_lesson removes one if the user asks.
-8. Release checks (0.2.0, free, offline except where noted, no API keys): rocketlauncher_get_report includes release_checks and the submission guide has a "Release checks" step. Details: rocketlauncher_check_requirements (store deadlines from a dated table with official sources), rocketlauncher_privacy_check (Data safety / App Privacy / PrivacyInfo.xcprivacy / permission texts consistency + drafts), rocketlauncher_play_policy_audit (Google's Apache-2.0 Play Policy Insights rules, bundled), rocketlauncher_reviewer_notes, rocketlauncher_account_deletion_check, rocketlauncher_closed_test (12 testers \xD7 14 days for new personal Play accounts), rocketlauncher_version_sync, rocketlauncher_country_check, rocketlauncher_move_app_plan and rocketlauncher_remove_app_guide. These only advise: never unpublish, delete, transfer, create accounts, change permissions or apply for production yourself; the account owner does that in the console after choosing. For moving an app, present both paths (transfer / new registration) neutrally and let the user choose; never default to one. Never ask for or store passwords, keys or tokens; for the signing key only the place where its backup is kept.
+8. Release checks (0.2.0, free, offline except where noted, no API keys): rocketlauncher_get_report includes release_checks and the submission guide has a "Release checks" step. Details: rocketlauncher_check_requirements (store deadlines from a dated table with official sources), rocketlauncher_privacy_check (Data safety / App Privacy / PrivacyInfo.xcprivacy / permission texts consistency + drafts), rocketlauncher_play_policy_audit (Google's Apache-2.0 Play Policy Insights rules, bundled), rocketlauncher_reviewer_notes, rocketlauncher_account_deletion_check, rocketlauncher_closed_test (12 testers \xD7 14 days for new personal Play accounts), rocketlauncher_version_sync, rocketlauncher_country_check, rocketlauncher_move_app_plan and rocketlauncher_remove_app_guide. These only advise: never unpublish, delete, transfer, create accounts, change permissions or apply for production yourself; the account owner does that in the console after choosing. For moving an app, present both paths (transfer / new registration) neutrally and let the user choose; never default to one. Never ask for or store passwords, keys or tokens; for the signing key only the place where its backup is kept. If a check was wrong, call rocketlauncher_report_correction with the check id, the correct verdict and a short evidence note (file and line). That overrides the check for this app and, when a lessons API is configured, sends an anonymized record (check id and verdicts only \u2014 never code, names or paths). An empty lessons API URL keeps the report on this computer.
 App Store review rules the analysis follows (explain them in plain words when they come up):
 - Tracking, ATT, PrivacyInfo.xcprivacy, the App Privacy form and real behavior must match from the first submit. Default for apps with ads: no ATT prompt or NSUserTrackingUsageDescription, NSPrivacyTracking=false with no tracking domains, every ad request non-personalized (npa=1), App Privacy "No, we do not track". Never suggest adding ATT just because the app shows ads. Keep an already fully aligned tracking setup, but never leave a mixed one.
 - Core features should work without login (5.1.1(v)); third-party login on iOS needs Sign in with Apple; accounts need in-app and web deletion; the Support URL must show a contact method; ads are mentioned only in the privacy policy; no "free" or other brands' names in subtitle/keywords; review notes for user-supplied API keys say there is no IAP and the developer does not sell keys, with a review-only key the user attaches (never put real keys anywhere).
@@ -61209,6 +61378,20 @@ function createServer2({ allowPath = true, inlineZip = false } = {}) {
     inputSchema: { project_id: pid, lang },
     annotations: RO
   }, rt("deletion"));
+  server.registerTool("rocketlauncher_report_correction", {
+    title: "Report a wrong check",
+    description: "Record that a Rocket Launcher check was wrong for this connected app (for example account deletion was marked missing but exists, or location was marked on-device only but is sent to a server). Immediately overrides that check for this app, recalculates readiness, and \u2014 when a lessons API is configured \u2014 sends an anonymized record (check id, wrong and corrected verdicts, framework, language, pattern kinds; never code, app names, paths or evidence text). If the lessons API URL is empty, the override stays on this computer only. Pass evidence as a short file:line note for local use; it is not shared.",
+    inputSchema: {
+      project_id: pid,
+      check_id: external_exports.enum(["account_deletion", "location_sharing", "auth", "cloud_db"]).describe("Which check was wrong"),
+      actual: external_exports.enum(["present", "missing", "server", "device"]).describe("The correct verdict: present/missing for account_deletion, auth and cloud_db; server/device for location_sharing"),
+      evidence: external_exports.string().max(200).optional().describe("Short local note such as file:line. Stored on this computer only, never sent"),
+      wrong_verdict: external_exports.enum(["present", "missing", "server", "device"]).optional().describe("What the checker said; inferred if omitted"),
+      pattern_kinds: external_exports.array(external_exports.enum(["function_name", "http_delete", "i18n", "ui_text", "query_string", "wrapper_fetch", "geolocation_plugin", "same_file", "co_occur", "sdk_api", "user_report", "device_only"])).max(8).optional(),
+      lang
+    },
+    annotations: { ...W, idempotentHint: true }
+  }, wrap(async (a) => ok(reportCorrection(load(a.project_id, a.lang), a, a.lang))));
   server.registerTool("rocketlauncher_closed_test", {
     title: "Closed test tracker (12 testers \xD7 14 days)",
     description: `Track Google Play's closed test for new personal developer accounts: at least 12 testers opted in for 14 days in a row before applying for production. action=status (count and earliest apply date), record (save testers as {label, opted_in, opted_out} with YYYY-MM-DD dates; a tester who opted out restarts their 14 days; plus optional feedback notes; nicknames only, never e-mails), application_draft (draft answers for "Apply for production"; the user submits it), recruit_copy (tester invitation texts in en/ko/th/zh/hi), check_optin_page (checks a tester web page for the Play opt-in link, in-app-browser escape and the 14-day notice). Stored only on this computer.`,

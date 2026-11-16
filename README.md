@@ -8,7 +8,7 @@ A free **MCP server** and **web tool** that helps people who already built an An
 
 You connect the app once. From then on you only **pick, approve, or reject**. Nothing is submitted to a store automatically. The final step of the guide unlocks only after you approve, and you press the store’s Submit button yourself.
 
-[![Version 0.2.1](https://img.shields.io/badge/version-0.2.1-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
+[![Version 0.2.2](https://img.shields.io/badge/version-0.2.2-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
 [![npm](https://img.shields.io/npm/v/rocket-launcher-mcp?style=flat-square&color=F4A261)](https://www.npmjs.com/package/rocket-launcher-mcp)
 [![MCP](https://img.shields.io/badge/MCP-server-171717?style=flat-square)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/license-MIT-171717?style=flat-square)](LICENSE)
@@ -86,7 +86,7 @@ The launch kit can include store listing text, a privacy policy and account-dele
 
 ## Tools
 
-The server exposes **21 tools**. Names always start with `rocketlauncher_`.
+The server exposes **22 tools**. Names always start with `rocketlauncher_`.
 
 ### Connect and decide
 
@@ -106,6 +106,7 @@ The server exposes **21 tools**. Names always start with `rocketlauncher_`.
 | `rocketlauncher_privacy_check` | Cross-check Data safety, App Privacy, PrivacyInfo.xcprivacy, permission texts, and the privacy policy, and draft what is missing. |
 | `rocketlauncher_play_policy_audit` | Run a quick Google Play policy scan with Google’s Play Policy Insights rules, and point to the offline full audit. |
 | `rocketlauncher_account_deletion_check` | Check in-app and web account-deletion paths when the app has sign-up or login. |
+| `rocketlauncher_report_correction` | Report that a check was wrong (for example account deletion or location sharing). Overrides it for this app, recalculates readiness, and can send an anonymized record to the shared lessons server. |
 | `rocketlauncher_version_sync` | Check version and build numbers across Android, iOS, and related apps, including force-update safety. |
 | `rocketlauncher_country_check` | Show Korea, EU, and Thailand rules that apply to the app, with official sources. Legal summaries only, not legal advice. |
 | `rocketlauncher_closed_test` | Track Google Play’s 12 testers × 14 days closed-test rule, invitations, and the tester page. |

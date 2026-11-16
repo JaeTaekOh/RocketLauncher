@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import { Analyzer, Gen, Gfx, Flow, Sources, Zip, CFG, tr, hasGraphics, Lessons } from './runtime.mjs';
 import { msg } from './messages.mjs';
 import { withLessons, relevantLessons, listLessons } from './lessons.mjs';
-import { shareLesson } from './shared.mjs';
+import { shareLesson, shareCorrection } from './shared.mjs';
 import * as RL from './release.mjs';
 
 /* Texts come in five languages; English is the default whenever lang is omitted or unknown. */
@@ -29,7 +29,9 @@ export function load(id, lang) {
   if (!idOk(id)) throw new UserError(msg(normLang(lang), 'noProject', { id }), 'noProject');
   const f = path.join(dirOf(id), 'state.json');
   if (!fs.existsSync(f)) throw new UserError(msg(normLang(lang), 'noProject', { id }), 'noProject');
-  return JSON.parse(fs.readFileSync(f, 'utf8'));
+  const st = JSON.parse(fs.readFileSync(f, 'utf8'));
+  if (st.corrections) RL.applyCorrections(st);
+  return st;
 }
 const T = lang => (k, v) => tr(lang, k, v);
 const appName = (st, lang) => Gen.nameOf(st.A, lang);
@@ -139,7 +141,7 @@ function stageNext(st, L) {
 /* ---------- 2. 분석 보고 ---------- */
 export function report(st, lang) {
   const L = normLang(lang || st.lang), t = T(L), A = st.A, issues = Flow.issuesFor(A, st.dec);
-  const c = { block: 0, warn: 0, tip: 0 }; issues.forEach(i => c[i.sev]++);
+  const c = { block: 0, warn: 0, check: 0, tip: 0 }; issues.forEach(i => c[i.sev]++);
   return {
     project_id: st.id,
     summary: msg(L, 'connected', { name: appName(st, L), ready: A.readiness }) + ' ' + msg(L, 'counts', c),
@@ -473,6 +475,38 @@ export function status(id, lang) {
 }
 
 /* Remove one learned lesson from this machine (lessons.json and the export). Project state is not touched. */
+
+const KIND_OK = new Set(['function_name','http_delete','i18n','ui_text','query_string','wrapper_fetch','geolocation_plugin','same_file','co_occur','sdk_api','user_report','device_only']);
+function cleanKinds(arr) {
+  return [...new Set((arr || []).filter(k => typeof k === 'string' && KIND_OK.has(k)))].slice(0, 8);
+}
+export function reportCorrection(st, { check_id, actual, evidence, wrong_verdict, pattern_kinds }, lang) {
+  const L = normLang(lang || st.lang);
+  const allowed = RL.CORRECTION_CHECKS[check_id];
+  if (!allowed) throw new UserError('check_id must be one of ' + Object.keys(RL.CORRECTION_CHECKS).join(', '), 'badValue');
+  if (!allowed.includes(actual)) throw new UserError('actual must be one of ' + allowed.join(', '), 'badValue');
+  const wrong = (wrong_verdict && allowed.includes(wrong_verdict)) ? wrong_verdict : RL.inferredVerdict(st, check_id);
+  const kinds = cleanKinds(pattern_kinds && pattern_kinds.length ? pattern_kinds : RL.patternKindsOf(st, check_id));
+  if (!kinds.length) kinds.push('user_report');
+  st.corrections = st.corrections || {};
+  st.corrections[check_id] = { actual, wrong, at: new Date().toISOString(), evidence: String(evidence || '').slice(0, 200), kinds };
+  RL.applyCorrections(st);
+  save(st);
+  const sharedPayload = !st.sample ? shareCorrection({
+    check_id, wrong_verdict: wrong, corrected_verdict: actual,
+    framework: String((st.A && st.A.framework) || 'unknown').slice(0, 32),
+    language: RL.langKindOf(st),
+    pattern_kinds: kinds
+  }) : null;
+  const rep = report(st, L);
+  return {
+    project_id: st.id, check_id, previous: wrong, actual, applied: true,
+    readiness: st.A.readiness, shared: sharedPayload || false,
+    message: 'This check is overridden for this app. Readiness was recalculated.',
+    issues: rep.issues, release_checks: rep.release_checks
+  };
+}
+
 export function forgetLesson(id, lang) {
   const L = normLang(lang);
   const r = withLessons(db => Lessons.forget(db, String(id || '')));

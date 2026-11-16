@@ -1,10 +1,10 @@
 /* Local tests for the lessons Worker with an in-memory KV. Run: node workers/lessons/test/worker.test.mjs */
 import vm from 'node:vm'; import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
-import worker, { validate } from '../src/index.js';
+import worker, { validate, validateCorrection, adminStats } from '../src/index.js';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 let pass = 0, failN = 0; const check = (c, n, x) => { if (c) { pass++; console.log('  ✓', n); } else { failN++; console.log('  ✗', n, x !== undefined ? JSON.stringify(x).slice(0, 400) : ''); } };
 const store = new Map(), puts = [];
-const env = { LESSONS: { async get(k, t) { const v = store.get(k); return v == null ? null : t === 'json' ? JSON.parse(v) : v; }, async put(k, v, o) { puts.push([k, v, o]); store.set(k, v); } } };
+const env = { ADMIN_TOKEN: 'test-admin-token', LESSONS: { async get(k, t) { const v = store.get(k); return v == null ? null : t === 'json' ? JSON.parse(v) : v; }, async put(k, v, o) { puts.push([k, v, o]); store.set(k, v); } } };
 const ctx = { waitUntil() { } };
 let origin = 0; globalThis.fetch = async () => { origin++; return new Response('site'); };
 const req = (method, body, h = {}, url = 'https://example.test/api/lessons') => new Request(url, { method, body: body == null ? undefined : typeof body === 'string' ? body : JSON.stringify(body), headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.9', ...h } });
@@ -65,5 +65,32 @@ check(last.s === 429, 'rate limit → 429 after 30 posts per hour');
 r = await call(req('OPTIONS', null, { Origin: 'http://localhost' })); check(r.s === 204 && r.h.get('Access-Control-Allow-Origin') === 'http://localhost', 'preflight OK for localhost');
 r = await call(req('GET', null, { Origin: 'https://evil.example' })); check(!r.h.get('Access-Control-Allow-Origin'), 'no CORS for other origins');
 r = await call(req('DELETE')); check(r.s === 405, 'other methods → 405');
+
+
+console.log('[worker] corrections + admin');
+check(validateCorrection({ v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', pattern_kinds: ['function_name', 'i18n'] }), 'correction payload accepted');
+check(!validateCorrection({ v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', path: 'app/src/main.js' }), 'correction with path field rejected');
+check(!validateCorrection({ v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', evidence: 'acct.js:128' }), 'correction with evidence field rejected');
+check(!validateCorrection({ v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'MyApp', language: 'js' }), 'unknown framework rejected');
+check(!validateCorrection({ v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', pattern_kinds: ['eval(code)'] }), 'free-text pattern kind rejected');
+check(!validateCorrection({ v: 1, check_id: 'account_deletion', wrong_verdict: 'present', corrected_verdict: 'present', framework: 'capacitor', language: 'js' }), 'same verdict rejected');
+r = await call(req('POST', { v: 1, check_id: 'location_sharing', wrong_verdict: 'device', corrected_verdict: 'server', framework: 'capacitor', language: 'js', pattern_kinds: ['query_string', 'wrapper_fetch'] }, { 'CF-Connecting-IP': '203.0.113.50' }, 'https://example.test/api/corrections'));
+check(r.s === 202 && r.j.ok && r.j.counted, 'POST /api/corrections accepted', r);
+r = await call(req('POST', { v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'flutter', language: 'dart', pattern_kinds: ['i18n'] }, { 'CF-Connecting-IP': '203.0.113.50' }, 'https://example.test/api/corrections'));
+check(r.s === 202, 'second correction counted');
+r = await call(req('POST', { v: 1, check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', code: 'deleteAccount()' }, { 'CF-Connecting-IP': '203.0.113.50' }, 'https://example.test/api/corrections'));
+check(r.s === 400, 'correction with code field → 400');
+check(![...store.values()].some(v => /deleteAccount\(\)|acct\.js|MyApp|gaddy/i.test(v)), 'correction store has no code or paths');
+r = await call(req('GET', null, {}, 'https://example.test/admin'));
+check(r.s === 200 && /Admin token/.test(r.t) && /Rocket Launcher/.test(r.t), 'GET /admin returns the sign-in page');
+r = await call(req('GET', null, {}, 'https://example.test/api/admin/stats'));
+check(r.s === 401, 'admin stats without token → 401');
+r = await call(req('GET', null, { Authorization: 'Bearer wrong' }, 'https://example.test/api/admin/stats'));
+check(r.s === 401, 'admin stats with wrong token → 401');
+r = await call(req('GET', null, { Authorization: 'Bearer test-admin-token' }, 'https://example.test/api/admin/stats'));
+check(r.s === 200 && r.j.corrections.events === 2 && r.j.corrections.top[0].count >= 1 && r.j.corrections.recent.length === 2, 'admin stats show counts, top checks, recent 50', r.j);
+check(r.j.lessons && typeof r.j.lessons.events === 'number', 'admin stats include lesson counts');
+const snap = adminStats({ rows: { a: { count: 3, passed: 1 } }, updated: '2026-11-17' }, { rows: { 'account_deletion|missing|present': { check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', count: 4, last_seen: '2026-11-17' } }, recent: [{ check_id: 'account_deletion', wrong_verdict: 'missing', corrected_verdict: 'present', framework: 'capacitor', language: 'js', pattern_kinds: ['i18n'], day: '2026-11-17' }], updated: '2026-11-17' });
+check(snap.lessons.events === 3 && snap.corrections.events === 4 && snap.corrections.top[0].check_id === 'account_deletion', 'adminStats aggregates lessons and corrections');
 
 console.log(`\n${pass} passed, ${failN} failed`); process.exit(failN ? 1 : 0);

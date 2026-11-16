@@ -50,6 +50,7 @@ Rocket Launcher is for apps at every stage, per store: **not submitted yet** (fi
 | `rocketlauncher_play_policy_audit` | Quick Google Play policy scan with Google's open-source Play Policy Insights rules, plus the offline full audit |
 | `rocketlauncher_reviewer_notes` | Notes for App Review and Play App access (placeholders, never passwords) |
 | `rocketlauncher_account_deletion_check` | In-app and web account deletion paths |
+| `rocketlauncher_report_correction` | Report that a check was wrong: override it for this app, recalculate readiness, and send an anonymized record when sharing is enabled |
 | `rocketlauncher_closed_test` | 12 testers × 14 days tracker, production-access draft, tester invitations, tester page check |
 | `rocketlauncher_version_sync` | Version / build numbers across platforms and related apps, force-update safety |
 | `rocketlauncher_country_check` | Korea, EU and Thailand rules that apply to the app |

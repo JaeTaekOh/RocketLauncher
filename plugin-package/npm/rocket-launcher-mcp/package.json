@@ -1,7 +1,7 @@
 {
   "name": "rocket-launcher-mcp",
   "mcpName": "io.github.JaeTaekOh/rocket-launcher",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Rocket Launcher MCP server: from a finished app to launched on Google Play / App Store. You only pick and approve. Free, no API keys.",
   "type": "module",
   "bin": { "rocket-launcher-mcp": "mcp/dist/rocket-launcher-mcp.mjs" },

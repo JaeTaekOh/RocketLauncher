@@ -232,16 +232,19 @@
     A.developer = { name: (holder || (project.meta && project.meta.owner) || '').trim() || null, email: email || null, policyFound: !!find(F, /privacy[^/]*\.(md|html)$/i).length || !!A.listing.privacyUrl, privacyUrl: A.listing.privacyUrl || null };
 
     // ---------- SDK ----------
-    const hay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), txt(F, pubspec), txt(F, shortest(find(F, /Podfile$/))), txt(F, plistPath), (A.android && A.android.permissions.join(' ')) || '', JSON.stringify((A.ios && A.ios.usage) || {})].join(' ');
+    const codeHay = Object.keys(F).filter(p => F[p].code).map(p => F[p].text).join('\n').slice(0, 1500000);
+    const pluginHay = txt(F, shortest(find(F, /capacitor\.plugins\.json$/))) + '\n' + txt(F, shortest(find(F, /capacitor\.config\.(json|ts|js)$/))) + '\n' + txt(F, shortest(find(F, /google-services\.json$/)));
+    const hay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), txt(F, pubspec), txt(F, shortest(find(F, /Podfile$/))), txt(F, plistPath), (A.android && A.android.permissions.join(' ')) || '', JSON.stringify((A.ios && A.ios.usage) || {}), pluginHay, codeHay].join(' ');
+    const Det = window.RLDetect;
     A.sdk = {
       ads: has(hay, /play-services-ads|google_mobile_ads|google-mobile-ads|admob|Google-Mobile-Ads|GADApplicationIdentifier|applovin|unity-ads|audience-network/i) || !!(A.android && A.android.adsAppId),
       analytics: has(hay, /firebase-analytics|firebase_analytics|\/analytics|FirebaseAnalytics|amplitude|mixpanel/i),
       crash: has(hay, /crashlytics|sentry|bugsnag/i),
-      auth: has(hay, /firebase-auth|firebase_auth|play-services-auth|google_sign_in|google-signin|auth0|supabase|credentials-play-services|googleid/i),
-      googleSignIn: has(hay, /play-services-auth|google_sign_in|google-signin|googleid/i),
-      cloudDb: has(hay, /firestore|firebase-database|firebase_database|supabase|realm/i),
+      auth: has(hay, (Det && Det.AUTH_RE) || /firebase-auth|firebase_auth|play-services-auth|google_sign_in|google-signin|auth0|supabase|credentials-play-services|googleid/i),
+      googleSignIn: has(hay, /play-services-auth|google_sign_in|google-signin|googleid|GoogleAuthProvider|signInWithPopup/i),
+      cloudDb: has(hay, (Det && Det.CLOUD_RE) || /firestore|firebase-database|firebase_database|supabase|realm/i),
       billing: has(hay, /billing|in_app_purchase|react-native-iap|revenuecat|purchases/i),
-      location: has(hay, /LOCATION|play-services-location|geolocator|NSLocation/i),
+      location: has(hay, (Det && Det.LOC_SDK_RE) || /LOCATION|play-services-location|geolocator|NSLocation|Geolocation|@capacitor\/geolocation/i),
       camera: has(hay, /permission\.CAMERA|camera-camera2|camerax|NSCameraUsageDescription|image_picker|expo-camera/i),
       ocr: has(hay, /text-recognition|mlkit|vision/i),
       photos: has(hay, /READ_MEDIA_IMAGES|READ_EXTERNAL_STORAGE|NSPhotoLibrary/i),
@@ -273,8 +276,7 @@
     A.brandColor = cm ? '#' + cm[1].toLowerCase() : null;
 
     A.issues = checks(A);
-    const blocks = A.issues.filter(i => i.sev === 'block').length, warns = A.issues.filter(i => i.sev === 'warn').length;
-    A.readiness = Math.max(18, Math.min(96, 100 - blocks * 9 - warns * 4 - (A.icon ? 0 : 6) - (A.screenshots.length ? 0 : 6)));
+    score(A);
     return A;
   }
 
@@ -304,8 +306,16 @@
     R.byok = ai && keyEntry;
     // Login gate: the first screen is a sign-in screen (core features may need login, Guideline 5.1.1(v))
     R.loginGate = /initialRoute\s*:\s*['"]\/?(login|signin|sign-in|auth|welcome-login)['"]|startDestination\s*=\s*["'](login|signin|sign_in|auth)["']|home\s*:\s*(const\s+)?(Login|SignIn|Auth)\w*(Screen|Page|View)\b|initialRouteName\s*=\s*["'](Login|SignIn|Auth)\w*["']|rootViewController\s*=\s*(Login|SignIn)\w*|WindowGroup\s*\{\s*(Login|SignIn)\w*View/.test(code) || /(requires?|must)\s+(a\s+)?(log ?in|sign[ -]?in)|login (is )?required|sign[- ]in (is )?required/i.test((A.readme && A.readme.summary) || '');
-    // Location: does code send coordinates to a server?
-    R.locationSent = codeP.some(p => { const t = F[p].text; return /latitude|longitude|GeoPoint|CLLocation|LatLng/.test(t) && /firestore|collection\(|\.setData\(|\bfetch\(|axios|http\.post|\bdio\b|Retrofit|URLSession|HttpClient/.test(t); });
+    // Location: does code send coordinates off the device? Conservative when uncertain.
+    const loc = (window.RLDetect && window.RLDetect.locationFlow(codeP, F, hay)) || { sent: false, confidence: null, kinds: [] };
+    R.locationSent = !!loc.sent;
+    R.locationConfidence = loc.confidence;
+    R.locationKinds = loc.kinds || [];
+    const del = (window.RLDetect && window.RLDetect.deletion(codeP, F, A.strings)) || { found: false, confidence: null, kinds: [], files: [] };
+    R.deletionInApp = !!del.found;
+    R.deletionConfidence = del.confidence;
+    R.deletionKinds = del.kinds || [];
+    R.deletionFiles = del.files || [];
     // CarPlay
     R.carplay = /CPTemplateApplicationScene|CPInterfaceController|import\s+CarPlay|flutter_carplay|react-native-carplay|CPTemplateApplicationSceneSessionRoleApplication/.test(any);
     // Store metadata in the repo (fastlane): iOS = fastlane/metadata/<locale>/, Android = fastlane/metadata/android/
@@ -345,7 +355,9 @@
       add('closedTest', 'tip', 'android', 'info', { testers: 12, days: 14 });
     }
     const R = A.review || {};
-    if (s.auth) add('accountDeletion', 'block', 'both', 'gen-deletion');
+    if (s.auth && !R.deletionInApp && R.deletionConfidence !== 'uncertain') add('accountDeletion', 'block', 'both', 'gen-deletion');
+    if (s.auth && !R.deletionInApp && R.deletionConfidence === 'uncertain') add('accountDeletionUnsure', 'check', 'both', 'gen-deletion');
+    if (s.location && R.locationSent && R.locationConfidence === 'uncertain') add('locationConfirm', 'check', 'both', 'info');
     if (!A.developer.policyFound) add('privacyPolicy', 'block', 'both', 'gen-privacy');
     // Support URL: a page where an official contact method is visible right away (Guideline 1.5)
     if (R.supportNoContact) add('supportNoContact', 'block', 'both', 'info', { file: R.supportPage });
@@ -384,8 +396,8 @@
     if (!A.icon) add('noIcon', 'warn', 'both', 'gen-icon');
     if (!A.screenshots.length) add('noShots', 'warn', 'both', 'info');
     if (A.appName && A.appName.length > 30) add('longName', 'warn', 'both', 'choose-name', { len: A.appName.length });
-    const order = { block: 0, warn: 1, tip: 2 };
-    return out.sort((a, b) => order[a.sev] - order[b.sev]);
+    const order = { block: 0, warn: 1, check: 2, tip: 3 };
+    return out.sort((a, b) => (order[a.sev] ?? 9) - (order[b.sev] ?? 9));
   }
 
   /* Tracking state of the iOS app: 'none' (no tracking anywhere), 'tracking' (ATT string + ATT prompt + PrivacyInfo tracking + domains
@@ -399,5 +411,14 @@
     return { state, found, missing };
   }
 
-  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET };
+  function score(A) {
+    const blocks = A.issues.filter(i => i.sev === 'block').length, warns = A.issues.filter(i => i.sev === 'warn').length, checks = A.issues.filter(i => i.sev === 'check').length;
+    /* Unverified risky passes (needs-confirmation) are not treated as a clean pass. */
+    A.readiness = Math.max(18, Math.min(96, 100 - blocks * 9 - warns * 4 - checks * 3 - (A.icon ? 0 : 6) - (A.screenshots.length ? 0 : 6)));
+    return A.readiness;
+  }
+  function refreshIssues(A) { A.issues = checks(A); score(A); return A; }
+
+  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET, score, refreshIssues };
+
 })();

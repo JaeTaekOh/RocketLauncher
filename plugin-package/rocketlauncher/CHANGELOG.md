@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+- Broader account-deletion and location-sharing detection, including Capacitor / Cordova / Ionic web assets, i18n keys, HTTP DELETE helpers, and lat/lng query strings passed to wrapper fetch functions. Uncertain findings are marked for confirmation instead of counted as a pass.
+- Privacy checks now detect Firebase Auth and Firestore in web JavaScript (name, email, user IDs, and synced user content).
+- New tool `rocketlauncher_report_correction`: override a wrong check for the connected app, recalculate readiness, and optionally send an anonymized record (check id and verdicts only) to the shared lessons API. A token-protected `/admin` view on the lessons Worker shows stacked correction counts.
+
 ## 0.2.1
 
 Listing metadata only; no tool or behavior changes.

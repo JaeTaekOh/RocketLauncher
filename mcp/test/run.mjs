@@ -31,8 +31,9 @@ async function stdioFlow() {
   const { tools } = await c.listTools();
   const names = tools.map(t => t.name).sort();
   console.log('  tools:', names.join(', '));
-  check(names.length === 21, '21 tools listed', names);
+  check(names.length === 22, '22 tools listed', names);
   for (const n of ['rocketlauncher_check_requirements', 'rocketlauncher_closed_test', 'rocketlauncher_privacy_check', 'rocketlauncher_play_policy_audit', 'rocketlauncher_reviewer_notes', 'rocketlauncher_account_deletion_check', 'rocketlauncher_move_app_plan', 'rocketlauncher_remove_app_guide', 'rocketlauncher_version_sync', 'rocketlauncher_country_check']) check(names.includes(n), '0.2.0 tool listed: ' + n);
+  check(names.includes('rocketlauncher_report_correction'), '0.2.2 tool listed: report_correction');
   check(tools.every(t => t.description && t.description.length > 60 && t.inputSchema && t.inputSchema.type === 'object'), 'every tool has a description and an input schema');
   const langProps = tools.map(t => t.inputSchema.properties && t.inputSchema.properties.lang).filter(Boolean);
   check(langProps.length === tools.length && langProps.every(p => JSON.stringify(p.enum) === JSON.stringify(LANGS)), 'every tool: lang accepts en, ko, th, zh, hi', langProps.map(p => p.enum));
@@ -153,7 +154,7 @@ async function httpFlow() {
   try {
     const c = new Client({ name: 'rocketlauncher-test-http', version: '1.0.0' });
     await c.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`)));
-    const { tools } = await c.listTools(); check(tools.length === 21, 'HTTP: 21 tools listed');
+    const { tools } = await c.listTools(); check(tools.length === 22, 'HTTP: 22 tools listed');
     let r = await c.callTool({ name: 'rocketlauncher_connect_app', arguments: { source: 'sample' } });
     const id = data(r).project_id; check(!!id && !NON_EN.test(data(r).summary), 'HTTP: connect sample (default en) → ' + data(r).summary);
     r = await c.callTool({ name: 'rocketlauncher_connect_app', arguments: { source: 'path', path: '/etc' } });

@@ -1,9 +1,9 @@
-/* Rocket Launcher 0.2.0 — release checks.
+/* Rocket Launcher 0.2.2 — release checks.
    Every function here only reads the connected project and the bundled rule tables, and returns guidance.
    Nothing is submitted, uploaded, deleted or sent to a store. No API keys. */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, Analyzer, Gen, Flow } from './runtime.mjs';
+import { ROOT, Analyzer, Detect, Gen, Flow } from './runtime.mjs';
 import { rx, RECRUIT } from './release-i18n.mjs';
 
 const readJson = f => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
@@ -89,14 +89,18 @@ export function scanProject(project, A) {
   }
   const xp = P.filter(p => /PrivacyInfo\.xcprivacy$/.test(p));
   X.manifestApis = [...new Set(xp.flatMap(p => text(p).match(/NSPrivacyAccessedAPICategory\w+/g) || []))];
-  /* account deletion */
-  const strHay = JSON.stringify(A.strings || {});
+  /* account deletion — function names, HTTP DELETE, i18n keys, and UI strings */
+  const del = (Detect && Detect.deletion(codeP, F, A.strings)) || { found: false, kinds: [], files: [], confidence: null };
   X.deletion = {
-    code: codeP.filter(p => DELETE_CODE.test(stripComments(text(p)))).slice(0, 5),
-    text: DELETE_TEXT.test(strHay) || codeP.some(p => DELETE_TEXT.test(text(p))),
+    code: (del.files || []).slice(0, 8),
+    text: !!(del.found || (del.kinds || []).some(k => k === 'ui_text' || k === 'i18n')),
+    kinds: del.kinds || [],
+    confidence: del.confidence,
     pages: textP.filter(p => /\.(html?|md)$/i.test(p) && /delet/i.test(p)).slice(0, 5),
     urls: [...urls].filter(u => /delet/i.test(u)).slice(0, 5)
   };
+  const loc = (Detect && Detect.locationFlow(codeP, F, '')) || { sent: false, confidence: null, kinds: [] };
+  X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
   /* privacy policy content */
   const pol = textP.filter(p => POLICY_FILE.test(p.split('/').pop()) && /\.(html?|md)$/i.test(p)), polTxt = pol.map(text).join('\n');
   X.policy = { files: pol.slice(0, 5), location: /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt), ads: /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
@@ -195,20 +199,26 @@ export function requirements(st, L, opts = {}) {
 
 /* ---------- H6: account deletion ---------- */
 function deletionStatus(st) {
-  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [] };
+  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [], kinds: [], confidence: null };
   const generated = !!(st.generated && A.sdk.auth);   // generate_store_materials made account-deletion-<lang>.html
-  const inApp = D.code.length > 0 || D.text;
+  const R = A.review || {}, corr = (st.corrections || {}).account_deletion;
+  let inApp = D.code.length > 0 || D.text || !!R.deletionInApp;
+  let confidence = D.confidence || R.deletionConfidence || (inApp ? 'certain' : null);
+  if (corr && corr.actual === 'present') { inApp = true; confidence = 'certain'; }
+  if (corr && corr.actual === 'missing') { inApp = false; confidence = 'certain'; }
   const web = D.pages.length > 0 || D.urls.length > 0 || generated;
   const missing = [!inApp && 'no in-app "Delete account" path found', !web && 'no web deletion page or URL found'].filter(Boolean);
-  return { inApp, web, generated, D, missing, summary: missing.length ? `Missing: ${missing.join('; ')}.` : 'In-app path and web page found.' };
+  return { inApp, web, generated, D, missing, confidence, corrected: !!(corr && corr.actual),
+    summary: missing.length ? `Missing: ${missing.join('; ')}.` : 'In-app path and web page found.' };
 }
 export function deletionCheck(st, L) {
   const A = st.A, X = st.X, sig = (X && X.signals) || {};
   const accountSignals = !!(sig.USER_ACCOUNT || sig.ACCOUNT_DELETION);
   if (!A.sdk.auth && !accountSignals) return { title: rx(L, 'del.title'), summary: rx(L, 'del.notNeeded'), required: false };
   const d = deletionStatus(st), rows = [];
-  rows.push({ id: 'in_app', severity: d.inApp ? 'ok' : 'block', what: 'Delete account inside the app (Play + App Store 5.1.1(v)).',
-    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : ''].filter(Boolean).join(', ')}` : 'Not found.',
+  const inSev = d.inApp ? 'ok' : (d.confidence === 'uncertain' ? 'check' : 'block');
+  rows.push({ id: 'in_app', severity: inSev, what: 'Delete account inside the app (Play + App Store 5.1.1(v)).',
+    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : '', ...((d.D.kinds || []).map(k => 'pattern:' + k)), d.corrected ? 'overridden by a correction report' : ''].filter(Boolean).join(', ')}` : (d.confidence === 'uncertain' ? 'Not certain — please confirm there is an in-app Delete account path.' : 'Not found.'),
     action: d.inApp ? undefined : 'Add Settings > Delete account. It must delete the account and its data (not just sign out), ask once for confirmation and say how long deletion takes.',
     source: 'https://developer.apple.com/support/offering-account-deletion-in-your-app/' });
   rows.push({ id: 'web', severity: d.web ? 'ok' : (A.platforms.android ? 'block' : 'warn'), what: 'A web page where users can request deletion without the app (Google Play requires it; enter the URL in Play Console > App content > Data safety).',
@@ -236,7 +246,12 @@ export function privacyCheck(st, L) {
   const add = (id, severity, finding, action, source) => rows.push({ id, severity, finding, action: action || undefined, source: source || undefined });
   const perms = (an && an.permissions) || [], usage = (io && io.usage) || {};
   const fine = perms.some(p => /ACCESS_FINE_LOCATION/.test(p)), coarse = perms.some(p => /ACCESS_COARSE_LOCATION/.test(p)), bg = perms.some(p => /ACCESS_BACKGROUND_LOCATION/.test(p));
-  const po = Flow.privacyOpts(A, st.dec), sent = R.locationSent || po.location === 'server';
+  const po = Flow.privacyOpts(A, st.dec);
+  const locCorr = (st.corrections || {}).location_sharing;
+  let sent = !!(R.locationSent || (X && X.location && X.location.sent) || po.location === 'server');
+  let locConf = R.locationConfidence || (X && X.location && X.location.confidence) || null;
+  if (locCorr && locCorr.actual === 'server') { sent = true; locConf = 'certain'; }
+  if (locCorr && locCorr.actual === 'device') { sent = false; locConf = 'certain'; }
   /* location */
   if (A.sdk.location) {
     if (io && !usage.NSLocationWhenInUseUsageDescription && !usage.NSLocationAlwaysAndWhenInUseUsageDescription) add('loc.ios_string', 'block', 'Location is used but Info.plist has no NSLocationWhenInUseUsageDescription.', 'Add a purpose string that says why (for example "Shows fuel stations near you.").', 'https://developer.apple.com/documentation/bundleresources/information-property-list/nslocationwheninuseusagedescription');
@@ -245,7 +260,11 @@ export function privacyCheck(st, L) {
     if (sent && st.dec.location === 'device') add('loc.datasafety_device', 'block', 'The code sends location to a server, but the Data safety answer says it stays on the device.', 'Answer that location is collected (app functionality) in Data safety and App Privacy.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
     if (sent && fine) add('loc.precise', 'warn', 'ACCESS_FINE_LOCATION is declared and location is sent to the server.', 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
     if (X && !X.policy.location) add('loc.policy', 'warn', 'The privacy policy does not mention location.', 'Say what location is used for, whether it is sent and how long it is kept.');
-    if (!X || (X && !rows.some(r => r.id.startsWith('loc.')))) add('loc.ok', 'ok', `Location: ${sent ? 'sent to the server' : 'used on the device'}; permission texts and declarations line up.`);
+    if (sent && locConf === 'uncertain' && !locCorr) {
+      add('loc.confirm', 'check', 'Location looks like it may leave the device (coordinates appear near a network call), but this is not certain.', 'Confirm whether coordinates are sent off the device. If they are, declare location as collected in Data safety and App Privacy; if they stay on the device, confirm that.');
+    } else if (!rows.some(r => r.id.startsWith('loc.'))) {
+      add('loc.ok', 'ok', `Location: ${sent ? 'sent to the server' : 'used on the device'}${locCorr ? ' (from a correction report)' : locConf === 'certain' ? '' : ' (please confirm)'}; permission texts and declarations line up.`);
+    }
   }
   /* tracking / ATT / ads */
   if (io) {
@@ -619,11 +638,72 @@ export function releaseChecks(st, L) {
   return { summary: rx(L, 'rc.note', c), counts: c, rules_verified_on: REQ.verified_on,
     must_fix: all.filter(r => r.severity === 'block').map(r => ({ id: r.id, finding: r.finding, action: r.action, source: r.source })),
     to_check: all.filter(r => r.severity === 'warn').map(r => ({ id: r.id, finding: r.finding, action: r.action })),
+    needs_confirmation: all.filter(r => r.severity === 'check').map(r => ({ id: r.id, finding: r.finding, action: r.action })),
     rescan_needed: !st.X || undefined };
 }
 export function guideStep(st, L) {
   const r = releaseChecks(st, L);
-  return { id: 'release-checks', title: rx(L, 'rc.step.t'), detail: rx(L, 'rc.step.d'), status: r.counts.block ? 'todo' : 'done', counts: r.counts,
+  return { id: 'release-checks', title: rx(L, 'rc.step.t'), detail: rx(L, 'rc.step.d'), status: r.counts.block || r.counts.check ? 'todo' : 'done', counts: r.counts,
     items: r.must_fix.map(x => `${x.finding}${x.action ? ' → ' + x.action : ''}`),
     tools: ['rocketlauncher_check_requirements', 'rocketlauncher_privacy_check', 'rocketlauncher_account_deletion_check', 'rocketlauncher_reviewer_notes'] };
+}
+
+
+/* ---------- correction reports (0.2.2) ---------- */
+const CHECK_ACTUAL = {
+  account_deletion: ['present', 'missing'],
+  location_sharing: ['server', 'device'],
+  auth: ['present', 'missing'],
+  cloud_db: ['present', 'missing']
+};
+export const CORRECTION_CHECKS = CHECK_ACTUAL;
+
+export function inferredVerdict(st, check_id) {
+  const A = st.A || {}, R = A.review || {}, d = deletionStatus(st);
+  if (check_id === 'account_deletion') return d.inApp ? 'present' : 'missing';
+  if (check_id === 'location_sharing') {
+    const sent = !!(R.locationSent || (st.X && st.X.location && st.X.location.sent) || (st.dec || {}).location === 'server');
+    return sent ? 'server' : 'device';
+  }
+  if (check_id === 'auth') return A.sdk && A.sdk.auth ? 'present' : 'missing';
+  if (check_id === 'cloud_db') return A.sdk && A.sdk.cloudDb ? 'present' : 'missing';
+  return 'unknown';
+}
+
+export function applyCorrections(st) {
+  const A = st.A; if (!A) return st;
+  A.review = A.review || {};
+  for (const [id, c] of Object.entries(st.corrections || {})) {
+    if (!c || !CHECK_ACTUAL[id] || !CHECK_ACTUAL[id].includes(c.actual)) continue;
+    if (id === 'account_deletion') { A.review.deletionInApp = c.actual === 'present'; A.review.deletionConfidence = 'certain'; A.review.deletionOverridden = true; }
+    if (id === 'location_sharing') {
+      A.review.locationSent = c.actual === 'server'; A.review.locationConfidence = 'certain'; A.review.locationOverridden = true;
+      st.dec = st.dec || {}; st.dec.location = c.actual;
+    }
+    if (id === 'auth' && A.sdk) A.sdk.auth = c.actual === 'present';
+    if (id === 'cloud_db' && A.sdk) A.sdk.cloudDb = c.actual === 'present';
+  }
+  if (Analyzer.refreshIssues) Analyzer.refreshIssues(A);
+  return st;
+}
+
+export function patternKindsOf(st, check_id) {
+  const R = (st.A && st.A.review) || {}, X = st.X || {};
+  if (check_id === 'account_deletion') return [...new Set([...(R.deletionKinds || []), ...((X.deletion && X.deletion.kinds) || [])])];
+  if (check_id === 'location_sharing') return [...new Set([...(R.locationKinds || []), ...((X.location && X.location.kinds) || [])])];
+  return [];
+}
+
+export function langKindOf(st) {
+  const files = Object.keys((st.projectFiles) || (st.A && st.A._files) || {});
+  const code = ((st.X && st.X.deletion && st.X.deletion.code) || []).join(' ') + ' ' + files.join(' ');
+  if (/\.dart(\b|$)/i.test(code)) return 'dart';
+  if (/\.(kt|java)(\b|$)/i.test(code)) return 'kotlin';
+  if (/\.(swift|m|mm)(\b|$)/i.test(code)) return 'swift';
+  if (/\.(tsx|ts)(\b|$)/i.test(code)) return 'ts';
+  if (/\.(jsx|js|mjs)(\b|$)/i.test(code)) return 'js';
+  const fw = (st.A && st.A.framework) || '';
+  if (fw === 'flutter') return 'dart';
+  if (fw === 'react-native' || fw === 'capacitor' || fw === 'cordova' || fw === 'ionic') return 'js';
+  return 'unknown';
 }

@@ -1,6 +1,6 @@
 window.RL_I18N = window.RL_I18N || {};
 window.RL_I18N.en = {
-  copied: 'Copied', copy: 'Copy', 'sev.block': 'Must fix', 'sev.warn': 'Recommended', 'sev.tip': 'Good to know', bothStores: 'Both stores',
+  copied: 'Copied', copy: 'Copy', 'sev.block': 'Must fix', 'sev.warn': 'Recommended',  'sev.check': 'Needs confirmation', 'sev.tip': 'Good to know', bothStores: 'Both stores',
   'ad.label': 'Ad space · coming later', 'ad.note': 'One banner may appear here later. It will never cover buttons or content.',
   'step.analyze': 'Analyze', 'step.decide': 'Decide', 'step.assets': 'Assets', 'step.submit': 'Submit', 'step.review': 'Review', 'step.done': 'Live',
   home: 'Home', progress: 'Progress', language: 'Language', 'foot.tag': 'A free helper that takes your app to launch — you just decide.', feedback: 'Send feedback', 'foot.privacy': 'Privacy policy',
@@ -39,6 +39,8 @@ window.RL_I18N.en = {
   'iss.adsDeclare.t': 'App contains ads', 'iss.adsDeclare.w': 'Declare “Contains ads” and “Advertising ID” in Play Console and in Data safety.', 'iss.adsDeclare.f': 'Draft ads and advertising ID answers',
   'iss.closedTest.t': 'Personal accounts must run a closed test first', 'iss.closedTest.w': 'Personal accounts created after Nov 2023 need {testers}+ testers for {days} days before applying for production.',
   'iss.accountDeletion.t': 'Account deletion is required', 'iss.accountDeletion.f': 'Generate a deletion help page and Play form answers',
+  'iss.accountDeletionUnsure.t': 'Account deletion needs confirmation', 'iss.accountDeletionUnsure.f': 'Confirm the in-app Delete account path, or generate a deletion help page',
+  'iss.locationConfirm.t': 'Confirm whether location leaves the device', 'iss.locationConfirm.f': 'Confirm whether location is sent off the device',
   'iss.privacyPolicy.t': 'No privacy policy', 'iss.privacyPolicy.w': 'Both stores require a privacy policy URL.', 'iss.privacyPolicy.f': 'Write a policy matching what the app really uses, in each store language',
   'iss.emptyUsage.t': 'Permission reason is empty ({key})', 'iss.emptyUsage.w': 'iOS rejects apps whose permission prompt has no reason (Guideline 5.1.1).', 'iss.emptyUsage.f': 'Patch Info.plist with a clear reason',
   'iss.missingUsage.t': 'Permission reason is missing ({key})', 'iss.missingUsage.w': 'Without it the app crashes and is rejected.', 'iss.missingUsage.f': 'Patch Info.plist with a reason',
@@ -162,6 +164,8 @@ window.RL_I18N.en = {
   'iss.demoAccount.t': 'Tell reviewers how to get in',
   'iss.demoAccount.w': 'If the app works without login, say so and set demoAccountRequired = false — reviewers can use Sign in with Apple with their own account. If login is required, give a working demo account.',
   'iss.accountDeletion.w': 'Apps with accounts must offer deletion in the app AND on a web page, and say where to find it in the review notes. Required by both stores.',
+  'iss.accountDeletionUnsure.w': 'Sign-in was found, but the in-app deletion path is not certain. Confirm that users can delete their account in the app and on a web page.',
+  'iss.locationConfirm.w': 'Location is used and the app talks to a server, but it is not certain that coordinates are sent. If they are, Data safety must declare location as collected. Confirm before you submit.',
   'iss.iosSdk.w': 'App Store uploads must be built with the current iOS SDK (iOS {sdk} SDK, Xcode 26). Builds with older SDKs are rejected.',
   'opt.npa': 'No tracking + non-personalized ads (npa=1)',
   'opt.npa.d': 'No ATT prompt or text, NSPrivacyTracking=false with no tracking domains, App Privacy “No, we do not track” (recommended)',

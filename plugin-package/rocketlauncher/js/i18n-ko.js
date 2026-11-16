@@ -1,6 +1,6 @@
 window.RL_I18N = window.RL_I18N || {};
 window.RL_I18N.ko = {
-  copied: '복사했어요', copy: '복사', 'sev.block': '꼭 고칠 것', 'sev.warn': '확인 권장', 'sev.tip': '참고', bothStores: '두 스토어',
+  copied: '복사했어요', copy: '복사', 'sev.block': '꼭 고칠 것', 'sev.warn': '확인 권장',  'sev.check': '확인 필요', 'sev.tip': '참고', bothStores: '두 스토어',
   'ad.label': '광고 영역 · 준비 중', 'ad.note': '이 자리는 나중에 배너 하나만 들어가며, 버튼이나 내용을 가리지 않아요.',
   'step.analyze': '분석', 'step.decide': '결정', 'step.assets': '자료', 'step.submit': '제출', 'step.review': '심사', 'step.done': '출시',
   home: '처음으로', progress: '진행 단계', language: '언어', 'foot.tag': '앱 출시 완료까지, 결정만 하면 되는 무료 도우미', feedback: '피드백 보내기', 'foot.privacy': '개인정보처리방침',
@@ -39,6 +39,8 @@ window.RL_I18N.ko = {
   'iss.adsDeclare.t': '광고가 들어 있어요', 'iss.adsDeclare.w': 'Play Console에 “광고 포함”과 “광고 ID 사용”을 신고하고, 데이터 보안에도 적어야 해요.', 'iss.adsDeclare.f': '광고·광고 ID 신고서 답안 작성',
   'iss.closedTest.t': '개인 개발자 계정은 비공개 테스트가 먼저예요', 'iss.closedTest.w': '2023년 11월 이후 만든 개인 계정은 테스터 {testers}명 이상이 {days}일 동안 테스트해야 프로덕션 출시를 신청할 수 있어요.',
   'iss.accountDeletion.t': '계정 삭제 방법이 필요해요', 'iss.accountDeletion.f': '계정 삭제 안내 페이지를 만들고 Play 양식 답안 준비',
+  'iss.accountDeletionUnsure.t': '계정 삭제 여부를 확인해 주세요', 'iss.accountDeletionUnsure.f': '앱 안 계정 삭제 경로를 확인하거나 안내 페이지를 만들기',
+  'iss.locationConfirm.t': '위치가 기기를 나가는지 확인해 주세요', 'iss.locationConfirm.f': '위치가 서버로 보내지는지 확인',
   'iss.privacyPolicy.t': '개인정보처리방침이 없어요', 'iss.privacyPolicy.w': '두 스토어 모두 개인정보처리방침 주소가 꼭 있어야 해요.', 'iss.privacyPolicy.f': '앱이 실제로 쓰는 정보에 맞춘 방침을 스토어 언어별로 작성',
   'iss.emptyUsage.t': '권한 설명 문구가 비어 있어요 ({key})', 'iss.emptyUsage.w': 'iOS는 권한을 물을 때 보여 줄 이유가 비어 있으면 거절해요 (가이드라인 5.1.1).', 'iss.emptyUsage.f': 'Info.plist에 이유 문구를 채우는 수정안',
   'iss.missingUsage.t': '권한 설명 문구가 없어요 ({key})', 'iss.missingUsage.w': '이 문구가 없으면 앱이 바로 꺼지고 심사에서 거절돼요.', 'iss.missingUsage.f': 'Info.plist에 이유 문구를 넣는 수정안',
@@ -162,6 +164,8 @@ window.RL_I18N.ko = {
   'iss.demoAccount.t': '심사자가 들어가는 방법을 알려 주세요',
   'iss.demoAccount.w': '로그인 없이 쓸 수 있으면 그렇게 쓰고 demoAccountRequired = false 로 두세요. 심사자는 자기 계정으로 Apple 로그인을 쓸 수 있어요. 로그인이 필수면 작동하는 데모 계정을 주세요.',
   'iss.accountDeletion.w': '계정이 있는 앱은 앱 안과 웹 페이지 두 곳에서 삭제할 수 있어야 하고, 위치를 심사 메모에 적어야 해요. 두 스토어 모두 필수예요.',
+  'iss.accountDeletionUnsure.w': '로그인은 찾았지만 앱 안 계정 삭제 경로가 확실하지 않아요. 앱과 웹에서 계정을 삭제할 수 있는지 확인해 주세요.',
+  'iss.locationConfirm.w': '위치를 쓰고 서버와 통신하지만, 좌표가 서버로 가는지는 확실하지 않아요. 보내진다면 Data safety에 위치를 수집한다고 적어야 해요. 제출 전에 확인해 주세요.',
   'iss.iosSdk.w': 'App Store 업로드는 최신 iOS SDK(iOS {sdk} SDK, Xcode 26)로 빌드해야 해요. 이전 SDK 빌드는 거부돼요.',
   'opt.npa': '추적 안 함 + 비맞춤 광고(npa=1)',
   'opt.npa.d': 'ATT 팝업·문구 없음, NSPrivacyTracking=false·추적 도메인 없음, App Privacy "추적 안 함" (권장)',

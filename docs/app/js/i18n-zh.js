@@ -1,6 +1,6 @@
 window.RL_I18N = window.RL_I18N || {};
 window.RL_I18N.zh = {
-  copied: '已复制', copy: '复制', 'sev.block': '必须修改', 'sev.warn': '建议检查', 'sev.tip': '值得了解', bothStores: '两个商店',
+  copied: '已复制', copy: '复制', 'sev.block': '必须修改', 'sev.warn': '建议检查',  'sev.check': '需要确认', 'sev.tip': '值得了解', bothStores: '两个商店',
   'ad.label': '广告位 · 即将推出', 'ad.note': '以后这里可能会显示一个横幅广告，绝不会遮挡按钮或内容。',
   'step.analyze': '分析', 'step.decide': '决定', 'step.assets': '素材', 'step.submit': '提交', 'step.review': '审核', 'step.done': '上架',
   home: '首页', progress: '进度', language: '语言', 'foot.tag': '免费的上架助手，把你的应用一路送到上架——你只需做决定。', feedback: '发送反馈', 'foot.privacy': '隐私政策',
@@ -39,6 +39,8 @@ window.RL_I18N.zh = {
   'iss.adsDeclare.t': '应用包含广告', 'iss.adsDeclare.w': '请在 Play Console 和数据安全中声明“包含广告”和“广告 ID”。', 'iss.adsDeclare.f': '起草广告和广告 ID 的答案',
   'iss.closedTest.t': '个人账号必须先进行封闭测试', 'iss.closedTest.w': '2023 年 11 月之后创建的个人账号，需要 {testers} 名以上测试者测试 {days} 天，才能申请正式版。',
   'iss.accountDeletion.t': '必须提供账号删除', 'iss.accountDeletion.f': '生成删除说明页面和 Play 表单答案',
+  'iss.accountDeletionUnsure.t': '请确认账号删除功能', 'iss.accountDeletionUnsure.f': '确认应用内的删除账号路径，或生成说明页',
+  'iss.locationConfirm.t': '请确认位置是否离开设备', 'iss.locationConfirm.f': '确认位置是否被发送到设备外',
   'iss.privacyPolicy.t': '没有隐私政策', 'iss.privacyPolicy.w': '两个商店都要求提供隐私政策网址。', 'iss.privacyPolicy.f': '按应用实际使用的信息，用每种商店语言撰写政策',
   'iss.emptyUsage.t': '权限说明为空（{key}）', 'iss.emptyUsage.w': '权限提示没有说明原因的应用会被 iOS 拒绝（准则 5.1.1）。', 'iss.emptyUsage.f': '在 Info.plist 中补上清楚的原因',
   'iss.missingUsage.t': '缺少权限说明（{key}）', 'iss.missingUsage.w': '缺少它应用会崩溃并被拒。', 'iss.missingUsage.f': '在 Info.plist 中补上原因',
@@ -162,6 +164,8 @@ window.RL_I18N.zh = {
   'iss.demoAccount.t': '告诉审核人员如何进入',
   'iss.demoAccount.w': '如果无需登录即可使用，请说明并设置 demoAccountRequired = false——审核人员可用自己的账号使用“通过 Apple 登录”。如果必须登录，请提供可用的演示账号。',
   'iss.accountDeletion.w': '有账号的应用必须在应用内和网页上都能删除账号，并在审核备注中说明位置。两个商店都要求。',
+  'iss.accountDeletionUnsure.w': '检测到登录，但应用内删除账号路径尚不明确。请确认用户可在应用内和网页上删除账号。',
+  'iss.locationConfirm.w': '应用使用位置并与服务器通信，但无法确定坐标是否被发送。若已发送，Data safety 必须声明收集了位置。提交前请确认。',
   'iss.iosSdk.w': '上传到 App Store 必须使用当前 iOS SDK（iOS {sdk} SDK，Xcode 26）构建。用旧 SDK 构建会被拒绝。',
   'opt.npa': '不跟踪 + 非个性化广告（npa=1）',
   'opt.npa.d': '无 ATT 弹窗或说明，NSPrivacyTracking=false 且无跟踪域名，App Privacy“不跟踪”（推荐）',
