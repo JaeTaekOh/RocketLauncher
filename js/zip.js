@@ -75,5 +75,5 @@
     end.setUint32(12, csize, true); end.setUint32(16, offset, true);
     return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
   }
-  window.AAPZip = { readZip, writeZip, crc32 };
+  window.RLZip = { readZip, writeZip, crc32 };
 })();

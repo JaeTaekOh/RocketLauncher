@@ -1,5 +1,5 @@
-window.AAP_I18N = window.AAP_I18N || {};
-window.AAP_I18N.th = {
+window.RL_I18N = window.RL_I18N || {};
+window.RL_I18N.th = {
   copied: 'คัดลอกแล้ว', copy: 'คัดลอก', 'sev.block': 'ต้องแก้', 'sev.warn': 'ควรตรวจสอบ', 'sev.tip': 'ข้อมูลเพิ่มเติม', bothStores: 'ทั้งสองสโตร์',
   'ad.label': 'พื้นที่โฆษณา · เร็ว ๆ นี้', 'ad.note': 'ในอนาคตอาจมีแบนเนอร์หนึ่งอันตรงนี้ และจะไม่บังปุ่มหรือเนื้อหา',
   'step.analyze': 'วิเคราะห์', 'step.decide': 'ตัดสินใจ', 'step.assets': 'ไฟล์', 'step.submit': 'ส่ง', 'step.review': 'ตรวจ', 'step.done': 'เปิดตัว',

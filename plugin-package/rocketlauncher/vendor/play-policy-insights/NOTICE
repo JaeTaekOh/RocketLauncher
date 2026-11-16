@@ -1,0 +1,14 @@
+Play Policy Insights (agent skill)
+Copyright 2026 The Android Open Source Project (Google LLC)
+
+This folder is an unmodified copy of play/play-policy-insights from
+https://github.com/android/skills (commit c72942584fff970dac86ced78b367fce0c441e52,
+fetched 2026-11-17), licensed under the Apache License, Version 2.0 (see LICENSE.txt).
+
+Rocket Launcher (by Prezentree) bundles it so the Google Play policy audit works
+offline and for free. Rocket Launcher reads resources/scanner_config.json and
+resources/policies.json for its own quick scan and points AI agents to SKILL.md
+for the full audit. No files in this folder were changed.
+
+Google says AI can make mistakes: the audit is a checklist to review, not a
+Play review decision.

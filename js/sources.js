@@ -10,7 +10,10 @@
     /(^|\/)pubspec\.yaml$/i, /(^|\/)package\.json$/i, /(^|\/)app\.json$/i, /(^|\/)app\.config\.(js|ts)$/i, /(^|\/)capacitor\.config\.(json|ts|js)$/i,
     /(^|\/)eas\.json$/i, /(^|\/)README(\.[a-z]+)?$/i, /(^|\/)LICENSE(\.[a-z]+)?$/i, /(^|\/)privacy[^/]*\.(md|html)$/i,
     /fastlane\/metadata\/.*\.txt$/i, /(^|\/)fastlane\/(Appfile|Deliverfile)$/i, /(^|\/)variables\.gradle$/i, /AppIcon\.appiconset\/Contents\.json$/i, /(^|\/)lib\/l10n\/.*\.arb$/i,
-    /(^|\/)(support|contact)[^/]*\.(md|html?)$/i, /(^|\/)(support|contact)\/index\.(md|html?)$/i
+    /(^|\/)(support|contact)[^/]*\.(md|html?)$/i, /(^|\/)(support|contact)\/index\.(md|html?)$/i,
+    /* 0.2.0: release checks (Xcode version hints, CI images, AGP/Gradle versions, deletion / tester pages) */
+    /(^|\/)\.xcode-version$/i, /(^|\/)\.github\/workflows\/[^/]+\.ya?ml$/i, /(^|\/)codemagic\.ya?ml$/i, /(^|\/)gradle-wrapper\.properties$/i,
+    /(^|\/)[^/]*(delete|deletion|tester|testing|beta|join|opt-?in)[^/]*\.(html?|md)$/i, /(^|\/)(delete|deletion|delete-account|testers?|beta|join)\/index\.html?$/i
   ];
   /* App source code: read a limited number of files so review checks can see runtime behavior
      (ad request settings, ATT prompt, secret storage, login gate, user-supplied API keys). */
@@ -25,6 +28,39 @@
   ];
   const SKIP_RE = /(^|\/)(node_modules|\.git|build|\.gradle|Pods|DerivedData|\.dart_tool|\.idea|intermediates|generated)\//;
   const MAX_TEXT = 400 * 1024, MAX_IMG = 4 * 1024 * 1024, MAX_FILES = 140;
+  /* 0.2.0: native libraries (.so) for the Google Play 16 KB page-size check. Only ELF headers are read; nothing is uploaded. */
+  const SO_RE = /\.so$/i, NATIVE_SRC_RE = /(^|\/)(CMakeLists\.txt|Android\.mk|Application\.mk)$|(^|\/)src\/main\/(cpp|jni)\//i;
+  const NOTABLE_RE = /(^|\/)(google-services\.json|GoogleService-Info\.plist|key\.properties|assetlinks\.json|apple-app-site-association|app-ads\.txt)$|\.(jks|keystore|p12|p8|mobileprovision)$/i;
+  const MAX_SO = 12, MAX_SO_SIZE = 40 * 1024 * 1024;
+  /* Smallest LOAD segment alignment of an ELF file (bytes), its class (32/64) and machine; null if not ELF. */
+  function elfAlign(u8) {
+    if (!u8 || u8.length < 64 || u8[0] !== 0x7f || u8[1] !== 0x45 || u8[2] !== 0x4c || u8[3] !== 0x46) return null;
+    const is64 = u8[4] === 2, le = u8[5] === 1, dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    const r16 = o => dv.getUint16(o, le), r32 = o => dv.getUint32(o, le), r64 = o => Number(dv.getBigUint64(o, le));
+    const phoff = is64 ? r64(0x20) : r32(0x1c), phent = r16(is64 ? 0x36 : 0x2a), phnum = r16(is64 ? 0x38 : 0x2c);
+    let min = null;
+    for (let i = 0; i < phnum && i < 256; i++) {
+      const o = phoff + i * phent; if (o + phent > u8.length) break;
+      if (r32(o) !== 1) continue;                               // PT_LOAD
+      const al = is64 ? r64(o + 0x30) : r32(o + 0x1c);
+      min = min == null ? al : Math.min(min, al);
+    }
+    return { bits: is64 ? 64 : 32, machine: r16(0x12), align: min };
+  }
+  async function scanNatives(entries) {
+    const libs = entries.filter(e => SO_RE.test(e.rel) && !SKIP_RE.test(e.rel));
+    const out = { libs: [], unread: 0, nativeSrc: entries.some(e => NATIVE_SRC_RE.test(e.rel) && !SKIP_RE.test(e.rel)),
+      /* paths only (never contents): config and key files that change when an app moves to another account */
+      notable: entries.filter(e => NOTABLE_RE.test(e.rel) && !SKIP_RE.test(e.rel)).map(e => e.rel).slice(0, 40) };
+    for (const e of libs.slice(0, MAX_SO)) {
+      const abi = (e.rel.match(/(arm64-v8a|armeabi-v7a|armeabi|x86_64|x86)\//) || [])[1] || null;
+      if (e.size > MAX_SO_SIZE) { out.unread++; out.libs.push({ path: e.rel, abi, align: null }); continue; }
+      try { const h = elfAlign(await e.read()); out.libs.push({ path: e.rel, abi, bits: h && h.bits, align: h && h.align }); }
+      catch (err) { out.unread++; out.libs.push({ path: e.rel, abi, align: null }); }
+    }
+    out.unread += Math.max(0, libs.length - MAX_SO); out.total = libs.length;
+    return out;
+  }
 
   function wanted(path) {
     if (SKIP_RE.test(path)) return null;
@@ -49,6 +85,7 @@
   async function fromEntries(entries, name, source, onStep) {
     // entries: [{path, size, read: async()=>Uint8Array}]
     const strip = stripRoot(entries.map(e => e.path));
+    const natives = await scanNatives(entries.map(e => ({ ...e, rel: strip(e.path) })));
     let picked = entries.map(e => ({ ...e, rel: strip(e.path) })).map(e => ({ ...e, kind: wanted(e.rel) })).filter(e => e.kind);
     // 런처 아이콘은 가장 큰 밀도만
     const launchers = picked.filter(e => /mipmap-[^/]+\/ic_launcher(_round)?\.(png|webp)$/i.test(e.rel)).sort((a, b) => rank(b.rel) - rank(a.rel));
@@ -66,18 +103,18 @@
         files[e.rel] = e.kind === 'text' ? { text: new TextDecoder().decode(u8) } : e.kind === 'code' ? { text: new TextDecoder().decode(u8), code: true } : { dataUrl: await u8ToDataUrl(u8, e.rel) };
       } catch (err) { console.warn('skip', e.rel, err); }
     }
-    return { name, source, files, fileCount: entries.length };
+    return { name, source, files, fileCount: entries.length, natives };
   }
 
   function sample() {
-    const S = window.AAP_SAMPLE; const files = {};
+    const S = window.RL_SAMPLE; const files = {};
     for (const [p, v] of Object.entries(S.files)) files[p] = v.text != null ? { text: v.text } : { dataUrl: 'data:' + mime(p) + ';base64,' + v.b64 };
     return Promise.resolve({ name: S.name, source: { kind: 'sample' }, files, fileCount: Object.keys(files).length });
   }
 
   async function fromZipFile(file, onStep) {
     const buf = await file.arrayBuffer();
-    const entries = window.AAPZip.readZip(buf);
+    const entries = window.RLZip.readZip(buf);
     return fromEntries(entries, file.name.replace(/\.zip$/i, ''), { kind: 'zip', name: file.name }, onStep);
   }
   async function fromFileList(list, onStep) {
@@ -128,5 +165,5 @@
     res.meta = { description: meta.description || '', homepage: meta.homepage || '', owner: meta.owner && meta.owner.login, license: meta.license && meta.license.spdx_id, stars: meta.stargazers_count };
     return res;
   }
-  window.AAPSources = { sample, fromZipFile, fromFileList, fromGitHub, parseRepo };
+  window.RLSources = { sample, fromZipFile, fromFileList, fromGitHub, parseRepo, elfAlign };
 })();

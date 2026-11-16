@@ -13,6 +13,7 @@ Rocket Launcher is an MCP server (plus a skill) for people who built an Android 
 - make store graphics: 512×512 icon, 1024×500 feature graphic, 1080×1920 screenshots
 - guide Play Console and App Store Connect step by step, with the value for every field
 - turn a rejection message into a fix plan and a reply to the reviewer
+- run release checks before you submit: store deadlines with official sources, privacy consistency, Google Play policy scan, account deletion, closed-test tracking, version numbers, country rules
 
 **Nothing is submitted automatically.** The final step unlocks only after you approve, and you press the store's submit button yourself.
 
@@ -39,6 +40,44 @@ Rocket Launcher is for apps at every stage, per store: **not submitted yet** (fi
 | `rocketlauncher_report_review` | submitted / rejected / resubmitted / approved |
 | `rocketlauncher_status` | Where am I, what's next, and the review lessons learned on this computer |
 | `rocketlauncher_forget_lesson` | Remove one learned review lesson (only when the user asks) |
+| `rocketlauncher_check_requirements` | Store technical requirements and deadlines (target API, 16 KB pages, Xcode / iOS SDK, required-reason APIs, age-rating questions…), each with its official source and verified date |
+| `rocketlauncher_privacy_check` | Data safety / App Privacy / PrivacyInfo.xcprivacy / permission texts / privacy policy consistency, plus drafts |
+| `rocketlauncher_play_policy_audit` | Quick Google Play policy scan with Google's open-source Play Policy Insights rules, plus the offline full audit |
+| `rocketlauncher_reviewer_notes` | Notes for App Review and Play App access (placeholders, never passwords) |
+| `rocketlauncher_account_deletion_check` | In-app and web account deletion paths |
+| `rocketlauncher_closed_test` | 12 testers × 14 days tracker, production-access draft, tester invitations, tester page check |
+| `rocketlauncher_version_sync` | Version / build numbers across platforms and related apps, force-update safety |
+| `rocketlauncher_country_check` | Korea, EU and Thailand rules that apply to the app |
+| `rocketlauncher_move_app_plan` | Moving an app to another developer account: transfer or new registration, shown side by side |
+| `rocketlauncher_remove_app_guide` | How to unpublish or delete an app on each store (guide only) |
+
+## Set up
+
+Node.js 20+. The server runs with `npx -y rocket-launcher-mcp` (stdio).
+
+**Claude Code**
+```bash
+claude mcp add rocket-launcher -- npx -y rocket-launcher-mcp
+```
+
+**Claude Desktop** (`claude_desktop_config.json`) and **Cursor** (`~/.cursor/mcp.json` or `.cursor/mcp.json`)
+```json
+{
+  "mcpServers": {
+    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
+  }
+}
+```
+
+**Gemini CLI** (`~/.gemini/settings.json`, or `.gemini/settings.json` in a project)
+```json
+{
+  "mcpServers": {
+    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
+  }
+}
+```
+Then run `/mcp` in Gemini CLI to see the Rocket Launcher tools.
 
 ## Try it
 
@@ -48,10 +87,15 @@ Ask your assistant: *"Use Rocket Launcher with the sample app."* or *"My app is 
 
 - Node.js 20 or later. The server runs on the computer of the AI client (stdio).
 - App files are read only on that computer. Public GitHub repos are read through the GitHub public API. Apart from the optional anonymized review-lesson record below, nothing is uploaded. No telemetry, no accounts.
+- Store rules are in `data/store-requirements.json` (official source and verified date for every rule). The only network calls in the release checks are an optional public App Store lookup (`rocketlauncher_version_sync` with `check_store`) and an optional tester page you ask it to open.
 - Progress is saved in `~/.rocketlauncher` (change it with `ROCKETLAUNCHER_HOME`).
 - Review results you report are learned locally: an unknown rejection becomes a generalized lesson in `~/.rocketlauncher/lessons.json` (no original store message, app names or emails) and is reused as warnings, pre-submit checks and review-note lines for your later apps. When a lessons API is configured (`lessonsApiUrl` or `ROCKETLAUNCHER_LESSONS_API`), an anonymized record (store, guideline / ITMS / Play policy codes, a fixed advice id; never the store message, app name or ids) is sent there, and other users' combined lessons are shown as "From other reviews" reminders. The demo never sends; if the API is unset or unreachable, the plugin works normally on this computer only.
 - Graphics need the optional `@napi-rs/canvas` package. Run `npm install` in `mcp/` to turn graphics on. Without it, everything else still works.
 
 - Languages: tool texts come in English (default), Korean, Thai, Simplified Chinese and Hindi (`lang`: `en`, `ko`, `th`, `zh`, `hi`); without `lang` they are in English. Store listings default to English.
+
+## Third-party notice
+
+`vendor/play-policy-insights/` is Google's Play Policy Insights skill from https://github.com/android/skills (Apache License 2.0, © Google LLC / The Android Open Source Project), included unmodified with its `LICENSE.txt` and a `NOTICE`. Rocket Launcher reads its rule files for the quick scan and points to its `SKILL.md` for the full offline audit.
 
 See PRIVACY.md. Source: https://github.com/JaeTaekOh/rocketlauncher · MIT License (see LICENSE). © Prezentree

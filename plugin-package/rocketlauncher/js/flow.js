@@ -2,7 +2,7 @@
    상태(S)에 묶이지 않은 순수 함수만 둔다: 결정 목록, 추천값, 고른 자료, 제출 안내, 묶음 파일. */
 (function () {
   'use strict';
-  const G = window.AAPGen;
+  const G = window.RLGen;
   /* Store-listing languages for the user's app: all five are available; English is the default and the recommendation. */
   const LANGS = ['en', 'ko', 'th', 'zh', 'hi'];
   const DEFAULT_LANGS = ['en'];
@@ -97,7 +97,7 @@
   /* Tracking on? Only on a fully aligned tracking path: already aligned in the app, or the user chose "track" for a mixed state. */
   function trackingOn(A, dec) {
     if (!A.ios) return false;
-    const st = window.AAPAnalyzer && window.AAPAnalyzer.tracking ? window.AAPAnalyzer.tracking(A).state : 'none';
+    const st = window.RLAnalyzer && window.RLAnalyzer.tracking ? window.RLAnalyzer.tracking(A).state : 'none';
     return st === 'tracking' || (st === 'mixed' && (dec || {})['fix:trackingMismatch'] === 'track');
   }
   function locationAnswer(A, dec) { const d = dec || {}; return !A.sdk.location ? null : d.location || (A.review && A.review.locationSent ? 'server' : 'device'); }
@@ -227,5 +227,5 @@
   }
   const slugOf = A => (A.pkg || A.appName).replace(/[^\w.-]+/g, '-');
 
-  window.AAPFlow = { issuesFor, STAGES, storesOf, stageHints, stageRec, stageOf, stagesOf, hasListing, firstSubmit, KEEPABLE, WHATS_NEW, LANGS, DEFAULT_LANGS, issueKey, decisions, recValue, defaultStores, stores, chosen, guide, ratingTxt, appliedFixes, patchText, textFiles, slugOf, trackingOn, locationAnswer, loginRequired, privacyOpts, reviewNotes };
+  window.RLFlow = { issuesFor, STAGES, storesOf, stageHints, stageRec, stageOf, stagesOf, hasListing, firstSubmit, KEEPABLE, WHATS_NEW, LANGS, DEFAULT_LANGS, issueKey, decisions, recValue, defaultStores, stores, chosen, guide, ratingTxt, appliedFixes, patchText, textFiles, slugOf, trackingOn, locationAnswer, loginRequired, privacyOpts, reviewNotes };
 })();

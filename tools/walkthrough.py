@@ -55,7 +55,7 @@ async def run(p, w, h, tag, full):
     await pg.click('#resubmit'); await pg.click('.modal [data-ok]'); await pg.wait_for_selector('#gotOk'); await pg.click('#gotOk')
     await pg.wait_for_selector('.done'); await pg.wait_for_timeout(900)
     await shot('10-launched')
-    st = await pg.evaluate('JSON.stringify(AAPApp.state().review)')
+    st = await pg.evaluate('JSON.stringify(RLApp.state().review)')
     await b.close(); return zp, st
 async def main():
     async with async_playwright() as p:

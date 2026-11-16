@@ -23,7 +23,7 @@ check(!validate([1, 2]) && !validate('x') && !validate(null), 'non-objects rejec
 
 /* Same verdicts as the client validator in js/lessons.js */
 const c = { window: {} }; vm.createContext(c); vm.runInContext(fs.readFileSync(path.join(HERE, '..', '..', '..', 'js', 'lessons.js'), 'utf8'), c);
-const CL = c.window.AAPLessons;
+const CL = c.window.RLLessons;
 const cases = [{ store: 'apple', codes: ['5.1.1(v)'], advice_id: '5.1.1' }, { store: 'apple', codes: ['ITMS-90683'], advice_id: 'ITMS-90683' }, { store: 'play', codes: ['play-target-api'], advice_id: 'play-target-api' }, { store: 'apple', codes: ['x'], advice_id: '2.1' }, { store: 'apple', codes: [], advice_id: 'builtin-apple-511' }, { store: 'play', codes: [], advice_id: 'builtin-apple-511' }, { event: 'passed', store: 'apple', codes: ['4.8'], advice_id: '4.8' }, { event: 'oops', store: 'apple', codes: [], advice_id: '4.8' }];
 check(cases.every(p => !!validate(p) === !!CL.validShare(p)), 'worker and client validators agree', cases.map(p => [!!validate(p), !!CL.validShare(p)]));
 

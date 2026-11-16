@@ -1,5 +1,5 @@
 /* Rocket Launcher — settings in one place */
-window.AAP_CONFIG = {
+window.RL_CONFIG = {
   /* Feedback / contact: GitHub issues until a dedicated site exists */
   feedbackUrl: 'https://github.com/JaeTaekOh/rocketlauncher/issues',
   /* Ad-slot placeholder only (no real ad network). Set false to hide it. */

@@ -1,0 +1,274 @@
+{
+ "_about": "Store technical requirements and policy deadlines used by rocketlauncher_check_requirements. One row per rule. Update 'date', 'status' and 'verified_on' when a store changes a rule; keep the official source URL. status: in_force | upcoming | ongoing. 'conservative' marks rules where sources disagree and Rocket Launcher applies the earliest date.",
+ "verified_on": "2026-11-17",
+ "requirements": [
+  {
+   "id": "play.target_api_36",
+   "store": "play",
+   "kind": "target_sdk",
+   "value": 36,
+   "date": "2026-08-31",
+   "extension_until": "2026-11-01",
+   "status": "in_force",
+   "rule": "New apps and app updates must target Android 16 (API 36) or higher. Wear OS and Android Automotive OS: API 35; Android TV and XR: API 34. The extension window (to 2026-11-01) has ended.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/11926878",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.existing_api_35",
+   "store": "play",
+   "kind": "target_sdk_existing",
+   "value": 35,
+   "date": "2026-08-31",
+   "status": "in_force",
+   "rule": "Existing apps must target API 35 or higher to stay available to new users on devices running a newer Android version.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/11926878",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.16kb_page_size",
+   "store": "play",
+   "kind": "page_size_16kb",
+   "date": "2025-11-01",
+   "official_update_block_date": "2027-02-01",
+   "status": "in_force",
+   "conservative": true,
+   "rule": "Apps targeting Android 15+ that ship native code (.so) must support 16 KB memory pages on 64-bit devices (LOAD segments aligned to 16 KB; AGP 8.5.1+, NDK r28+). Sources disagree on the update deadline: the official Android page says updates without 16 KB support are blocked from 2027-02-01, while the Play announcement applied it to new apps and updates targeting Android 15+ from 2025-11-01 and third-party reports say update enforcement started in May 2026. Rocket Launcher treats it as required now.",
+   "source": "https://developer.android.com/guide/practices/page-sizes",
+   "also": [
+    "https://android-developers.googleblog.com/2025/05/prepare-play-apps-for-devices-with-16kb-page-size.html"
+   ],
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.app_registration",
+   "store": "play",
+   "kind": "app_registration",
+   "date": "2026-09-30",
+   "status": "in_force",
+   "rule": "Register every app in Play Console (Android developer verification). Unregistered apps risk removal; install checks started in Brazil, Indonesia, Singapore and Thailand, with a global rollout in 2027. Check the Play Console home page.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/17134731",
+   "also": [
+    "https://developer.android.com/developer-verification/guides/faq"
+   ],
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.trader_status",
+   "store": "play",
+   "kind": "trader_status",
+   "date": "2027-02-01",
+   "status": "upcoming",
+   "rule": "Every active developer account must declare trader or non-trader status (EEA/UK law) in Play Console > Account details > About you. Developers who do not distribute in the EEA or UK can declare non-trader. Personal trader accounts show a phone number and address.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/17594752",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.closed_testing_personal",
+   "store": "play",
+   "kind": "closed_testing",
+   "date": "2023-11-13",
+   "status": "ongoing",
+   "rule": "Personal developer accounts created after 2023-11-13 need a closed test with at least 12 testers opted in continuously for the last 14 days before applying for production access.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/14151465",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.contacts_location_policy_2027",
+   "store": "play",
+   "kind": "policy",
+   "date": "2027-01-27",
+   "status": "upcoming",
+   "rule": "New Contacts Permissions policy and an updated Location Permissions policy take effect.",
+   "source": "https://support.google.com/googleplay/android-developer/table/12921780",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.account_deletion",
+   "store": "play",
+   "kind": "account_deletion",
+   "status": "ongoing",
+   "rule": "Apps that let users create an account must offer account deletion in the app and through a web link entered in Play Console.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/13327111",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.xcode_26",
+   "store": "apple",
+   "kind": "xcode",
+   "value": 26,
+   "date": "2026-04-28",
+   "status": "in_force",
+   "rule": "Uploads must be built with Xcode 26 or later and an iOS/iPadOS 26 SDK.",
+   "source": "https://developer.apple.com/news/upcoming-requirements/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.min_target_ios13",
+   "store": "apple",
+   "kind": "deployment_target",
+   "value": 13,
+   "date": "2026-09-09",
+   "status": "in_force",
+   "rule": "iOS and iPadOS uploads must target iOS 13 or later.",
+   "source": "https://developer.apple.com/news/upcoming-requirements/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.ios27_sdk",
+   "store": "apple",
+   "kind": "xcode_next",
+   "value": 27,
+   "min_target": 15,
+   "date": "2027-04-01",
+   "date_precision": "month",
+   "status": "upcoming",
+   "rule": "From April 2027 uploads must be built with the iOS & iPadOS 27 SDK (Xcode 27) or later and target iOS 15 or later.",
+   "source": "https://developer.apple.com/app-store/submitting/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.privacy_manifest_reasons",
+   "store": "apple",
+   "kind": "privacy_manifest",
+   "date": "2024-05-01",
+   "status": "in_force",
+   "rule": "Apps (and their third-party SDKs) must include PrivacyInfo.xcprivacy with approved reasons for every required-reason API they use (UserDefaults, file timestamps, system boot time, disk space, active keyboards).",
+   "source": "https://developer.apple.com/documentation/bundleresources/privacy-manifest-files",
+   "also": [
+    "https://developer.apple.com/news/upcoming-requirements/",
+    "https://developer.apple.com/support/third-party-SDK-requirements/"
+   ],
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.export_compliance",
+   "store": "apple",
+   "kind": "encryption",
+   "status": "ongoing",
+   "rule": "Declare encryption use. Set ITSAppUsesNonExemptEncryption in Info.plist (false when the app only uses standard HTTPS / OS encryption) so each build is not held for the export-compliance question.",
+   "source": "https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.age_rating_social_media",
+   "store": "apple",
+   "kind": "age_rating",
+   "date": "2026-09-01",
+   "date_precision": "month",
+   "status": "in_force",
+   "rule": "The age rating questionnaire must answer the social media capability questions (social feed or similar discovery of user content) to submit new apps or updates.",
+   "source": "https://developer.apple.com/news/?id=tlur8uvi",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.age_rating_location_dating",
+   "store": "apple",
+   "kind": "age_rating",
+   "date": "2026-11-16",
+   "deadline_all_apps": "2027-01-12",
+   "status": "in_force",
+   "rule": "Declare Shared Location (sharing real-world location with another person or group) and Dating & Relationships in the age rating questionnaire when submitting an update; every app must answer by 2027-01-12. Dating & Relationships means 18+.",
+   "source": "https://developer.apple.com/news/?id=yxkh08us",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.iphone_duo_screenshots",
+   "store": "apple",
+   "kind": "screenshots",
+   "date": "2027-04-01",
+   "date_precision": "month",
+   "status": "upcoming",
+   "rule": "Apps built with the iOS 27.1 SDK or later will need iPhone Duo screenshots. Screenshots must not have an alpha channel.",
+   "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.account_deletion",
+   "store": "apple",
+   "kind": "account_deletion",
+   "status": "ongoing",
+   "rule": "Apps that support account creation must let users start account deletion inside the app (Guideline 5.1.1(v)).",
+   "source": "https://developer.apple.com/support/offering-account-deletion-in-your-app/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "apple.hidden_features",
+   "store": "apple",
+   "kind": "guideline",
+   "date": "2026-10-16",
+   "status": "in_force",
+   "rule": "Guideline 2.5.19: no hidden, dormant or undocumented features; explain every feature (including remotely enabled ones) in the review notes. Guideline 2.3.14: creative assets must not show prices, discounts or unverifiable claims.",
+   "source": "https://developer.apple.com/news/?id=92th7e5i",
+   "verified_on": "2026-11-17"
+  }
+ ],
+ "countries": [
+  {
+   "id": "kr.lbs_report",
+   "country": "KR",
+   "store": "both",
+   "applies": "location_sent",
+   "rule": "Korea: a location-based service that sends users' personal location data to the operator's server must report as a location-based service business (위치기반서비스사업 신고). Small businesses and one-person creative businesses can start first and must report within 1 month. Not needed when location is used only on the device and never sent.",
+   "source": "https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=15701000086",
+   "also": [
+    "https://www.lbsc.kr/front/content/contentViewer.do?contentId=CONTENT_0000081"
+   ],
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "kr.apple_seller_info",
+   "country": "KR",
+   "store": "apple",
+   "applies": "developer_in_kr",
+   "rule": "App Store Korea seller information: only for developers based in South Korea (Act on Consumer Protection in Electronic Commerce). Individuals: email + business registration number; organizations: name, email, phone, BRN. App Store Connect > Business > Agreements > Compliance > Korean Law.",
+   "source": "https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-korea-compliance-information/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "kr.grac_rating",
+   "country": "KR",
+   "store": "apple",
+   "applies": "games_entertainment",
+   "rule": "Korea: the App Store shows Korea-specific age rating values. Apps in the Games or Entertainment category (or with frequent simulated gambling) also show a GRAC regional rating; if GRAC issues a different official rating, App Review sends a message and you override the Korea rating and resubmit.",
+   "source": "https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "eu.dsa_trader_apple",
+   "country": "EU",
+   "store": "apple",
+   "applies": "always",
+   "rule": "EU Digital Services Act: declare trader or non-trader in App Store Connect. Traders publish address, phone and email on the EU product page; apps without a status are not available in the EU.",
+   "source": "https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "eu.dsa_trader_play",
+   "country": "EU",
+   "store": "play",
+   "applies": "always",
+   "rule": "Google Play: every developer account declares trader / non-trader by 2027-02-01 (all accounts, even outside the EEA/UK).",
+   "source": "https://support.google.com/googleplay/android-developer/answer/17594752",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "th.pdpa",
+   "country": "TH",
+   "store": "both",
+   "applies": "personal_data",
+   "rule": "Thailand PDPA (Personal Data Protection Act B.E. 2562): tell Thai users what personal data is collected, why, how long it is kept and how to contact you, ideally in Thai, and get consent when consent is the legal basis. The privacy policy should cover this.",
+   "source": "https://www.pdpc.or.th/",
+   "verified_on": "2026-11-17"
+  },
+  {
+   "id": "th.developer_verification",
+   "country": "TH",
+   "store": "play",
+   "applies": "always",
+   "rule": "Thailand is one of the first regions where Android developer verification install checks apply (from 2026-09-30). Make sure the Play developer account is verified and every app is registered.",
+   "source": "https://developer.android.com/developer-verification/guides/faq",
+   "verified_on": "2026-11-17"
+  }
+ ]
+}

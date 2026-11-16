@@ -1,7 +1,7 @@
 /* Rocket Launcher 0.1.5 — texts for store stages (first submit, in review, rejected, live update) in five languages.
-   Merged into window.AAP_I18N after the main language files. */
+   Merged into window.RL_I18N after the main language files. */
 (function () {
-  const D = window.AAP_I18N = window.AAP_I18N || {};
+  const D = window.RL_I18N = window.RL_I18N || {};
   const add = (l, o) => { D[l] = Object.assign(D[l] || {}, o); };
   add('en', {
     'stage.askFirst': "Pick each store's stage first: the project shows signs the app may already be in a store.", 'stage.goPaste': "Paste the store's message", 'stage.goWait': 'Go to the review screen',

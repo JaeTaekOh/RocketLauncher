@@ -97,7 +97,21 @@ Cursor IDE asks you to approve the server the first time.
 
 ---
 
-## 4. Other MCP apps ✅
+## 4. Gemini CLI 📄
+
+`~/.gemini/settings.json` (all projects) or `.gemini/settings.json` (one project):
+```json
+{
+  "mcpServers": {
+    "rocket-launcher": { "command": "npx", "args": ["-y", "rocket-launcher-mcp"] }
+  }
+}
+```
+Restart Gemini CLI and run `/mcp` to see the tools. Source: [Gemini CLI MCP servers](https://geminicli.com/docs/tools/mcp-server/).
+
+---
+
+## 5. Other MCP apps ✅
 
 - **stdio:** command `npx -y rocket-launcher-mcp` (or `node mcp/server.mjs` from a checkout). Example with the MCP Inspector CLI:
   ```bash

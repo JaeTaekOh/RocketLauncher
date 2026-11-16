@@ -1,5 +1,5 @@
-window.AAP_I18N = window.AAP_I18N || {};
-window.AAP_I18N.zh = {
+window.RL_I18N = window.RL_I18N || {};
+window.RL_I18N.zh = {
   copied: '已复制', copy: '复制', 'sev.block': '必须修改', 'sev.warn': '建议检查', 'sev.tip': '值得了解', bothStores: '两个商店',
   'ad.label': '广告位 · 即将推出', 'ad.note': '以后这里可能会显示一个横幅广告，绝不会遮挡按钮或内容。',
   'step.analyze': '分析', 'step.decide': '决定', 'step.assets': '素材', 'step.submit': '提交', 'step.review': '审核', 'step.done': '上架',

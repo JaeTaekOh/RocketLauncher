@@ -5,8 +5,8 @@ import fs from 'node:fs'; import path from 'node:path'; import vm from 'node:vm'
 const HERE = path.dirname(fileURLToPath(import.meta.url)), JS = path.join(HERE, '..', '..', 'js');
 const ctx = { window: {} }; vm.createContext(ctx);
 for (const f of ['i18n-en.js', 'lessons.js']) vm.runInContext(fs.readFileSync(path.join(JS, f), 'utf8'), ctx, { filename: f });
-const W = ctx.window, L = W.AAPLessons;
-const en = (W.AAP_I18N && W.AAP_I18N.en) || null;
+const W = ctx.window, L = W.RLLessons;
+const en = (W.RL_I18N && W.RL_I18N.en) || null;
 const dict = en || Object.values(W).find(v => v && typeof v === 'object' && v['rj.apple-511.t']) || {};
 const table = {};
 for (const [id, e] of Object.entries(L.TABLE)) {

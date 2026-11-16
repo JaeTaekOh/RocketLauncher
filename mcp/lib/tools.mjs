@@ -5,7 +5,7 @@ import * as E from './engine.mjs';
 import { CFG } from './runtime.mjs';
 import { ensureShared } from './shared.mjs';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 export const INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
@@ -17,6 +17,7 @@ How to use it:
 5. The final submit step stays locked until the user explicitly approves; then call rocketlauncher_approve_submission. Rocket Launcher never submits to any store itself: the user presses the submit button in Play Console / App Store Connect.
 6. When the user reports the review result, call rocketlauncher_report_review (submitted / rejected with the store's message / resubmitted / approved). When every chosen store is live, the job is done. In App Store Connect an "Information Needed" request also shows as Rejected; it asks for a reply, not always a new build. Never reply to Apple or Google yourself: draft the reply and let the user send it.
 7. Reported review results are learned automatically: an unknown rejection becomes a generalized lesson (store, guideline/ITMS codes, short advice from a fixed table) saved on this computer, and known ones are counted. To improve checks for every user, when a lessons API is configured (js/config.js lessonsApiUrl, or the ROCKETLAUNCHER_LESSONS_API environment variable) each real (non-demo) learned result also sends an anonymized event to that lessons API containing only the store, guideline/ITMS/Play policy codes and a fixed advice id (field lesson.shared shows the exact payload); the store message, app name, bundle/package id, project id, e-mail and any free text are never sent. The aggregated feed from other users is fetched and cached on this computer. Reports, choices, submission guides and review notes show relevant lessons as warnings or pre-submit checks (field learned_lessons): source "local" = from the user's own reviews, "shared" = from other Rocket Launcher users' reviews; tell the user which is which. Lessons never become must-fix items and never override the default checks (for example they never mean "add ATT because of ads"). If the lessons API is not configured or cannot be reached, everything still works locally. rocketlauncher_status lists the local lessons; rocketlauncher_forget_lesson removes one if the user asks.
+8. Release checks (0.2.0, free, offline except where noted, no API keys): rocketlauncher_get_report includes release_checks and the submission guide has a "Release checks" step. Details: rocketlauncher_check_requirements (store deadlines from a dated table with official sources), rocketlauncher_privacy_check (Data safety / App Privacy / PrivacyInfo.xcprivacy / permission texts consistency + drafts), rocketlauncher_play_policy_audit (Google's Apache-2.0 Play Policy Insights rules, bundled), rocketlauncher_reviewer_notes, rocketlauncher_account_deletion_check, rocketlauncher_closed_test (12 testers × 14 days for new personal Play accounts), rocketlauncher_version_sync, rocketlauncher_country_check, rocketlauncher_move_app_plan and rocketlauncher_remove_app_guide. These only advise: never unpublish, delete, transfer, create accounts, change permissions or apply for production yourself; the account owner does that in the console after choosing. For moving an app, present both paths (transfer / new registration) neutrally and let the user choose; never default to one. Never ask for or store passwords, keys or tokens; for the signing key only the place where its backup is kept.
 App Store review rules the analysis follows (explain them in plain words when they come up):
 - Tracking, ATT, PrivacyInfo.xcprivacy, the App Privacy form and real behavior must match from the first submit. Default for apps with ads: no ATT prompt or NSUserTrackingUsageDescription, NSPrivacyTracking=false with no tracking domains, every ad request non-personalized (npa=1), App Privacy "No, we do not track". Never suggest adding ATT just because the app shows ads. Keep an already fully aligned tracking setup, but never leave a mixed one.
 - Core features should work without login (5.1.1(v)); third-party login on iOS needs Sign in with Apple; accounts need in-app and web deletion; the Support URL must show a contact method; ads are mentioned only in the privacy policy; no "free" or other brands' names in subtitle/keywords; review notes for user-supplied API keys say there is no IAP and the developer does not sell keys, with a review-only key the user attaches (never put real keys anywhere).
@@ -122,6 +123,80 @@ export function createServer({ allowPath = true, inlineZip = false } = {}) {
     description: 'Remove one review lesson that Rocket Launcher learned on this computer from earlier store results, only when the user asks to drop it. Pass lesson_id from the lessons list of rocketlauncher_status. Removes it from ~/.rocketlauncher/lessons.json and the anonymized export; projects are not changed.',
     inputSchema: { lesson_id: z.string().min(1).describe('id from rocketlauncher_status lessons'), lang }, annotations: { ...W, destructiveHint: true, idempotentHint: true }
   }, wrap(async a => ok(E.forgetLesson(a.lesson_id, a.lang))));
+
+  const rt = (tool) => wrap(async a => { await ensureShared(); return ok(await E.release(tool, a.project_id, a, a.lang)); });
+  server.registerTool('rocketlauncher_check_requirements', {
+    title: 'Store requirements and deadlines',
+    description: 'Check the connected app against current Google Play and App Store technical requirements with dates: target API level, 16 KB page size (reads native .so alignment), app registration / developer verification, trader status, Xcode / SDK version, minimum iOS, required-reason APIs in PrivacyInfo.xcprivacy, export compliance, new age-rating questions, account deletion. Every row has the official source URL and the date the rule was verified. Where sources disagree it uses the earliest date. Read-only, offline.',
+    inputSchema: { project_id: pid, lang }, annotations: RO
+  }, rt('requirements'));
+
+  server.registerTool('rocketlauncher_privacy_check', {
+    title: 'Privacy consistency check + drafts',
+    description: 'Cross-check Data safety, App Privacy, PrivacyInfo.xcprivacy, permissions, iOS purpose strings and the privacy policy against the code: location (precise / background / sent vs on-device), ATT and tracking, photos, required-reason APIs, and data types Google\'s scanner patterns detect. Returns mismatches with fixes plus drafts: Data safety rows, App Privacy answers, required-reason entries and a full PrivacyInfo.xcprivacy. Read-only, offline.',
+    inputSchema: { project_id: pid, lang }, annotations: RO
+  }, rt('privacy'));
+
+  server.registerTool('rocketlauncher_play_policy_audit', {
+    title: 'Google Play policy audit (Play Policy Insights)',
+    description: 'Quick Google Play policy scan using Google\'s open-source Play Policy Insights rules (Apache-2.0, bundled with attribution): finds policy signals (sensitive permissions, account / login, data types) and lists the Play policies to review with links. Also returns how to run Google\'s full offline audit skill (bundled SKILL.md, Python 3). Read-only, offline, free.',
+    inputSchema: { project_id: pid, lang }, annotations: RO
+  }, rt('policy'));
+
+  server.registerTool('rocketlauncher_reviewer_notes', {
+    title: 'Notes for store reviewers',
+    description: 'Draft App Review notes (App Store) and App access + notes (Google Play) in English: what the app does, why each permission is used, what reviewers outside the service area see, account deletion path, no hidden features (2.5.19). Placeholders like [review account] stay placeholders: never put real passwords in chat; the user types them only in the console.',
+    inputSchema: { project_id: pid, default_location: z.string().max(120).optional().describe('What the app shows when location is denied or the reviewer is outside the service area, e.g. "Bangkok"'), demo_account: z.enum(['needed', 'not_needed']).optional().describe('Whether reviewers need a sign-in to reach every feature'), extra: z.string().max(1500).optional().describe('Anything else the reviewer should know'), lang }, annotations: RO
+  }, rt('notes'));
+
+  server.registerTool('rocketlauncher_account_deletion_check', {
+    title: 'Account deletion check',
+    description: 'If the app has sign-up / login, check that it offers account deletion inside the app (App Store 5.1.1(v), Google Play) and a web deletion page / URL (Google Play), and that the privacy policy covers deletion and retention. Returns what is missing, a review-note line and where to paste the URL in Play Console. Read-only.',
+    inputSchema: { project_id: pid, lang }, annotations: RO
+  }, rt('deletion'));
+
+  server.registerTool('rocketlauncher_closed_test', {
+    title: 'Closed test tracker (12 testers × 14 days)',
+    description: 'Track Google Play\'s closed test for new personal developer accounts: at least 12 testers opted in for 14 days in a row before applying for production. action=status (count and earliest apply date), record (save testers as {label, opted_in, opted_out} with YYYY-MM-DD dates; a tester who opted out restarts their 14 days; plus optional feedback notes; nicknames only, never e-mails), application_draft (draft answers for "Apply for production"; the user submits it), recruit_copy (tester invitation texts in en/ko/th/zh/hi), check_optin_page (checks a tester web page for the Play opt-in link, in-app-browser escape and the 14-day notice). Stored only on this computer.',
+    inputSchema: { project_id: pid, action: z.enum(['status', 'record', 'application_draft', 'recruit_copy', 'check_optin_page']).optional().describe('Default status'),
+      account_type: z.enum(['personal_new', 'personal_old', 'organization']).optional().describe('personal_new = personal account created after 2023-11-13 (the rule applies)'),
+      testers: z.array(z.object({ label: z.string().min(1).max(60).describe('Nickname or initials'), opted_in: z.string().optional().describe('YYYY-MM-DD'), opted_out: z.string().optional().describe('YYYY-MM-DD'), remove: z.boolean().optional() })).max(200).optional(),
+      feedback: z.array(z.object({ date: z.string().optional(), text: z.string().max(500), from: z.string().max(60).optional() })).max(50).optional(),
+      opt_in_link: z.string().max(300).optional().describe('For recruit_copy'),
+      url: z.string().max(500).optional().describe('For check_optin_page: public https page to check'), html: z.string().max(500000).optional(), file: z.string().optional().describe('For check_optin_page: a page path inside the project'),
+      lang }, annotations: { ...W, idempotentHint: true, openWorldHint: true }
+  }, rt('closed_test'));
+
+  server.registerTool('rocketlauncher_version_sync', {
+    title: 'Version and build numbers',
+    description: 'Check version names and build numbers across Android, iOS and related apps (e.g. country variants connected on this computer): mismatches, numbers already used (Apple treats 1.2 and 1.2.0 as the same), versionCode must grow, and a suggested next version. Force-update safety: warns when the server\'s minimum / latest version is higher than what the store shows (check_store=true does a free public App Store lookup). Saves used numbers on this computer.',
+    inputSchema: { project_id: pid, other_project_ids: z.array(z.string()).max(20).optional().describe('Related Rocket Launcher projects to keep in sync'),
+      used_versions: z.array(z.string()).max(200).optional().describe('Version names already released or uploaded'), used_version_codes: z.array(z.number().int()).max(200).optional(),
+      planned_version: z.string().optional(), server_min_version: z.string().optional().describe('Force-update minimum version the server will return'), server_latest_version: z.string().optional(),
+      store_visible: z.string().optional().describe('Version users can download now'), check_store: z.boolean().optional().describe('Look up the App Store version (public, free)'), country: z.string().length(2).optional(), lang },
+    annotations: { ...W, idempotentHint: true, openWorldHint: true }
+  }, rt('version'));
+
+  server.registerTool('rocketlauncher_country_check', {
+    title: 'Country rules',
+    description: 'Country-specific rules that apply to the app, with official sources: Korea (location-based service report when location is sent to a server, App Store seller info for Korea-based developers, GRAC ratings), EU (DSA trader status on both stores), Thailand (PDPA privacy notice, developer verification). Legal summaries only, not legal advice.',
+    inputSchema: { project_id: pid, countries: z.array(z.enum(['KR', 'EU', 'TH'])).optional().describe('Default all'), developer_country: z.string().length(2).optional().describe('Where the developer is based, e.g. KR, TH'), lang }, annotations: RO
+  }, rt('countries'));
+
+  server.registerTool('rocketlauncher_move_app_plan', {
+    title: 'Plan moving an app to another developer account',
+    description: 'Plan moving an app to another developer account. Two paths, shown neutrally (neither is the default): path=transfer (keeps package, users and reviews; Play needs both accounts\' registration transaction IDs; Firebase / AdMob / Analytics must be relinked) or path=new_registration (new package / bundle ID, new signing key, new Firebase project, closed test 12×14 for new personal Play accounts, store listing recreated; AdMob only if the app shows ads). Without path it compares both so the user can choose. key_backup_location saves only WHERE the signing key backup is kept (values that look like secrets are refused). Plans only: never transfers, deletes or creates anything.',
+    inputSchema: { project_id: pid, path: z.enum(['transfer', 'new_registration']).optional().describe('Only after the user chose'), has_ads: z.boolean().optional().describe('Default: detected from the code'),
+      account_type: z.enum(['personal_new', 'personal_old', 'organization']).optional().describe('The receiving Play account'), stores: z.array(z.enum(['play', 'apple'])).optional(),
+      key_backup_location: z.string().max(200).optional().describe('Where the signing key backup is kept, e.g. "password manager vault: Android keys". Never the key or passwords'), lang },
+    annotations: { ...W, idempotentHint: true }
+  }, rt('move'));
+
+  server.registerTool('rocketlauncher_remove_app_guide', {
+    title: 'Unpublish or delete an app (guide)',
+    description: 'Step-by-step guide to unpublish or delete an app on Google Play and the App Store, with the conditions (Play: fewer than 1,000 active devices, transaction ID format, 7-day restore, package name reuse only with zero installs; Apple: remove from sale first, states that block removal, name / SKU / bundle ID consequences). Guide only: Rocket Launcher never removes anything.',
+    inputSchema: { store: z.enum(['play', 'apple']).optional().describe('Default both'), lang }, annotations: RO
+  }, wrap(async a => ok(E.removeGuide(a.store, a.lang))));
 
   server.registerPrompt('launch_my_app', {
     title: 'Launch my app with Rocket Launcher',

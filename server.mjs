@@ -20,7 +20,7 @@ const server = http.createServer(async (req, res) => {
     try { target = new URL(url.searchParams.get('u')); } catch { res.writeHead(400).end('bad url'); return; }
     if (target.protocol !== 'https:' || !ALLOW.has(target.hostname) || req.method !== 'GET') { res.writeHead(403).end('host not allowed'); return; }
     try {
-      const r = await fetch(target, { headers: { 'User-Agent': 'AA-Plug-2-local-preview', Accept: req.headers.accept || '*/*' } });
+      const r = await fetch(target, { headers: { 'User-Agent': 'Rocket-Launcher-local-preview', Accept: req.headers.accept || '*/*' } });
       const buf = Buffer.from(await r.arrayBuffer());
       res.writeHead(r.status, { 'Content-Type': r.headers.get('content-type') || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(buf);

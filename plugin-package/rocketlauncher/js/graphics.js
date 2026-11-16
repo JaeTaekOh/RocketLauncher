@@ -104,5 +104,5 @@
     }
     return out;
   }
-  window.AAPGfx = { icons, feature, shots, avgColor, mix, onColor, img };
+  window.RLGfx = { icons, feature, shots, avgColor, mix, onColor, img };
 })();

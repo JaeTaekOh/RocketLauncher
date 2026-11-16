@@ -399,5 +399,5 @@
     return { state, found, missing };
   }
 
-  window.AAPAnalyzer = { analyze, tracking, PLAY_TARGET };
+  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET };
 })();

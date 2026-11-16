@@ -235,7 +235,7 @@
     return !a || !g.length || g.some(c => a.some(p => under(c, p)));
   }
   function matchKnown(text, store) {
-    const G = window.AAPGen; if (!G) return null; const t = String(text || '');
+    const G = window.RLGen; if (!G) return null; const t = String(text || '');
     const ok = r => r.match.test(t) && builtinFits(r.id, t);
     return G.REJECTIONS.find(r => (!store || r.store === store) && ok(r)) || G.REJECTIONS.find(ok) || null;
   }
@@ -250,7 +250,7 @@
   /* Single source for the lessons API URL: config.lessonsApiUrl, overridable by ROCKETLAUNCHER_LESSONS_API. */
   function lessonsApiUrl() {
     try { if (typeof process !== 'undefined' && process.env && process.env.ROCKETLAUNCHER_LESSONS_API) return String(process.env.ROCKETLAUNCHER_LESSONS_API).trim(); } catch (e) { }
-    try { if (typeof window !== 'undefined' && window.AAP_CONFIG && window.AAP_CONFIG.lessonsApiUrl) return String(window.AAP_CONFIG.lessonsApiUrl).trim(); } catch (e) { }
+    try { if (typeof window !== 'undefined' && window.RL_CONFIG && window.RL_CONFIG.lessonsApiUrl) return String(window.RL_CONFIG.lessonsApiUrl).trim(); } catch (e) { }
     return '';
   }
   const SHARE_URL = lessonsApiUrl();
@@ -347,6 +347,6 @@
     return [...(local || []).map(r => ({ ...r, source: 'local', from: tx(lang, 'fromLocal') })), ...(shared || [])];
   }
 
-  window.AAPLessons = { matchKnown, builtinFits, V, KEY: 'rocketlauncher.lessons.v1', sanitize, codesOf, parse, empty, normDb, learn, recordPass, forget, compact, exportDb, signalsOf, relevant, reviewNoteLines, planFor, replyFor, tx, AREAS,
+  window.RLLessons = { matchKnown, builtinFits, V, KEY: 'rocketlauncher.lessons.v1', sanitize, codesOf, parse, empty, normDb, learn, recordPass, forget, compact, exportDb, signalsOf, relevant, reviewNoteLines, planFor, replyFor, tx, AREAS,
     SHARE_URL, TABLE, validShare, sharePayload, normShared, relevantShared, mergeRelevant };
 })();

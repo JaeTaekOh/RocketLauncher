@@ -1,8 +1,8 @@
 /* Rocket Launcher — 화면·상태·흐름 (프레임워크 없음) */
 (function () {
   'use strict';
-  const G = window.AAPGen, X = window.AAPGfx, F = window.AAPFlow, CFG = window.AAP_CONFIG;
-  const I18N = window.AAPi18n, UI_LANG_KEY = 'rocketlauncher.uiLang';   // UI language list + saved manual pick
+  const G = window.RLGen, X = window.RLGfx, F = window.RLFlow, CFG = window.RL_CONFIG;
+  const I18N = window.RLi18n, UI_LANG_KEY = 'rocketlauncher.uiLang';   // UI language list + saved manual pick
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = G.esc;
   const STEPS = ['home', 'analyze', 'decide', 'assets', 'submit', 'review', 'done'];
@@ -21,7 +21,7 @@
   }
   function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.A) { s.lang = detectLang(); return s; } } catch (e) { } return null; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { try { const c = JSON.parse(JSON.stringify(S)); if (c.A) c.A.screenshots = []; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e2) { } } }
-  const t = (k, v) => window.AAPi18n.t(S.lang, k, v);
+  const t = (k, v) => window.RLi18n.t(S.lang, k, v);
 
   /* ---------------- 공통 조각 ---------------- */
   function toast(msg, kind) {
@@ -52,7 +52,7 @@
      When a lessons API is configured, a real (non-demo) learned result also sends { v, event, store, codes, advice_id }
      (never the store message, app name, ids or any free text), and the aggregated feed of other users' lessons is
      cached in localStorage for 12 hours. If the API is empty or the request fails, lessons stay on this device. */
-  const LS = window.AAPLessons;
+  const LS = window.RLLessons;
   const SHARED_KEY = 'rocketlauncher.shared.v1', SHARED_TTL = 12 * 3600e3;
   function lessonsDb() { try { return LS.normDb(JSON.parse(localStorage.getItem(LS.KEY))); } catch (e) { return LS.empty(); } }
   function saveLessons(db) { try { localStorage.setItem(LS.KEY, JSON.stringify(LS.normDb(db))); } catch (e) { } }
@@ -190,14 +190,14 @@
     ${adSlot()}`;
   }
   after.home = () => {
-    $('#startSample').onclick = () => start(() => window.AAPSources.sample(), true);
-    $('#ghForm').onsubmit = e => { e.preventDefault(); const u = $('#ghUrl').value.trim(); if (!window.AAPSources.parseRepo(u)) { toast(t('err.badurl'), 'err'); $('#ghUrl').focus(); return; } start(step => window.AAPSources.fromGitHub(u, step)); };
-    $('#zipIn').onchange = e => { const f = e.target.files[0]; if (f) start(step => window.AAPSources.fromZipFile(f, step)); };
-    $('#dirIn').onchange = e => { if (e.target.files.length) start(step => window.AAPSources.fromFileList(e.target.files, step)); };
+    $('#startSample').onclick = () => start(() => window.RLSources.sample(), true);
+    $('#ghForm').onsubmit = e => { e.preventDefault(); const u = $('#ghUrl').value.trim(); if (!window.RLSources.parseRepo(u)) { toast(t('err.badurl'), 'err'); $('#ghUrl').focus(); return; } start(step => window.RLSources.fromGitHub(u, step)); };
+    $('#zipIn').onchange = e => { const f = e.target.files[0]; if (f) start(step => window.RLSources.fromZipFile(f, step)); };
+    $('#dirIn').onchange = e => { if (e.target.files.length) start(step => window.RLSources.fromFileList(e.target.files, step)); };
     const d = $('#drop');
     ['dragenter', 'dragover'].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.add('over'); }));
     ['dragleave', 'drop'].forEach(ev => d.addEventListener(ev, () => d.classList.remove('over')));
-    d.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && /\.zip$/i.test(f.name)) start(step => window.AAPSources.fromZipFile(f, step)); else toast(t('err.dropzip'), 'err'); });
+    d.addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && /\.zip$/i.test(f.name)) start(step => window.RLSources.fromZipFile(f, step)); else toast(t('err.dropzip'), 'err'); });
   };
 
   /* ===== 2. 분석 ===== */
@@ -211,7 +211,7 @@
       project = await loader(p => log(t('log.read', { f: p })));
       await pause(250);
       log(t('log.analyze'));
-      const A = window.AAPAnalyzer.analyze(project);
+      const A = window.RLAnalyzer.analyze(project);
       if (!A.platforms.android && !A.platforms.ios) throw Object.assign(new Error('noapp'), { code: 'noapp' });
       for (const f of A.read.slice(0, 14)) { log(t('log.parsed', { f })); await pause(70); }
       log(t('log.policy')); await pause(320);
@@ -291,7 +291,7 @@
     <div class="cta-bar"><span class="muted">${esc(t('an.next.d'))}</span><button class="btn primary lg" data-go="decide" data-press data-ripple>${esc(t('an.next'))}${ic('right')}</button></div>
     ${adSlot()}`;
   }
-  after.analyze = () => { const b = $('#trySample'); if (b) b.onclick = () => start(() => window.AAPSources.sample(), true); };
+  after.analyze = () => { const b = $('#trySample'); if (b) b.onclick = () => start(() => window.RLSources.sample(), true); };
 
   /* ===== 생성 자료 ===== */
   async function ensureGen() {
@@ -537,7 +537,7 @@
     if (!GEN) { await ensureGen(); await ensureShots(); return render('none'); }
     if (!GEN.shots || GEN.shotsLang !== S.lang) { await ensureShots(); return render('none'); }
     $$('[data-atab]').forEach(b => b.onclick = () => { assetTab = b.dataset.atab; const y = window.scrollY; render('none'); window.scrollTo(0, y); });
-    $('#zipAll').onclick = () => { const { slug, files } = bundleFiles(); download(`rocketlauncher-${slug}.zip`, window.AAPZip.writeZip(files)); toast(t('downloaded')); };
+    $('#zipAll').onclick = () => { const { slug, files } = bundleFiles(); download(`rocketlauncher-${slug}.zip`, window.RLZip.writeZip(files)); toast(t('downloaded')); };
     $$('[data-dl]').forEach(b => b.onclick = () => {
       const k = b.dataset.dl, A = S.A;
       if (k === 'icon') download('icon-512.png', GEN.icons[ix(S.dec.icon)].dataUrl);
@@ -730,5 +730,5 @@
     /* Shared lessons from other reviews: refresh in the background, redraw only screens that list lessons. */
     refreshShared().then(ch => { if (ch && S.A && ['analyze', 'submit'].includes(S.step)) render('none'); });
   });
-  window.AAPApp = { state: () => S, go };
+  window.RLApp = { state: () => S, go };
 })();

@@ -75,5 +75,5 @@ for (const f of ORDER) {
   vm.runInThisContext(fs.readFileSync(file, 'utf8'), { filename: file });
 }
 
-export const CFG = g.AAP_CONFIG, Analyzer = g.AAPAnalyzer, Gen = g.AAPGen, Gfx = g.AAPGfx, Flow = g.AAPFlow, Sources = g.AAPSources, Zip = g.AAPZip, Lessons = g.AAPLessons;
-export const tr = (lang, k, v) => g.AAPi18n.t(lang, k, v);
+export const CFG = g.RL_CONFIG, Analyzer = g.RLAnalyzer, Gen = g.RLGen, Gfx = g.RLGfx, Flow = g.RLFlow, Sources = g.RLSources, Zip = g.RLZip, Lessons = g.RLLessons;
+export const tr = (lang, k, v) => g.RLi18n.t(lang, k, v);

@@ -132,7 +132,7 @@ try {
   const rel = Lessons.relevant(Lessons.normDb(JSON.parse(fs.readFileSync(LFILE, 'utf8'))), B.A, { apple: true }, 'en');
   check(!/Ignore previous|evil@/.test(JSON.stringify(Lessons.normDb(JSON.parse(fs.readFileSync(LFILE, 'utf8'))))) && Array.isArray(rel), 're-sanitized on load');
   const { INSTRUCTIONS } = await import('../lib/tools.mjs');
-  check(/learned automatically/.test(INSTRUCTIONS) && /lessons API/.test(INSTRUCTIONS) && /ROCKETLAUNCHER_LESSONS_API/.test(INSTRUCTIONS) && /never sent/.test(INSTRUCTIONS) && !/aaplug\.com/.test(INSTRUCTIONS) && !/Login services/.test(INSTRUCTIONS) && !/ROCKETLAUNCHER_SHARE_LESSONS|opt[- ]?out/i.test(INSTRUCTIONS), 'instructions disclose sharing to the configured lessons API (what / never sent), no previous-product host, no opt-out, no learned text');
+  check(/learned automatically/.test(INSTRUCTIONS) && /lessons API/.test(INSTRUCTIONS) && /ROCKETLAUNCHER_LESSONS_API/.test(INSTRUCTIONS) && /never sent/.test(INSTRUCTIONS) && !/Login services/.test(INSTRUCTIONS) && !/ROCKETLAUNCHER_SHARE_LESSONS|opt[- ]?out/i.test(INSTRUCTIONS), 'instructions disclose sharing to the configured lessons API (what / never sent), no opt-out, no learned text');
   const id48 = l48().id; const fr = E.forgetLesson(id48, 'en');
   check(fr.removed === id48 && !lessonsFile().lessons.some(l => l.id === id48) && !JSON.parse(fs.readFileSync(XFILE, 'utf8')).lessons.some(l => (l.codes || []).includes('4.8')), 'forget removes from lessons.json and export');
   let threw = false; try { E.forgetLesson('nope-xyz', 'en'); } catch (e) { threw = e.code === 'lessonNotFound'; } check(threw, 'forget unknown id → lessonNotFound');

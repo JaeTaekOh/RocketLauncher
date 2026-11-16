@@ -86,7 +86,7 @@ check(G.files.includes('listing/KEEP-CURRENT-LISTING.txt') && G.files.includes('
 const lt = fs.readFileSync(path.join(G.folder, 'listing/en/google-play.txt'), 'utf8');
 check(/Tool Box - Unit Converter/.test(lt) && /Convert units fast\./.test(lt) && /\[keep the current text\]/.test(lt), 'listing file = existing fastlane copy only (missing parts say keep current)', lt);
 g = E.guide(st, 'play', 'en');
-check(JSON.stringify(ids(g.steps)) === JSON.stringify(['u-version', 'u-whatsnew', 'u-checks', 'u-listing', 'u-submit']), 'live guide: version → What\'s new → checks → listing kept → send update', ids(g.steps));
+check(JSON.stringify(ids(g.steps)) === JSON.stringify(['u-version', 'u-whatsnew', 'u-checks', 'u-listing', 'release-checks', 'u-submit']), 'live guide: version → What\'s new → checks → listing kept → release checks → send update', ids(g.steps));
 const uv = g.steps.find(s => s.id === 'u-version').fields;
 check(uv.some(f => /Next version/.test(f.label) && f.value === '1.3.1 / 8') && uv.some(f => f.label === 'targetSdk' && f.value === '36'), 'new version suggested (versionCode +1), real targetSdk shown', uv);
 check(g.steps.find(s => s.id === 'u-checks').fields.some(f => f.value === 'https://toolbox.app/privacy'), 'privacy URL kept, not replaced');
@@ -147,7 +147,7 @@ check(tf && /No/.test(tf.value) && !Object.keys(st.dec).some(k => st.dec[k] === 
 check(g.steps.find(s => s.id === 'u-version').fields.some(f => f.value === '2.0.1 (13)'), 'next iOS version/build suggested (2.0.1 (13))');
 
 console.log('\n[9] texts in five languages');
-const D = globalThis.window.AAP_I18N;
+const D = globalThis.window.RL_I18N;
 const need = ['dec.stage.play', 'stage.not_submitted', 'stage.in_review', 'stage.rejected', 'stage.live', 'opt.keep', 'binary.wait', 'binary.new_build', 'iss.targetSdkUnread.t', 'g.u-version.t', 'g.i-wait.t', 'g.r-resubmit.t'];
 check(['en', 'ko', 'th', 'zh', 'hi'].every(l => need.every(k => D[l] && D[l][k])), 'stage texts present in en/ko/th/zh/hi');
 check(Flow.STAGES.join() === 'not_submitted,in_review,rejected,live', 'four stages');

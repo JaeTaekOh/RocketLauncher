@@ -1,5 +1,5 @@
-window.AAP_I18N = window.AAP_I18N || {};
-window.AAP_I18N.ko = {
+window.RL_I18N = window.RL_I18N || {};
+window.RL_I18N.ko = {
   copied: '복사했어요', copy: '복사', 'sev.block': '꼭 고칠 것', 'sev.warn': '확인 권장', 'sev.tip': '참고', bothStores: '두 스토어',
   'ad.label': '광고 영역 · 준비 중', 'ad.note': '이 자리는 나중에 배너 하나만 들어가며, 버튼이나 내용을 가리지 않아요.',
   'step.analyze': '분석', 'step.decide': '결정', 'step.assets': '자료', 'step.submit': '제출', 'step.review': '심사', 'step.done': '출시',

@@ -1,5 +1,5 @@
-window.AAP_I18N = window.AAP_I18N || {};
-window.AAP_I18N.en = {
+window.RL_I18N = window.RL_I18N || {};
+window.RL_I18N.en = {
   copied: 'Copied', copy: 'Copy', 'sev.block': 'Must fix', 'sev.warn': 'Recommended', 'sev.tip': 'Good to know', bothStores: 'Both stores',
   'ad.label': 'Ad space · coming later', 'ad.note': 'One banner may appear here later. It will never cover buttons or content.',
   'step.analyze': 'Analyze', 'step.decide': 'Decide', 'step.assets': 'Assets', 'step.submit': 'Submit', 'step.review': 'Review', 'step.done': 'Live',

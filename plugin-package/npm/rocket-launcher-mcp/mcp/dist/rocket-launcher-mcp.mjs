@@ -12,6 +12,14 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
   if (typeof require !== "undefined") return require.apply(this, arguments);
   throw Error('Dynamic require of "' + x + '" is not supported');
 });
+var __esm = (fn, res, err) => function __init() {
+  if (err) throw err[0];
+  try {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  } catch (e) {
+    throw err = [e], e;
+  }
+};
 var __commonJS = (cb, mod) => function __require2() {
   try {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -291,8 +299,8 @@ var require_code = __commonJS({
       throw new Error(`CodeGen: invalid export name: ${key2}, use explicit $id name mapping`);
     }
     exports.getEsmExportName = getEsmExportName;
-    function regexpCode(rx) {
-      return new _Code(rx.toString());
+    function regexpCode(rx2) {
+      return new _Code(rx2.toString());
     }
     exports.regexpCode = regexpCode;
   }
@@ -563,9 +571,9 @@ var require_codegen = __commonJS({
       }
     };
     var Label = class extends Node4 {
-      constructor(label) {
+      constructor(label2) {
         super();
-        this.label = label;
+        this.label = label2;
         this.names = {};
       }
       render({ _n }) {
@@ -573,14 +581,14 @@ var require_codegen = __commonJS({
       }
     };
     var Break = class extends Node4 {
-      constructor(label) {
+      constructor(label2) {
         super();
-        this.label = label;
+        this.label = label2;
         this.names = {};
       }
       render({ _n }) {
-        const label = this.label ? ` ${this.label}` : "";
-        return `break${label};` + _n;
+        const label2 = this.label ? ` ${this.label}` : "";
+        return `break${label2};` + _n;
       }
     };
     var Throw = class extends Node4 {
@@ -992,12 +1000,12 @@ var require_codegen = __commonJS({
         return this._endBlockNode(For);
       }
       // `label` statement
-      label(label) {
-        return this._leafNode(new Label(label));
+      label(label2) {
+        return this._leafNode(new Label(label2));
       }
       // `break` statement
-      break(label) {
-        return this._leafNode(new Break(label));
+      break(label2) {
+        return this._leafNode(new Break(label2));
       }
       // `return` statement
       return(value) {
@@ -1892,10 +1900,10 @@ var require_code2 = __commonJS({
     function usePattern({ gen, it: { opts } }, pattern) {
       const u = opts.unicodeRegExp ? "u" : "";
       const { regExp } = opts.code;
-      const rx = regExp(pattern, u);
+      const rx2 = regExp(pattern, u);
       return gen.scopeValue("pattern", {
-        key: rx.toString(),
-        ref: rx,
+        key: rx2.toString(),
+        ref: rx2,
         code: (0, codegen_1._)`${regExp.code === "new RegExp" ? newRegExp : (0, util_2.useFunc)(gen, regExp)}(${pattern}, ${u})`
       });
     }
@@ -3373,8 +3381,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path5) {
-      let input2 = path5;
+    function removeDotSegments(path6) {
+      let input2 = path6;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3448,11 +3456,11 @@ var require_utils = __commonJS({
       }
       return output2.join("");
     }
-    function removeDotSegmentsRelative(path5) {
-      if (path5 === "" || path5[0] === "/") {
-        return removeDotSegments(path5);
+    function removeDotSegmentsRelative(path6) {
+      if (path6 === "" || path6[0] === "/") {
+        return removeDotSegments(path6);
       }
-      const segments = path5.split("/");
+      const segments = path6.split("/");
       const last = segments.length - 1;
       const output2 = [];
       let trailingDirectory = false;
@@ -3815,8 +3823,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path5 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path5 && path5 !== "/" ? path5 : void 0;
+        const path6 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path6 && path6 !== "/" ? path6 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -7353,12 +7361,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs5, exportName) {
+    function addFormats(ajv, list, fs6, exportName) {
       var _a5;
       var _b;
       (_a5 = (_b = ajv.opts.code).formats) !== null && _a5 !== void 0 ? _a5 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs5[f]);
+        ajv.addFormat(f, fs6[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -7395,6 +7403,251 @@ var require_canvas = __commonJS({
     } catch (fallback) {
       module.exports = require_canvas_shim();
     }
+  }
+});
+
+// lib/release-i18n.mjs
+var release_i18n_exports = {};
+__export(release_i18n_exports, {
+  RECRUIT: () => RECRUIT,
+  RX: () => RX,
+  rx: () => rx
+});
+function rx(L, key2, vars) {
+  let s = RX[L] && RX[L][key2] || en[key2] || key2;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => vars[k] !== void 0 ? String(vars[k]) : m);
+  return s;
+}
+var en, ko, th, zh, hi, RX, RECRUIT;
+var init_release_i18n = __esm({
+  "lib/release-i18n.mjs"() {
+    en = {
+      "sev.block": "Must fix",
+      "sev.warn": "Check",
+      "sev.check": "Confirm in the console",
+      "sev.ok": "OK",
+      "sev.info": "Info",
+      "req.title": "Store requirements and deadlines",
+      "req.summary": "{block} must fix \xB7 {warn} to check \xB7 {check} to confirm in the console \xB7 {ok} OK. Rules verified on {date}.",
+      "req.rescan": "This project was connected with an older Rocket Launcher, so the code scan (native libraries, required-reason APIs, deletion path) is missing. Connect the app again to get every check.",
+      "ct.title": "Google Play closed test (12 testers \xD7 14 days)",
+      "ct.summary": "{q}/12 testers have been opted in for 14 days in a row. {left}",
+      "ct.left.days": "Earliest date to apply: {date} ({days} days left).",
+      "ct.left.need": "{n} more testers needed. If they opt in today, the earliest date to apply is {date}.",
+      "ct.ready": "Ready: you can apply for production access in Play Console (Dashboard > Apply for production). The user presses the button.",
+      "ct.notNeeded": "Not required: this rule only applies to personal Play developer accounts created after 2023-11-13.",
+      "ct.recorded": "Saved {n} tester record(s) on this computer.",
+      "pv.title": "Privacy consistency check",
+      "pv.summary": "{block} mismatch(es) to fix and {warn} to check across Data safety, App Privacy, PrivacyInfo.xcprivacy, permission texts and the privacy policy.",
+      "pa.title": "Google Play policy audit (Play Policy Insights)",
+      "pa.summary": "Quick scan with Google's Play Policy Insights rules: {n} area(s) to review. For the full audit, ask your AI agent to follow the bundled SKILL.md.",
+      "pa.noAndroid": "This app has no Android project, so the Google Play policy audit does not apply.",
+      "rn.title": "Notes for the store reviewers",
+      "rn.summary": "Review notes drafted for {stores}. Replace every [placeholder]. Never paste real passwords into chat; type them only in the console.",
+      "del.title": "Account deletion path",
+      "del.ok": "Account deletion looks complete: in-app path and web page found.",
+      "del.missing": "Account deletion is incomplete: {missing}.",
+      "del.notNeeded": "No account sign-up found, so the account deletion rule does not apply.",
+      "mv.title": "Move the app to another developer account",
+      "mv.neutral": "There are two paths: transfer the existing app, or register it again as a new app in the new account. Neither is the default. Read the differences and pick one.",
+      "mv.transfer": "Path: transfer the existing app.",
+      "mv.new": "Path: register again as a new app.",
+      "mv.keyRecorded": "Saved where the signing key backup is kept (location only, no secrets).",
+      "rm.title": "Unpublish or delete an app",
+      "rm.summary": "Step-by-step guide. Rocket Launcher never removes or deletes anything; the account owner does it in the console.",
+      "vs.title": "Version and build numbers",
+      "vs.summary": "{issues} issue(s). Suggested next version: {next}.",
+      "vs.forceUpdate": "Force-update safety: raise the server's minimum or latest version only after the new build is visible in every store.",
+      "cc.title": "Country rules",
+      "cc.summary": "{n} country rule(s) apply to this app.",
+      "rc.step.t": "Release checks before you submit",
+      "rc.step.d": 'Store requirements, privacy consistency and account deletion. Fix every "Must fix" item before pressing submit.',
+      "rc.note": "Release checks: {block} must fix, {warn} to check. Details: rocketlauncher_check_requirements, rocketlauncher_privacy_check, rocketlauncher_account_deletion_check."
+    };
+    ko = {
+      "sev.block": "\uAF2D \uACE0\uCE60 \uAC83",
+      "sev.warn": "\uD655\uC778 \uD544\uC694",
+      "sev.check": "\uCF58\uC194\uC5D0\uC11C \uD655\uC778",
+      "sev.ok": "\uD1B5\uACFC",
+      "sev.info": "\uCC38\uACE0",
+      "req.title": "\uC2A4\uD1A0\uC5B4 \uC694\uAC74\uACFC \uB9C8\uAC10\uC77C",
+      "req.summary": "\uAF2D \uACE0\uCE60 \uAC83 {block}\uAC1C \xB7 \uD655\uC778 \uD544\uC694 {warn}\uAC1C \xB7 \uCF58\uC194\uC5D0\uC11C \uD655\uC778 {check}\uAC1C \xB7 \uD1B5\uACFC {ok}\uAC1C. \uADDC\uCE59 \uD655\uC778\uC77C {date}.",
+      "req.rescan": "\uC608\uC804 \uBC84\uC804\uC73C\uB85C \uC5F0\uACB0\uD55C \uD504\uB85C\uC81D\uD2B8\uB77C \uCF54\uB4DC \uAC80\uC0AC(\uB124\uC774\uD2F0\uBE0C \uB77C\uC774\uBE0C\uB7EC\uB9AC, \uD544\uC218 \uC0AC\uC720 API, \uC0AD\uC81C \uACBD\uB85C)\uAC00 \uBE60\uC838 \uC788\uC5B4\uC694. \uC571\uC744 \uB2E4\uC2DC \uC5F0\uACB0\uD558\uBA74 \uBAA8\uB4E0 \uAC80\uC0AC\uB97C \uBCFC \uC218 \uC788\uC5B4\uC694.",
+      "ct.title": "Google Play \uBE44\uACF5\uAC1C \uD14C\uC2A4\uD2B8 (\uD14C\uC2A4\uD130 12\uBA85 \xD7 14\uC77C)",
+      "ct.summary": "14\uC77C \uC5F0\uC18D \uCC38\uC5EC\uD55C \uD14C\uC2A4\uD130 {q}/12\uBA85. {left}",
+      "ct.left.days": "\uAC00\uC7A5 \uBE60\uB978 \uC2E0\uCCAD\uC77C: {date} ({days}\uC77C \uB0A8\uC74C).",
+      "ct.left.need": "\uD14C\uC2A4\uD130\uAC00 {n}\uBA85 \uB354 \uD544\uC694\uD574\uC694. \uC624\uB298 \uCC38\uC5EC\uD558\uBA74 \uAC00\uC7A5 \uBE60\uB978 \uC2E0\uCCAD\uC77C\uC740 {date}\uC774\uC5D0\uC694.",
+      "ct.ready": "\uC870\uAC74 \uCDA9\uC871: Play Console \uB300\uC2DC\uBCF4\uB4DC\uC5D0\uC11C \uD504\uB85C\uB355\uC158 \uC561\uC138\uC2A4\uB97C \uC2E0\uCCAD\uD560 \uC218 \uC788\uC5B4\uC694. \uBC84\uD2BC\uC740 \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uB20C\uB7EC\uC694.",
+      "ct.notNeeded": "\uD574\uB2F9 \uC5C6\uC74C: 2023-11-13 \uC774\uD6C4 \uB9CC\uB4E0 \uAC1C\uC778 Play \uAC1C\uBC1C\uC790 \uACC4\uC815\uC5D0\uB9CC \uC801\uC6A9\uB3FC\uC694.",
+      "ct.recorded": "\uD14C\uC2A4\uD130 \uAE30\uB85D {n}\uAC74\uC744 \uC774 \uCEF4\uD4E8\uD130\uC5D0 \uC800\uC7A5\uD588\uC5B4\uC694.",
+      "pv.title": "\uAC1C\uC778\uC815\uBCF4 \uC77C\uCE58 \uAC80\uC0AC",
+      "pv.summary": "\uB370\uC774\uD130 \uBCF4\uC548\xB7App \uAC1C\uC778\uC815\uBCF4\xB7PrivacyInfo\xB7\uAD8C\uD55C \uBB38\uAD6C\xB7\uAC1C\uC778\uC815\uBCF4\uCC98\uB9AC\uBC29\uCE68 \uC0AC\uC774\uC5D0 \uACE0\uCE60 \uBD88\uC77C\uCE58 {block}\uAC1C, \uD655\uC778\uD560 \uAC83 {warn}\uAC1C.",
+      "pa.title": "Google Play \uC815\uCC45 \uC810\uAC80 (Play Policy Insights)",
+      "pa.summary": "Google Play Policy Insights \uADDC\uCE59\uC73C\uB85C \uBE60\uB974\uAC8C \uAC80\uC0AC\uD588\uC5B4\uC694: \uC0B4\uD3B4\uBCFC \uC601\uC5ED {n}\uAC1C. \uC804\uCCB4 \uC810\uAC80\uC740 \uD568\uAED8 \uB4E4\uC5B4 \uC788\uB294 SKILL.md\uB97C AI \uC5D0\uC774\uC804\uD2B8\uAC00 \uB530\uB974\uAC8C \uD558\uC138\uC694.",
+      "pa.noAndroid": "Android \uD504\uB85C\uC81D\uD2B8\uAC00 \uC5C6\uC5B4\uC11C Google Play \uC815\uCC45 \uC810\uAC80\uC740 \uD574\uB2F9\uD558\uC9C0 \uC54A\uC544\uC694.",
+      "rn.title": "\uC2EC\uC0AC\uC790\uC5D0\uAC8C \uC804\uD560 \uBA54\uBAA8",
+      "rn.summary": "{stores} \uC2EC\uC0AC \uBA54\uBAA8 \uCD08\uC548\uC744 \uB9CC\uB4E4\uC5C8\uC5B4\uC694. [\uB300\uAD04\uD638] \uBD80\uBD84\uC744 \uCC44\uC6CC \uC8FC\uC138\uC694. \uC2E4\uC81C \uBE44\uBC00\uBC88\uD638\uB294 \uCC44\uD305\uC5D0 \uC4F0\uC9C0 \uB9D0\uACE0 \uCF58\uC194\uC5D0\uB9CC \uC785\uB825\uD558\uC138\uC694.",
+      "del.title": "\uACC4\uC815 \uC0AD\uC81C \uACBD\uB85C",
+      "del.ok": "\uACC4\uC815 \uC0AD\uC81C \uACBD\uB85C\uAC00 \uAC16\uCDB0\uC838 \uC788\uC5B4\uC694: \uC571 \uC548 \uACBD\uB85C\uC640 \uC6F9 \uD398\uC774\uC9C0\uB97C \uCC3E\uC558\uC5B4\uC694.",
+      "del.missing": "\uACC4\uC815 \uC0AD\uC81C\uAC00 \uC544\uC9C1 \uBD80\uC871\uD574\uC694: {missing}.",
+      "del.notNeeded": "\uD68C\uC6D0\uAC00\uC785 \uAE30\uB2A5\uC774 \uC5C6\uC5B4\uC11C \uACC4\uC815 \uC0AD\uC81C \uADDC\uCE59\uC740 \uD574\uB2F9\uD558\uC9C0 \uC54A\uC544\uC694.",
+      "mv.title": "\uB2E4\uB978 \uAC1C\uBC1C\uC790 \uACC4\uC815\uC73C\uB85C \uC571 \uC62E\uAE30\uAE30",
+      "mv.neutral": "\uB450 \uAC00\uC9C0 \uBC29\uBC95\uC774 \uC788\uC5B4\uC694: \uAE30\uC874 \uC571\uC744 \uC774\uC804\uD558\uAC70\uB098, \uC0C8 \uACC4\uC815\uC5D0 \uC0C8 \uC571\uC73C\uB85C \uB2E4\uC2DC \uB4F1\uB85D\uD558\uB294 \uAC83. \uAE30\uBCF8\uAC12\uC740 \uC5C6\uC5B4\uC694. \uCC28\uC774\uB97C \uBCF4\uACE0 \uACE8\uB77C \uC8FC\uC138\uC694.",
+      "mv.transfer": "\uC120\uD0DD: \uAE30\uC874 \uC571 \uC774\uC804",
+      "mv.new": "\uC120\uD0DD: \uC0C8 \uC571\uC73C\uB85C \uB2E4\uC2DC \uB4F1\uB85D",
+      "mv.keyRecorded": "\uC11C\uBA85 \uD0A4 \uBC31\uC5C5 \uC704\uCE58\uB97C \uC800\uC7A5\uD588\uC5B4\uC694 (\uC704\uCE58\uB9CC, \uBE44\uBC00 \uAC12\uC740 \uC800\uC7A5\uD558\uC9C0 \uC54A\uC544\uC694).",
+      "rm.title": "\uC571 \uAC8C\uC2DC \uC911\uB2E8\xB7\uC0AD\uC81C",
+      "rm.summary": "\uB2E8\uACC4\uBCC4 \uC548\uB0B4\uC608\uC694. Rocket Launcher\uB294 \uC544\uBB34\uAC83\uB3C4 \uC9C0\uC6B0\uC9C0 \uC54A\uC544\uC694. \uACC4\uC815 \uC18C\uC720\uC790\uAC00 \uCF58\uC194\uC5D0\uC11C \uC9C1\uC811 \uD574\uC694.",
+      "vs.title": "\uBC84\uC804\xB7\uBE4C\uB4DC \uBC88\uD638",
+      "vs.summary": "\uBB38\uC81C {issues}\uAC1C. \uCD94\uCC9C \uB2E4\uC74C \uBC84\uC804: {next}.",
+      "vs.forceUpdate": "\uAC15\uC81C \uC5C5\uB370\uC774\uD2B8 \uC548\uC804\uC7A5\uCE58: \uC0C8 \uBE4C\uB4DC\uAC00 \uBAA8\uB4E0 \uC2A4\uD1A0\uC5B4\uC5D0 \uC2E4\uC81C\uB85C \uBCF4\uC778 \uB4A4\uC5D0\uB9CC \uC11C\uBC84\uC758 \uCD5C\uC18C\xB7\uCD5C\uC2E0 \uBC84\uC804\uC744 \uC62C\uB9AC\uC138\uC694.",
+      "cc.title": "\uAD6D\uAC00\uBCC4 \uADDC\uC815",
+      "cc.summary": "\uC774 \uC571\uC5D0 \uD574\uB2F9\uD558\uB294 \uAD6D\uAC00\uBCC4 \uADDC\uC815 {n}\uAC1C.",
+      "rc.step.t": "\uC81C\uCD9C \uC804 \uCD9C\uC2DC \uC810\uAC80",
+      "rc.step.d": '\uC2A4\uD1A0\uC5B4 \uC694\uAC74, \uAC1C\uC778\uC815\uBCF4 \uC77C\uCE58, \uACC4\uC815 \uC0AD\uC81C\uB97C \uD655\uC778\uD574\uC694. "\uAF2D \uACE0\uCE60 \uAC83"\uC744 \uBAA8\uB450 \uACE0\uCE5C \uB4A4 \uC81C\uCD9C\uD558\uC138\uC694.',
+      "rc.note": "\uCD9C\uC2DC \uC810\uAC80: \uAF2D \uACE0\uCE60 \uAC83 {block}\uAC1C, \uD655\uC778 \uD544\uC694 {warn}\uAC1C."
+    };
+    th = {
+      "sev.block": "\u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49",
+      "sev.warn": "\u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08",
+      "sev.check": "\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E43\u0E19\u0E04\u0E2D\u0E19\u0E42\u0E0B\u0E25",
+      "sev.ok": "\u0E1C\u0E48\u0E32\u0E19",
+      "sev.info": "\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25",
+      "req.title": "\u0E02\u0E49\u0E2D\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E41\u0E25\u0E30\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E40\u0E27\u0E25\u0E32\u0E02\u0E2D\u0E07\u0E2A\u0E42\u0E15\u0E23\u0E4C",
+      "req.summary": "\u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49 {block} \xB7 \u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08 {warn} \xB7 \u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E43\u0E19\u0E04\u0E2D\u0E19\u0E42\u0E0B\u0E25 {check} \xB7 \u0E1C\u0E48\u0E32\u0E19 {ok} \u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E01\u0E0E\u0E40\u0E21\u0E37\u0E48\u0E2D {date}",
+      "req.rescan": "\u0E42\u0E1B\u0E23\u0E40\u0E08\u0E01\u0E15\u0E4C\u0E19\u0E35\u0E49\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E14\u0E49\u0E27\u0E22\u0E40\u0E27\u0E2D\u0E23\u0E4C\u0E0A\u0E31\u0E19\u0E40\u0E01\u0E48\u0E32 \u0E08\u0E36\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E01\u0E32\u0E23\u0E2A\u0E41\u0E01\u0E19\u0E42\u0E04\u0E49\u0E14 \u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E41\u0E2D\u0E1B\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E14\u0E39\u0E01\u0E32\u0E23\u0E15\u0E23\u0E27\u0E08\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14",
+      "ct.title": "\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A\u0E41\u0E1A\u0E1A\u0E1B\u0E34\u0E14\u0E02\u0E2D\u0E07 Google Play (\u0E1C\u0E39\u0E49\u0E17\u0E14\u0E2A\u0E2D\u0E1A 12 \u0E04\u0E19 \xD7 14 \u0E27\u0E31\u0E19)",
+      "ct.summary": "\u0E1C\u0E39\u0E49\u0E17\u0E14\u0E2A\u0E2D\u0E1A\u0E17\u0E35\u0E48\u0E40\u0E02\u0E49\u0E32\u0E23\u0E48\u0E27\u0E21\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 14 \u0E27\u0E31\u0E19 {q}/12 \u0E04\u0E19 {left}",
+      "ct.left.days": "\u0E2A\u0E21\u0E31\u0E04\u0E23\u0E44\u0E14\u0E49\u0E40\u0E23\u0E47\u0E27\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14: {date} (\u0E40\u0E2B\u0E25\u0E37\u0E2D {days} \u0E27\u0E31\u0E19)",
+      "ct.left.need": "\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E1C\u0E39\u0E49\u0E17\u0E14\u0E2A\u0E2D\u0E1A\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2D\u0E35\u0E01 {n} \u0E04\u0E19 \u0E16\u0E49\u0E32\u0E40\u0E02\u0E49\u0E32\u0E23\u0E48\u0E27\u0E21\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49 \u0E08\u0E30\u0E2A\u0E21\u0E31\u0E04\u0E23\u0E44\u0E14\u0E49\u0E40\u0E23\u0E47\u0E27\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14 {date}",
+      "ct.ready": "\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E41\u0E25\u0E49\u0E27: \u0E2A\u0E21\u0E31\u0E04\u0E23\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E40\u0E1C\u0E22\u0E41\u0E1E\u0E23\u0E48\u0E08\u0E23\u0E34\u0E07\u0E44\u0E14\u0E49\u0E43\u0E19 Play Console \u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E01\u0E14\u0E1B\u0E38\u0E48\u0E21\u0E40\u0E2D\u0E07",
+      "ct.notNeeded": "\u0E44\u0E21\u0E48\u0E08\u0E33\u0E40\u0E1B\u0E47\u0E19: \u0E43\u0E0A\u0E49\u0E01\u0E31\u0E1A\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E19\u0E31\u0E01\u0E1E\u0E31\u0E12\u0E19\u0E32\u0E2A\u0E48\u0E27\u0E19\u0E15\u0E31\u0E27\u0E17\u0E35\u0E48\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E2B\u0E25\u0E31\u0E07 2023-11-13 \u0E40\u0E17\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19",
+      "ct.recorded": "\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E1C\u0E39\u0E49\u0E17\u0E14\u0E2A\u0E2D\u0E1A {n} \u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E44\u0E27\u0E49\u0E43\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E41\u0E25\u0E49\u0E27",
+      "pv.title": "\u0E15\u0E23\u0E27\u0E08\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E2D\u0E14\u0E04\u0E25\u0E49\u0E2D\u0E07\u0E14\u0E49\u0E32\u0E19\u0E04\u0E27\u0E32\u0E21\u0E40\u0E1B\u0E47\u0E19\u0E2A\u0E48\u0E27\u0E19\u0E15\u0E31\u0E27",
+      "pv.summary": "\u0E1E\u0E1A\u0E08\u0E38\u0E14\u0E44\u0E21\u0E48\u0E15\u0E23\u0E07\u0E01\u0E31\u0E19\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49 {block} \u0E41\u0E25\u0E30\u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08 {warn}",
+      "pa.title": "\u0E15\u0E23\u0E27\u0E08\u0E19\u0E42\u0E22\u0E1A\u0E32\u0E22 Google Play (Play Policy Insights)",
+      "pa.summary": "\u0E2A\u0E41\u0E01\u0E19\u0E14\u0E48\u0E27\u0E19\u0E14\u0E49\u0E27\u0E22\u0E01\u0E0E Play Policy Insights \u0E02\u0E2D\u0E07 Google: \u0E21\u0E35 {n} \u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48\u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08",
+      "pa.noAndroid": "\u0E41\u0E2D\u0E1B\u0E19\u0E35\u0E49\u0E44\u0E21\u0E48\u0E21\u0E35\u0E42\u0E1B\u0E23\u0E40\u0E08\u0E01\u0E15\u0E4C Android \u0E08\u0E36\u0E07\u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E15\u0E23\u0E27\u0E08\u0E19\u0E42\u0E22\u0E1A\u0E32\u0E22 Google Play",
+      "rn.title": "\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E1C\u0E39\u0E49\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E02\u0E2D\u0E07\u0E2A\u0E42\u0E15\u0E23\u0E4C",
+      "rn.summary": "\u0E23\u0E48\u0E32\u0E07\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E1C\u0E39\u0E49\u0E15\u0E23\u0E27\u0E08\u0E02\u0E2D\u0E07 {stores} \u0E41\u0E25\u0E49\u0E27 \u0E01\u0E23\u0E38\u0E13\u0E32\u0E40\u0E15\u0E34\u0E21\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19 [\u0E27\u0E07\u0E40\u0E25\u0E47\u0E1A] \u0E41\u0E25\u0E30\u0E2D\u0E22\u0E48\u0E32\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19\u0E08\u0E23\u0E34\u0E07\u0E43\u0E19\u0E41\u0E0A\u0E15",
+      "del.title": "\u0E0A\u0E48\u0E2D\u0E07\u0E17\u0E32\u0E07\u0E25\u0E1A\u0E1A\u0E31\u0E0D\u0E0A\u0E35",
+      "del.ok": "\u0E0A\u0E48\u0E2D\u0E07\u0E17\u0E32\u0E07\u0E25\u0E1A\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E04\u0E23\u0E1A\u0E41\u0E25\u0E49\u0E27",
+      "del.missing": "\u0E0A\u0E48\u0E2D\u0E07\u0E17\u0E32\u0E07\u0E25\u0E1A\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E04\u0E23\u0E1A: {missing}",
+      "del.notNeeded": "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E01\u0E32\u0E23\u0E2A\u0E21\u0E31\u0E04\u0E23\u0E1A\u0E31\u0E0D\u0E0A\u0E35 \u0E08\u0E36\u0E07\u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E0A\u0E48\u0E2D\u0E07\u0E17\u0E32\u0E07\u0E25\u0E1A\u0E1A\u0E31\u0E0D\u0E0A\u0E35",
+      "mv.title": "\u0E22\u0E49\u0E32\u0E22\u0E41\u0E2D\u0E1B\u0E44\u0E1B\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E19\u0E31\u0E01\u0E1E\u0E31\u0E12\u0E19\u0E32\u0E2D\u0E37\u0E48\u0E19",
+      "mv.neutral": "\u0E21\u0E35\u0E2A\u0E2D\u0E07\u0E17\u0E32\u0E07: \u0E42\u0E2D\u0E19\u0E41\u0E2D\u0E1B\u0E40\u0E14\u0E34\u0E21 \u0E2B\u0E23\u0E37\u0E2D\u0E25\u0E07\u0E17\u0E30\u0E40\u0E1A\u0E35\u0E22\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E41\u0E2D\u0E1B\u0E43\u0E2B\u0E21\u0E48\u0E43\u0E19\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E43\u0E2B\u0E21\u0E48 \u0E44\u0E21\u0E48\u0E21\u0E35\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19 \u0E42\u0E1B\u0E23\u0E14\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E40\u0E2D\u0E07",
+      "mv.transfer": "\u0E17\u0E32\u0E07\u0E17\u0E35\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01: \u0E42\u0E2D\u0E19\u0E41\u0E2D\u0E1B\u0E40\u0E14\u0E34\u0E21",
+      "mv.new": "\u0E17\u0E32\u0E07\u0E17\u0E35\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01: \u0E25\u0E07\u0E17\u0E30\u0E40\u0E1A\u0E35\u0E22\u0E19\u0E40\u0E1B\u0E47\u0E19\u0E41\u0E2D\u0E1B\u0E43\u0E2B\u0E21\u0E48",
+      "mv.keyRecorded": "\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E15\u0E33\u0E41\u0E2B\u0E19\u0E48\u0E07\u0E17\u0E35\u0E48\u0E40\u0E01\u0E47\u0E1A\u0E2A\u0E33\u0E23\u0E2D\u0E07\u0E04\u0E35\u0E22\u0E4C\u0E41\u0E25\u0E49\u0E27 (\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E15\u0E33\u0E41\u0E2B\u0E19\u0E48\u0E07 \u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E25\u0E31\u0E1A)",
+      "rm.title": "\u0E2B\u0E22\u0E38\u0E14\u0E40\u0E1C\u0E22\u0E41\u0E1E\u0E23\u0E48\u0E2B\u0E23\u0E37\u0E2D\u0E25\u0E1A\u0E41\u0E2D\u0E1B",
+      "rm.summary": "\u0E04\u0E39\u0E48\u0E21\u0E37\u0E2D\u0E17\u0E35\u0E25\u0E30\u0E02\u0E31\u0E49\u0E19\u0E15\u0E2D\u0E19 Rocket Launcher \u0E44\u0E21\u0E48\u0E25\u0E1A\u0E2D\u0E30\u0E44\u0E23\u0E40\u0E2D\u0E07 \u0E40\u0E08\u0E49\u0E32\u0E02\u0E2D\u0E07\u0E1A\u0E31\u0E0D\u0E0A\u0E35\u0E17\u0E33\u0E43\u0E19\u0E04\u0E2D\u0E19\u0E42\u0E0B\u0E25",
+      "vs.title": "\u0E2B\u0E21\u0E32\u0E22\u0E40\u0E25\u0E02\u0E40\u0E27\u0E2D\u0E23\u0E4C\u0E0A\u0E31\u0E19\u0E41\u0E25\u0E30\u0E1A\u0E34\u0E25\u0E14\u0E4C",
+      "vs.summary": "\u0E1E\u0E1A {issues} \u0E1B\u0E31\u0E0D\u0E2B\u0E32 \u0E40\u0E27\u0E2D\u0E23\u0E4C\u0E0A\u0E31\u0E19\u0E16\u0E31\u0E14\u0E44\u0E1B\u0E17\u0E35\u0E48\u0E41\u0E19\u0E30\u0E19\u0E33: {next}",
+      "vs.forceUpdate": "\u0E1B\u0E23\u0E31\u0E1A\u0E40\u0E27\u0E2D\u0E23\u0E4C\u0E0A\u0E31\u0E19\u0E02\u0E31\u0E49\u0E19\u0E15\u0E48\u0E33\u0E1A\u0E19\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F\u0E40\u0E27\u0E2D\u0E23\u0E4C\u0E2B\u0E25\u0E31\u0E07\u0E08\u0E32\u0E01\u0E1A\u0E34\u0E25\u0E14\u0E4C\u0E43\u0E2B\u0E21\u0E48\u0E1B\u0E23\u0E32\u0E01\u0E0F\u0E43\u0E19\u0E17\u0E38\u0E01\u0E2A\u0E42\u0E15\u0E23\u0E4C\u0E41\u0E25\u0E49\u0E27\u0E40\u0E17\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19",
+      "cc.title": "\u0E01\u0E0E\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E1B\u0E23\u0E30\u0E40\u0E17\u0E28",
+      "cc.summary": "\u0E21\u0E35\u0E01\u0E0E\u0E02\u0E2D\u0E07\u0E1B\u0E23\u0E30\u0E40\u0E17\u0E28\u0E17\u0E35\u0E48\u0E40\u0E01\u0E35\u0E48\u0E22\u0E27\u0E02\u0E49\u0E2D\u0E07 {n} \u0E02\u0E49\u0E2D",
+      "rc.step.t": "\u0E15\u0E23\u0E27\u0E08\u0E01\u0E48\u0E2D\u0E19\u0E2A\u0E48\u0E07",
+      "rc.step.d": '\u0E02\u0E49\u0E2D\u0E01\u0E33\u0E2B\u0E19\u0E14\u0E02\u0E2D\u0E07\u0E2A\u0E42\u0E15\u0E23\u0E4C \u0E04\u0E27\u0E32\u0E21\u0E40\u0E1B\u0E47\u0E19\u0E2A\u0E48\u0E27\u0E19\u0E15\u0E31\u0E27 \u0E41\u0E25\u0E30\u0E01\u0E32\u0E23\u0E25\u0E1A\u0E1A\u0E31\u0E0D\u0E0A\u0E35 \u0E41\u0E01\u0E49\u0E17\u0E38\u0E01\u0E02\u0E49\u0E2D "\u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49" \u0E01\u0E48\u0E2D\u0E19\u0E01\u0E14\u0E2A\u0E48\u0E07',
+      "rc.note": "\u0E01\u0E32\u0E23\u0E15\u0E23\u0E27\u0E08\u0E01\u0E48\u0E2D\u0E19\u0E40\u0E1C\u0E22\u0E41\u0E1E\u0E23\u0E48: \u0E15\u0E49\u0E2D\u0E07\u0E41\u0E01\u0E49 {block} \u0E04\u0E27\u0E23\u0E15\u0E23\u0E27\u0E08 {warn}"
+    };
+    zh = {
+      "sev.block": "\u5FC5\u987B\u4FEE\u590D",
+      "sev.warn": "\u9700\u8981\u68C0\u67E5",
+      "sev.check": "\u5728\u540E\u53F0\u786E\u8BA4",
+      "sev.ok": "\u901A\u8FC7",
+      "sev.info": "\u8BF4\u660E",
+      "req.title": "\u5546\u5E97\u8981\u6C42\u4E0E\u622A\u6B62\u65E5\u671F",
+      "req.summary": "\u5FC5\u987B\u4FEE\u590D {block} \u9879 \xB7 \u9700\u8981\u68C0\u67E5 {warn} \u9879 \xB7 \u5728\u540E\u53F0\u786E\u8BA4 {check} \u9879 \xB7 \u901A\u8FC7 {ok} \u9879\u3002\u89C4\u5219\u6838\u5BF9\u65E5\u671F {date}\u3002",
+      "req.rescan": "\u8BE5\u9879\u76EE\u7531\u65E7\u7248\u672C\u8FDE\u63A5\uFF0C\u7F3A\u5C11\u4EE3\u7801\u626B\u63CF\u3002\u8BF7\u91CD\u65B0\u8FDE\u63A5\u5E94\u7528\u4EE5\u83B7\u5F97\u5168\u90E8\u68C0\u67E5\u3002",
+      "ct.title": "Google Play \u5C01\u95ED\u6D4B\u8BD5\uFF0812 \u540D\u6D4B\u8BD5\u8005 \xD7 14 \u5929\uFF09",
+      "ct.summary": "\u5DF2\u8FDE\u7EED\u53C2\u4E0E 14 \u5929\u7684\u6D4B\u8BD5\u8005 {q}/12 \u540D\u3002{left}",
+      "ct.left.days": "\u6700\u65E9\u53EF\u7533\u8BF7\u65E5\u671F\uFF1A{date}\uFF08\u8FD8\u5269 {days} \u5929\uFF09\u3002",
+      "ct.left.need": "\u8FD8\u9700\u8981 {n} \u540D\u6D4B\u8BD5\u8005\u3002\u82E5\u4ECA\u5929\u52A0\u5165\uFF0C\u6700\u65E9\u53EF\u7533\u8BF7\u65E5\u671F\u4E3A {date}\u3002",
+      "ct.ready": "\u5DF2\u6EE1\u8DB3\u6761\u4EF6\uFF1A\u53EF\u5728 Play \u7BA1\u7406\u4E2D\u5FC3\u7533\u8BF7\u6B63\u5F0F\u7248\u8BBF\u95EE\u6743\u9650\uFF0C\u7531\u7528\u6237\u81EA\u5DF1\u70B9\u51FB\u6309\u94AE\u3002",
+      "ct.notNeeded": "\u4E0D\u9002\u7528\uFF1A\u4EC5\u9002\u7528\u4E8E 2023-11-13 \u4E4B\u540E\u521B\u5EFA\u7684\u4E2A\u4EBA\u5F00\u53D1\u8005\u8D26\u53F7\u3002",
+      "ct.recorded": "\u5DF2\u5728\u672C\u673A\u4FDD\u5B58 {n} \u6761\u6D4B\u8BD5\u8005\u8BB0\u5F55\u3002",
+      "pv.title": "\u9690\u79C1\u4E00\u81F4\u6027\u68C0\u67E5",
+      "pv.summary": "\u53D1\u73B0 {block} \u5904\u9700\u8981\u4FEE\u590D\u3001{warn} \u5904\u9700\u8981\u68C0\u67E5\u7684\u4E0D\u4E00\u81F4\u3002",
+      "pa.title": "Google Play \u653F\u7B56\u5BA1\u6838\uFF08Play Policy Insights\uFF09",
+      "pa.summary": "\u4F7F\u7528 Google Play Policy Insights \u89C4\u5219\u5FEB\u901F\u626B\u63CF\uFF1A{n} \u4E2A\u65B9\u9762\u9700\u8981\u67E5\u770B\u3002",
+      "pa.noAndroid": "\u8BE5\u5E94\u7528\u6CA1\u6709 Android \u9879\u76EE\uFF0C\u4E0D\u9002\u7528 Google Play \u653F\u7B56\u5BA1\u6838\u3002",
+      "rn.title": "\u7ED9\u5546\u5E97\u5BA1\u6838\u5458\u7684\u8BF4\u660E",
+      "rn.summary": "\u5DF2\u4E3A {stores} \u8D77\u8349\u5BA1\u6838\u8BF4\u660E\u3002\u8BF7\u586B\u5199\u6240\u6709 [\u5360\u4F4D\u5185\u5BB9]\uFF0C\u4E0D\u8981\u5728\u804A\u5929\u4E2D\u7C98\u8D34\u771F\u5B9E\u5BC6\u7801\u3002",
+      "del.title": "\u8D26\u53F7\u5220\u9664\u8DEF\u5F84",
+      "del.ok": "\u8D26\u53F7\u5220\u9664\u8DEF\u5F84\u5B8C\u6574\u3002",
+      "del.missing": "\u8D26\u53F7\u5220\u9664\u5C1A\u4E0D\u5B8C\u6574\uFF1A{missing}\u3002",
+      "del.notNeeded": "\u672A\u53D1\u73B0\u6CE8\u518C\u529F\u80FD\uFF0C\u8D26\u53F7\u5220\u9664\u89C4\u5219\u4E0D\u9002\u7528\u3002",
+      "mv.title": "\u5C06\u5E94\u7528\u79FB\u5230\u53E6\u4E00\u4E2A\u5F00\u53D1\u8005\u8D26\u53F7",
+      "mv.neutral": "\u6709\u4E24\u79CD\u65B9\u5F0F\uFF1A\u8F6C\u79FB\u73B0\u6709\u5E94\u7528\uFF0C\u6216\u5728\u65B0\u8D26\u53F7\u4E2D\u91CD\u65B0\u6CE8\u518C\u4E3A\u65B0\u5E94\u7528\u3002\u6CA1\u6709\u9ED8\u8BA4\u9009\u9879\uFF0C\u8BF7\u6BD4\u8F83\u540E\u9009\u62E9\u3002",
+      "mv.transfer": "\u5DF2\u9009\uFF1A\u8F6C\u79FB\u73B0\u6709\u5E94\u7528\u3002",
+      "mv.new": "\u5DF2\u9009\uFF1A\u91CD\u65B0\u6CE8\u518C\u4E3A\u65B0\u5E94\u7528\u3002",
+      "mv.keyRecorded": "\u5DF2\u4FDD\u5B58\u7B7E\u540D\u5BC6\u94A5\u5907\u4EFD\u7684\u4F4D\u7F6E\uFF08\u4EC5\u4F4D\u7F6E\uFF0C\u4E0D\u542B\u673A\u5BC6\uFF09\u3002",
+      "rm.title": "\u4E0B\u67B6\u6216\u5220\u9664\u5E94\u7528",
+      "rm.summary": "\u5206\u6B65\u6307\u5357\u3002Rocket Launcher \u4E0D\u4F1A\u5220\u9664\u4EFB\u4F55\u5185\u5BB9\uFF0C\u7531\u8D26\u53F7\u6240\u6709\u8005\u5728\u540E\u53F0\u64CD\u4F5C\u3002",
+      "vs.title": "\u7248\u672C\u53F7\u4E0E\u6784\u5EFA\u53F7",
+      "vs.summary": "{issues} \u4E2A\u95EE\u9898\u3002\u5EFA\u8BAE\u7684\u4E0B\u4E00\u4E2A\u7248\u672C\uFF1A{next}\u3002",
+      "vs.forceUpdate": "\u53EA\u6709\u5728\u65B0\u7248\u672C\u5728\u6240\u6709\u5546\u5E97\u90FD\u53EF\u89C1\u540E\uFF0C\u624D\u63D0\u9AD8\u670D\u52A1\u5668\u4E0A\u7684\u6700\u4F4E/\u6700\u65B0\u7248\u672C\u3002",
+      "cc.title": "\u5404\u56FD\u89C4\u5B9A",
+      "cc.summary": "\u6709 {n} \u6761\u56FD\u5BB6/\u5730\u533A\u89C4\u5B9A\u9002\u7528\u4E8E\u8BE5\u5E94\u7528\u3002",
+      "rc.step.t": "\u63D0\u4EA4\u524D\u7684\u53D1\u5E03\u68C0\u67E5",
+      "rc.step.d": "\u5546\u5E97\u8981\u6C42\u3001\u9690\u79C1\u4E00\u81F4\u6027\u548C\u8D26\u53F7\u5220\u9664\u3002\u63D0\u4EA4\u524D\u8BF7\u4FEE\u590D\u6240\u6709\u201C\u5FC5\u987B\u4FEE\u590D\u201D\u9879\u3002",
+      "rc.note": "\u53D1\u5E03\u68C0\u67E5\uFF1A\u5FC5\u987B\u4FEE\u590D {block} \u9879\uFF0C\u9700\u8981\u68C0\u67E5 {warn} \u9879\u3002"
+    };
+    hi = {
+      "sev.block": "\u091C\u093C\u0930\u0942\u0930 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902",
+      "sev.warn": "\u091C\u093E\u0901\u091A\u0947\u0902",
+      "sev.check": "\u0915\u0902\u0938\u094B\u0932 \u092E\u0947\u0902 \u092A\u0941\u0937\u094D\u091F\u093F \u0915\u0930\u0947\u0902",
+      "sev.ok": "\u0920\u0940\u0915",
+      "sev.info": "\u091C\u093E\u0928\u0915\u093E\u0930\u0940",
+      "req.title": "\u0938\u094D\u091F\u094B\u0930 \u0915\u0940 \u091C\u093C\u0930\u0942\u0930\u0924\u0947\u0902 \u0914\u0930 \u0938\u092E\u092F-\u0938\u0940\u092E\u093E\u090F\u0901",
+      "req.summary": "\u091C\u093C\u0930\u0942\u0930 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902 {block} \xB7 \u091C\u093E\u0901\u091A\u0947\u0902 {warn} \xB7 \u0915\u0902\u0938\u094B\u0932 \u092E\u0947\u0902 \u092A\u0941\u0937\u094D\u091F\u093F \u0915\u0930\u0947\u0902 {check} \xB7 \u0920\u0940\u0915 {ok}. \u0928\u093F\u092F\u092E {date} \u0915\u094B \u091C\u093E\u0901\u091A\u0947 \u0917\u090F\u0964",
+      "req.rescan": "\u092F\u0939 \u092A\u094D\u0930\u094B\u091C\u0947\u0915\u094D\u091F \u092A\u0941\u0930\u093E\u0928\u0947 \u0935\u0930\u094D\u091C\u093C\u0928 \u0938\u0947 \u091C\u094B\u0921\u093C\u093E \u0917\u092F\u093E \u0925\u093E, \u0907\u0938\u0932\u093F\u090F \u0915\u094B\u0921 \u0938\u094D\u0915\u0948\u0928 \u0928\u0939\u0940\u0902 \u0939\u0948\u0964 \u0938\u092D\u0940 \u091C\u093E\u0901\u091A\u094B\u0902 \u0915\u0947 \u0932\u093F\u090F \u0910\u092A \u0915\u094B \u092B\u093F\u0930 \u0938\u0947 \u091C\u094B\u0921\u093C\u0947\u0902\u0964",
+      "ct.title": "Google Play \u0915\u094D\u0932\u094B\u091C\u093C\u094D\u0921 \u091F\u0947\u0938\u094D\u091F (12 \u091F\u0947\u0938\u094D\u091F\u0930 \xD7 14 \u0926\u093F\u0928)",
+      "ct.summary": "\u0932\u0917\u093E\u0924\u093E\u0930 14 \u0926\u093F\u0928 \u0938\u0947 \u091C\u0941\u0921\u093C\u0947 \u091F\u0947\u0938\u094D\u091F\u0930: {q}/12. {left}",
+      "ct.left.days": "\u0938\u092C\u0938\u0947 \u091C\u0932\u094D\u0926\u0940 \u0906\u0935\u0947\u0926\u0928 \u0915\u0940 \u0924\u093E\u0930\u0940\u0916: {date} ({days} \u0926\u093F\u0928 \u092C\u093E\u0915\u0940)\u0964",
+      "ct.left.need": "{n} \u0914\u0930 \u091F\u0947\u0938\u094D\u091F\u0930 \u091A\u093E\u0939\u093F\u090F\u0964 \u0905\u0917\u0930 \u0935\u0947 \u0906\u091C \u091C\u0941\u0921\u093C\u0947\u0902 \u0924\u094B \u0938\u092C\u0938\u0947 \u091C\u0932\u094D\u0926\u0940 \u0906\u0935\u0947\u0926\u0928 \u0915\u0940 \u0924\u093E\u0930\u0940\u0916 {date} \u0939\u0948\u0964",
+      "ct.ready": "\u0924\u0948\u092F\u093E\u0930: Play Console \u092E\u0947\u0902 \u092A\u094D\u0930\u094B\u0921\u0915\u094D\u0936\u0928 \u090F\u0915\u094D\u0938\u0947\u0938 \u0915\u0947 \u0932\u093F\u090F \u0906\u0935\u0947\u0926\u0928 \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964 \u092C\u091F\u0928 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0916\u0941\u0926 \u0926\u092C\u093E\u0924\u093E \u0939\u0948\u0964",
+      "ct.notNeeded": "\u091C\u093C\u0930\u0942\u0930\u0940 \u0928\u0939\u0940\u0902: \u092F\u0939 \u0928\u093F\u092F\u092E \u0938\u093F\u0930\u094D\u092B\u093C 2023-11-13 \u0915\u0947 \u092C\u093E\u0926 \u092C\u0928\u0947 \u0935\u094D\u092F\u0915\u094D\u0924\u093F\u0917\u0924 \u0921\u0947\u0935\u0932\u092A\u0930 \u0916\u093E\u0924\u094B\u0902 \u092A\u0930 \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u093E \u0939\u0948\u0964",
+      "ct.recorded": "\u0907\u0938 \u0915\u0902\u092A\u094D\u092F\u0942\u091F\u0930 \u092A\u0930 {n} \u091F\u0947\u0938\u094D\u091F\u0930 \u0930\u093F\u0915\u0949\u0930\u094D\u0921 \u0938\u0947\u0935 \u0915\u093F\u090F \u0917\u090F\u0964",
+      "pv.title": "\u092A\u094D\u0930\u093E\u0907\u0935\u0947\u0938\u0940 \u092E\u0947\u0932 \u091C\u093E\u0901\u091A",
+      "pv.summary": "{block} \u092C\u0947\u092E\u0947\u0932 \u0920\u0940\u0915 \u0915\u0930\u0928\u0947 \u0939\u0948\u0902 \u0914\u0930 {warn} \u091C\u093E\u0901\u091A\u0928\u0947 \u0939\u0948\u0902\u0964",
+      "pa.title": "Google Play \u0928\u0940\u0924\u093F \u091C\u093E\u0901\u091A (Play Policy Insights)",
+      "pa.summary": "Google Play Policy Insights \u0928\u093F\u092F\u092E\u094B\u0902 \u0938\u0947 \u0924\u0947\u091C\u093C \u0938\u094D\u0915\u0948\u0928: {n} \u0939\u093F\u0938\u094D\u0938\u0947 \u0926\u0947\u0916\u0928\u0947 \u0939\u0948\u0902\u0964",
+      "pa.noAndroid": "\u0907\u0938 \u0910\u092A \u092E\u0947\u0902 Android \u092A\u094D\u0930\u094B\u091C\u0947\u0915\u094D\u091F \u0928\u0939\u0940\u0902 \u0939\u0948, \u0907\u0938\u0932\u093F\u090F Google Play \u0928\u0940\u0924\u093F \u091C\u093E\u0901\u091A \u0932\u093E\u0917\u0942 \u0928\u0939\u0940\u0902 \u0939\u094B\u0924\u0940\u0964",
+      "rn.title": "\u0938\u094D\u091F\u094B\u0930 \u0930\u093F\u0935\u094D\u092F\u0942\u0905\u0930 \u0915\u0947 \u0932\u093F\u090F \u0928\u094B\u091F\u094D\u0938",
+      "rn.summary": "{stores} \u0915\u0947 \u0932\u093F\u090F \u0930\u093F\u0935\u094D\u092F\u0942 \u0928\u094B\u091F\u094D\u0938 \u0915\u093E \u0921\u094D\u0930\u093E\u092B\u093C\u094D\u091F \u0924\u0948\u092F\u093E\u0930 \u0939\u0948\u0964 \u0939\u0930 [\u092A\u094D\u0932\u0947\u0938\u0939\u094B\u0932\u094D\u0921\u0930] \u092D\u0930\u0947\u0902 \u0914\u0930 \u0905\u0938\u0932\u0940 \u092A\u093E\u0938\u0935\u0930\u094D\u0921 \u091A\u0948\u091F \u092E\u0947\u0902 \u0928 \u0932\u093F\u0916\u0947\u0902\u0964",
+      "del.title": "\u0916\u093E\u0924\u093E \u0939\u091F\u093E\u0928\u0947 \u0915\u093E \u0930\u093E\u0938\u094D\u0924\u093E",
+      "del.ok": "\u0916\u093E\u0924\u093E \u0939\u091F\u093E\u0928\u0947 \u0915\u093E \u0930\u093E\u0938\u094D\u0924\u093E \u092A\u0942\u0930\u093E \u0939\u0948\u0964",
+      "del.missing": "\u0916\u093E\u0924\u093E \u0939\u091F\u093E\u0928\u093E \u0905\u092D\u0940 \u0905\u0927\u0942\u0930\u093E \u0939\u0948: {missing}\u0964",
+      "del.notNeeded": "\u0916\u093E\u0924\u093E \u092C\u0928\u093E\u0928\u0947 \u0915\u0940 \u0938\u0941\u0935\u093F\u0927\u093E \u0928\u0939\u0940\u0902 \u092E\u093F\u0932\u0940, \u0907\u0938\u0932\u093F\u090F \u092F\u0939 \u0928\u093F\u092F\u092E \u0932\u093E\u0917\u0942 \u0928\u0939\u0940\u0902 \u0939\u094B\u0924\u093E\u0964",
+      "mv.title": "\u0910\u092A \u0915\u094B \u0926\u0942\u0938\u0930\u0947 \u0921\u0947\u0935\u0932\u092A\u0930 \u0916\u093E\u0924\u0947 \u092E\u0947\u0902 \u0932\u0947 \u091C\u093E\u090F\u0901",
+      "mv.neutral": "\u0926\u094B \u0930\u093E\u0938\u094D\u0924\u0947 \u0939\u0948\u0902: \u092E\u094C\u091C\u0942\u0926\u093E \u0910\u092A \u091F\u094D\u0930\u093E\u0902\u0938\u092B\u093C\u0930 \u0915\u0930\u0947\u0902, \u092F\u093E \u0928\u090F \u0916\u093E\u0924\u0947 \u092E\u0947\u0902 \u0928\u090F \u0910\u092A \u0915\u0947 \u0930\u0942\u092A \u092E\u0947\u0902 \u092B\u093F\u0930 \u0938\u0947 \u0930\u091C\u093F\u0938\u094D\u091F\u0930 \u0915\u0930\u0947\u0902\u0964 \u0915\u094B\u0908 \u0921\u093F\u092B\u093C\u0949\u0932\u094D\u091F \u0928\u0939\u0940\u0902 \u0939\u0948, \u0905\u0902\u0924\u0930 \u0926\u0947\u0916\u0915\u0930 \u091A\u0941\u0928\u0947\u0902\u0964",
+      "mv.transfer": "\u091A\u0941\u0928\u093E \u0917\u092F\u093E: \u092E\u094C\u091C\u0942\u0926\u093E \u0910\u092A \u091F\u094D\u0930\u093E\u0902\u0938\u092B\u093C\u0930\u0964",
+      "mv.new": "\u091A\u0941\u0928\u093E \u0917\u092F\u093E: \u0928\u090F \u0910\u092A \u0915\u0947 \u0930\u0942\u092A \u092E\u0947\u0902 \u0930\u091C\u093F\u0938\u094D\u091F\u0930\u0964",
+      "mv.keyRecorded": "\u0938\u093E\u0907\u0928\u093F\u0902\u0917 \u0915\u0940 \u092C\u0948\u0915\u0905\u092A \u0915\u0940 \u091C\u0917\u0939 \u0938\u0947\u0935 \u0915\u0940 \u0917\u0908 (\u0938\u093F\u0930\u094D\u092B\u093C \u091C\u0917\u0939, \u0915\u094B\u0908 \u0917\u094B\u092A\u0928\u0940\u092F \u091C\u093E\u0928\u0915\u093E\u0930\u0940 \u0928\u0939\u0940\u0902)\u0964",
+      "rm.title": "\u0910\u092A \u0905\u0928\u092A\u092C\u094D\u0932\u093F\u0936 \u092F\u093E \u0921\u093F\u0932\u0940\u091F \u0915\u0930\u0947\u0902",
+      "rm.summary": "\u091A\u0930\u0923-\u0926\u0930-\u091A\u0930\u0923 \u0917\u093E\u0907\u0921\u0964 Rocket Launcher \u0916\u0941\u0926 \u0915\u0941\u091B \u0928\u0939\u0940\u0902 \u0939\u091F\u093E\u0924\u093E; \u0916\u093E\u0924\u093E \u092E\u093E\u0932\u093F\u0915 \u0915\u0902\u0938\u094B\u0932 \u092E\u0947\u0902 \u0915\u0930\u0924\u093E \u0939\u0948\u0964",
+      "vs.title": "\u0935\u0930\u094D\u091C\u093C\u0928 \u0914\u0930 \u092C\u093F\u0932\u094D\u0921 \u0928\u0902\u092C\u0930",
+      "vs.summary": "{issues} \u0938\u092E\u0938\u094D\u092F\u093E\u0964 \u0938\u0941\u091D\u093E\u092F\u093E \u0917\u092F\u093E \u0905\u0917\u0932\u093E \u0935\u0930\u094D\u091C\u093C\u0928: {next}\u0964",
+      "vs.forceUpdate": "\u0938\u0930\u094D\u0935\u0930 \u0915\u093E \u0928\u094D\u092F\u0942\u0928\u0924\u092E/\u0928\u0935\u0940\u0928\u0924\u092E \u0935\u0930\u094D\u091C\u093C\u0928 \u0924\u092D\u0940 \u092C\u0922\u093C\u093E\u090F\u0901 \u091C\u092C \u0928\u092F\u093E \u092C\u093F\u0932\u094D\u0921 \u0939\u0930 \u0938\u094D\u091F\u094B\u0930 \u092E\u0947\u0902 \u0926\u093F\u0916\u0928\u0947 \u0932\u0917\u0947\u0964",
+      "cc.title": "\u0926\u0947\u0936 \u0915\u0947 \u0928\u093F\u092F\u092E",
+      "cc.summary": "\u0907\u0938 \u0910\u092A \u092A\u0930 {n} \u0926\u0947\u0936-\u0928\u093F\u092F\u092E \u0932\u093E\u0917\u0942 \u0939\u094B\u0924\u0947 \u0939\u0948\u0902\u0964",
+      "rc.step.t": "\u0938\u092C\u092E\u093F\u091F \u0938\u0947 \u092A\u0939\u0932\u0947 \u0930\u093F\u0932\u0940\u091C\u093C \u091C\u093E\u0901\u091A",
+      "rc.step.d": '\u0938\u094D\u091F\u094B\u0930 \u0915\u0940 \u091C\u093C\u0930\u0942\u0930\u0924\u0947\u0902, \u092A\u094D\u0930\u093E\u0907\u0935\u0947\u0938\u0940 \u092E\u0947\u0932 \u0914\u0930 \u0916\u093E\u0924\u093E \u0939\u091F\u093E\u0928\u093E\u0964 \u0938\u092C\u092E\u093F\u091F \u0938\u0947 \u092A\u0939\u0932\u0947 \u0939\u0930 "\u091C\u093C\u0930\u0942\u0930 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902" \u0920\u0940\u0915 \u0915\u0930\u0947\u0902\u0964',
+      "rc.note": "\u0930\u093F\u0932\u0940\u091C\u093C \u091C\u093E\u0901\u091A: \u091C\u093C\u0930\u0942\u0930 \u0920\u0940\u0915 \u0915\u0930\u0947\u0902 {block}, \u091C\u093E\u0901\u091A\u0947\u0902 {warn}\u0964"
+    };
+    RX = { en, ko, th, zh, hi };
+    RECRUIT = {
+      en: `Hi! I'm testing my new Android app "{app}" before it goes live on Google Play, and I need testers.
+1. Join the test: {link}
+2. Install the app from Google Play and use it a few times.
+3. Please stay in the test for at least 14 days in a row. If you leave, the 14 days start again.
+If the link opens inside LINE, Facebook or Instagram, tap the menu and choose "Open in Chrome" (or "Open in browser") first. Feedback is welcome!`,
+      ko: '\uC548\uB155\uD558\uC138\uC694! \uC0C8 \uC548\uB4DC\uB85C\uC774\uB4DC \uC571 "{app}"\uC744(\uB97C) Google Play\uC5D0 \uC815\uC2DD \uCD9C\uC2DC\uD558\uAE30 \uC804\uC5D0 \uD14C\uC2A4\uD2B8\uD558\uACE0 \uC788\uC5B4\uC11C \uD14C\uC2A4\uD130\uAC00 \uD544\uC694\uD574\uC694.\n1. \uD14C\uC2A4\uD2B8 \uCC38\uC5EC: {link}\n2. Google Play\uC5D0\uC11C \uC571\uC744 \uC124\uCE58\uD558\uACE0 \uBA87 \uBC88 \uC0AC\uC6A9\uD574 \uC8FC\uC138\uC694.\n3. 14\uC77C \uC5F0\uC18D\uC73C\uB85C \uD14C\uC2A4\uD2B8\uC5D0 \uCC38\uC5EC\uD55C \uC0C1\uD0DC\uB97C \uC720\uC9C0\uD574 \uC8FC\uC138\uC694. \uC911\uAC04\uC5D0 \uB098\uAC00\uBA74 14\uC77C\uC774 \uCC98\uC74C\uBD80\uD130 \uB2E4\uC2DC \uC2DC\uC791\uB3FC\uC694.\nLINE\xB7\uD398\uC774\uC2A4\uBD81\xB7\uC778\uC2A4\uD0C0\uADF8\uB7A8 \uC548\uC5D0\uC11C \uB9C1\uD06C\uAC00 \uC5F4\uB9AC\uBA74 \uBA54\uB274\uC5D0\uC11C "Chrome\uC73C\uB85C \uC5F4\uAE30"(\uB610\uB294 "\uBE0C\uB77C\uC6B0\uC800\uB85C \uC5F4\uAE30")\uB97C \uBA3C\uC800 \uB20C\uB7EC \uC8FC\uC138\uC694. \uC758\uACAC\uB3C4 \uD658\uC601\uD574\uC694!',
+      th: '\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0E04\u0E23\u0E31\u0E1A/\u0E04\u0E48\u0E30! \u0E01\u0E33\u0E25\u0E31\u0E07\u0E17\u0E14\u0E2A\u0E2D\u0E1A\u0E41\u0E2D\u0E1B Android \u0E43\u0E2B\u0E21\u0E48 "{app}" \u0E01\u0E48\u0E2D\u0E19\u0E40\u0E1B\u0E34\u0E14\u0E15\u0E31\u0E27\u0E1A\u0E19 Google Play \u0E41\u0E25\u0E30\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E1C\u0E39\u0E49\u0E17\u0E14\u0E2A\u0E2D\u0E1A\n1. \u0E40\u0E02\u0E49\u0E32\u0E23\u0E48\u0E27\u0E21\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A: {link}\n2. \u0E15\u0E34\u0E14\u0E15\u0E31\u0E49\u0E07\u0E41\u0E2D\u0E1B\u0E08\u0E32\u0E01 Google Play \u0E41\u0E25\u0E49\u0E27\u0E25\u0E2D\u0E07\u0E43\u0E0A\u0E49\u0E2B\u0E25\u0E32\u0E22 \u0E46 \u0E04\u0E23\u0E31\u0E49\u0E07\n3. \u0E01\u0E23\u0E38\u0E13\u0E32\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22 14 \u0E27\u0E31\u0E19 \u0E16\u0E49\u0E32\u0E2D\u0E2D\u0E01\u0E01\u0E25\u0E32\u0E07\u0E04\u0E31\u0E19 \u0E08\u0E30\u0E15\u0E49\u0E2D\u0E07\u0E19\u0E31\u0E1A 14 \u0E27\u0E31\u0E19\u0E43\u0E2B\u0E21\u0E48\n\u0E16\u0E49\u0E32\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E1B\u0E34\u0E14\u0E43\u0E19 LINE, Facebook \u0E2B\u0E23\u0E37\u0E2D Instagram \u0E43\u0E2B\u0E49\u0E01\u0E14\u0E40\u0E21\u0E19\u0E39\u0E41\u0E25\u0E49\u0E27\u0E40\u0E25\u0E37\u0E2D\u0E01 "\u0E40\u0E1B\u0E34\u0E14\u0E43\u0E19 Chrome" (\u0E2B\u0E23\u0E37\u0E2D "\u0E40\u0E1B\u0E34\u0E14\u0E43\u0E19\u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C") \u0E01\u0E48\u0E2D\u0E19 \u0E22\u0E34\u0E19\u0E14\u0E35\u0E23\u0E31\u0E1A\u0E1F\u0E31\u0E07\u0E04\u0E27\u0E32\u0E21\u0E04\u0E34\u0E14\u0E40\u0E2B\u0E47\u0E19!',
+      zh: "\u4F60\u597D\uFF01\u6211\u5728 Google Play \u6B63\u5F0F\u53D1\u5E03\u65B0 Android \u5E94\u7528\u201C{app}\u201D\u4E4B\u524D\u8FDB\u884C\u6D4B\u8BD5\uFF0C\u9700\u8981\u6D4B\u8BD5\u8005\u3002\n1. \u52A0\u5165\u6D4B\u8BD5\uFF1A{link}\n2. \u4ECE Google Play \u5B89\u88C5\u5E94\u7528\u5E76\u4F7F\u7528\u51E0\u6B21\u3002\n3. \u8BF7\u8FDE\u7EED\u81F3\u5C11 14 \u5929\u4FDD\u6301\u5728\u6D4B\u8BD5\u4E2D\u3002\u5982\u679C\u4E2D\u9014\u9000\u51FA\uFF0C14 \u5929\u4F1A\u91CD\u65B0\u8BA1\u7B97\u3002\n\u5982\u679C\u94FE\u63A5\u5728 LINE\u3001Facebook \u6216 Instagram \u5185\u6253\u5F00\uFF0C\u8BF7\u5148\u70B9\u83DC\u5355\u9009\u62E9\u201C\u5728 Chrome \u4E2D\u6253\u5F00\u201D\uFF08\u6216\u201C\u5728\u6D4F\u89C8\u5668\u4E2D\u6253\u5F00\u201D\uFF09\u3002\u6B22\u8FCE\u53CD\u9988\uFF01",
+      hi: '\u0928\u092E\u0938\u094D\u0924\u0947! \u092E\u0948\u0902 \u0905\u092A\u0928\u093E \u0928\u092F\u093E Android \u0910\u092A "{app}" Google Play \u092A\u0930 \u0932\u0949\u0928\u094D\u091A \u0915\u0930\u0928\u0947 \u0938\u0947 \u092A\u0939\u0932\u0947 \u091F\u0947\u0938\u094D\u091F \u0915\u0930 \u0930\u0939\u093E/\u0930\u0939\u0940 \u0939\u0942\u0901 \u0914\u0930 \u092E\u0941\u091D\u0947 \u091F\u0947\u0938\u094D\u091F\u0930 \u091A\u093E\u0939\u093F\u090F\u0964\n1. \u091F\u0947\u0938\u094D\u091F \u0938\u0947 \u091C\u0941\u0921\u093C\u0947\u0902: {link}\n2. Google Play \u0938\u0947 \u0910\u092A \u0907\u0902\u0938\u094D\u091F\u0949\u0932 \u0915\u0930\u0947\u0902 \u0914\u0930 \u0915\u0941\u091B \u092C\u093E\u0930 \u0907\u0938\u094D\u0924\u0947\u092E\u093E\u0932 \u0915\u0930\u0947\u0902\u0964\n3. \u0915\u0943\u092A\u092F\u093E \u0932\u0917\u093E\u0924\u093E\u0930 \u0915\u092E \u0938\u0947 \u0915\u092E 14 \u0926\u093F\u0928 \u091F\u0947\u0938\u094D\u091F \u092E\u0947\u0902 \u092C\u0928\u0947 \u0930\u0939\u0947\u0902\u0964 \u092C\u0940\u091A \u092E\u0947\u0902 \u091B\u094B\u0921\u093C\u0928\u0947 \u092A\u0930 14 \u0926\u093F\u0928 \u092B\u093F\u0930 \u0938\u0947 \u0936\u0941\u0930\u0942 \u0939\u094B\u0924\u0947 \u0939\u0948\u0902\u0964\n\u0905\u0917\u0930 \u0932\u093F\u0902\u0915 LINE, Facebook \u092F\u093E Instagram \u0915\u0947 \u0905\u0902\u0926\u0930 \u0916\u0941\u0932\u0947, \u0924\u094B \u092A\u0939\u0932\u0947 \u092E\u0947\u0928\u094D\u092F\u0942 \u092E\u0947\u0902 "Chrome \u092E\u0947\u0902 \u0916\u094B\u0932\u0947\u0902" (\u092F\u093E "\u092C\u094D\u0930\u093E\u0909\u091C\u093C\u0930 \u092E\u0947\u0902 \u0916\u094B\u0932\u0947\u0902") \u091A\u0941\u0928\u0947\u0902\u0964 \u092B\u093C\u0940\u0921\u092C\u0948\u0915 \u0915\u093E \u0938\u094D\u0935\u093E\u0917\u0924 \u0939\u0948!'
+    };
   }
 });
 
@@ -8221,10 +8474,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path5) {
-  if (!path5)
+function getElementAtPath(obj, path6) {
+  if (!path6)
     return obj;
-  return path5.reduce((acc, key2) => acc?.[key2], obj);
+  return path6.reduce((acc, key2) => acc?.[key2], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys2 = Object.keys(promisesObj);
@@ -8564,11 +8817,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path5, issues) {
+function prefixIssues(path6, issues) {
   return issues.map((iss) => {
     var _a5;
     (_a5 = iss).path ?? (_a5.path = []);
-    iss.path.unshift(path5);
+    iss.path.unshift(path6);
     return iss;
   });
 }
@@ -9030,16 +9283,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path5 = []) => {
+  const processError = (error63, path6 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path5, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path6, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else {
-        const fullpath = [...path5, ...issue2.path];
+        const fullpath = [...path6, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -9078,17 +9331,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path5 = []) => {
+  const processError = (error63, path6 = []) => {
     var _a5;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path5, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path6, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else {
-        const fullpath = [...path5, ...issue2.path];
+        const fullpath = [...path6, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -9127,8 +9380,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path5 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path5) {
+  const path6 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path6) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -10749,15 +11002,15 @@ var $ZodDate = /* @__PURE__ */ $constructor("$ZodDate", (inst, def) => {
       }
     }
     const input2 = payload.value;
-    const isDate = input2 instanceof Date;
-    const isValidDate = isDate && !Number.isNaN(input2.getTime());
+    const isDate2 = input2 instanceof Date;
+    const isValidDate = isDate2 && !Number.isNaN(input2.getTime());
     if (isValidDate)
       return payload;
     payload.issues.push({
       expected: "date",
       code: "invalid_type",
       input: input2,
-      ...isDate ? { received: "Invalid Date" } : {},
+      ...isDate2 ? { received: "Invalid Date" } : {},
       inst
     });
     return payload;
@@ -12243,11 +12496,11 @@ function leafPattern(schema) {
       pattern = d.pattern;
     isInt || (isInt = !!d.format?.includes("int"));
     const lo = d.minimum ?? d.length;
-    const hi = d.maximum ?? d.length;
+    const hi2 = d.maximum ?? d.length;
     if (lo !== void 0 && (minimum === void 0 || lo > minimum))
       minimum = lo;
-    if (hi !== void 0 && (maximum === void 0 || hi < maximum))
-      maximum = hi;
+    if (hi2 !== void 0 && (maximum === void 0 || hi2 < maximum))
+      maximum = hi2;
   }
   if (pattern)
     return pattern.source;
@@ -20625,9 +20878,9 @@ function codePointLengthVar(doc, ctx, accessor, inDoubt) {
   doc.write(`const ${v} = typeof ${accessor} === "string" && ${inDoubt} ? ${cpLen}(${accessor}) : ${accessor}.length;`);
   return v;
 }
-function numericOperand(value, label) {
+function numericOperand(value, label2) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new ZodCompileUnsupportedError(`${label} bound of type ${typeof value}`);
+    throw new ZodCompileUnsupportedError(`${label2} bound of type ${typeof value}`);
   }
   return `${value}`;
 }
@@ -26266,13 +26519,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path5 = ref.slice(1).split("/").filter(Boolean);
-  if (path5.length === 0) {
+  const path6 = ref.slice(1).split("/").filter(Boolean);
+  if (path6.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path5[0] === defsKey) {
-    const key2 = path5[1] === void 0 ? void 0 : decodeJSONPointerSegment(path5[1]);
+  if (path6[0] === defsKey) {
+    const key2 = path6[1] === void 0 ? void 0 : decodeJSONPointerSegment(path6[1]);
     if (!key2 || !ctx.defs[key2]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -29042,11 +29295,11 @@ var newRequestFromIncoming = (method, url2, headers, incoming, abortController) 
   };
   if (method === "TRACE") {
     init.method = "GET";
-    const req = new Request$1(url2, init);
-    Object.defineProperty(req, "method", { get() {
+    const req2 = new Request$1(url2, init);
+    Object.defineProperty(req2, "method", { get() {
       return "TRACE";
     } });
-    return req;
+    return req2;
   }
   if (!(method === "GET" || method === "HEAD")) if ("rawBody" in incoming && incoming.rawBody instanceof Buffer) init.body = new ReadableStream({ start(controller) {
     controller.enqueue(incoming.rawBody);
@@ -29294,11 +29547,11 @@ var requestPrototype = {
         } });
         init.duplex = "half";
       }
-      const req = new Request$1(this[urlKey], init);
-      if (method === "TRACE") Object.defineProperty(req, "method", { get() {
+      const req2 = new Request$1(this[urlKey], init);
+      if (method === "TRACE") Object.defineProperty(req2, "method", { get() {
         return "TRACE";
       } });
-      return this[requestCache] = req;
+      return this[requestCache] = req2;
     }
     return this[requestCache] = newRequestFromIncoming(this.method, this[urlKey], this.headers, this[incomingKey], abortController);
   },
@@ -29371,19 +29624,19 @@ Object.defineProperty(requestPrototype, /* @__PURE__ */ Symbol.for("nodejs.util.
 } });
 Object.setPrototypeOf(requestPrototype, Request$1.prototype);
 var newRequest = (incoming, defaultHostname) => {
-  const req = Object.create(requestPrototype);
-  req[incomingKey] = incoming;
-  req[methodKey] = normalizeIncomingMethod(incoming.method);
+  const req2 = Object.create(requestPrototype);
+  req2[incomingKey] = incoming;
+  req2[methodKey] = normalizeIncomingMethod(incoming.method);
   const incomingUrl = incoming.url || "";
   if (incomingUrl[0] !== "/" && (incomingUrl.startsWith("http://") || incomingUrl.startsWith("https://"))) {
     if (incoming instanceof Http2ServerRequest) throw new RequestError("Absolute URL for :path is not allowed in HTTP/2");
     try {
       validateRequestTarget(incomingUrl);
-      req[urlKey] = new URL(incomingUrl).href;
+      req2[urlKey] = new URL(incomingUrl).href;
     } catch (e) {
       throw new RequestError("Invalid absolute URL", { cause: e });
     }
-    return req;
+    return req2;
   }
   const host = (incoming instanceof Http2ServerRequest ? incoming.authority : incoming.headers.host) || defaultHostname;
   if (!host) throw new RequestError("Missing host header");
@@ -29393,12 +29646,12 @@ var newRequest = (incoming, defaultHostname) => {
     if (!(scheme === "http" || scheme === "https")) throw new RequestError("Unsupported scheme");
   } else scheme = incoming.socket && incoming.socket.encrypted ? "https" : "http";
   try {
-    req[urlKey] = buildUrl(scheme, host, incomingUrl);
+    req2[urlKey] = buildUrl(scheme, host, incomingUrl);
   } catch (e) {
     if (e instanceof RequestError) throw e;
     else throw new RequestError("Invalid URL", { cause: e });
   }
-  return req;
+  return req2;
 };
 var defaultContentType = "text/plain; charset=UTF-8";
 var responseCache = /* @__PURE__ */ Symbol("responseCache");
@@ -29623,13 +29876,13 @@ var drainIncoming = (incoming) => {
   incoming.on("error", cleanup);
   incoming.resume();
 };
-var makeCloseHandler = (req, incoming, outgoing, needsBodyCleanup) => () => {
+var makeCloseHandler = (req2, incoming, outgoing, needsBodyCleanup) => () => {
   if (incoming.errored) {
     recordBodyBufferedBeforeDisconnect(incoming);
-    req[abortRequest](incoming.errored.toString());
+    req2[abortRequest](incoming.errored.toString());
   } else if (!outgoing.writableFinished || incoming instanceof Http2ServerRequest && incoming.aborted) {
     recordBodyBufferedBeforeDisconnect(incoming);
-    req[abortRequest]("Client connection prematurely closed.");
+    req2[abortRequest]("Client connection prematurely closed.");
   }
   if (needsBodyCleanup && !incoming.readableEnded) setTimeout(() => {
     if (!incoming.readableEnded) setTimeout(() => {
@@ -29803,16 +30056,16 @@ var getRequestListener = (fetchCallback, options = {}) => {
     Object.defineProperty(global, "Response", { value: Response$1 });
   }
   return async (incoming, outgoing) => {
-    let res, req;
+    let res, req2;
     let needsBodyCleanup = false;
     let closeHandlerAttached = false;
     const ensureCloseHandler = () => {
-      if (!req || closeHandlerAttached) return;
+      if (!req2 || closeHandlerAttached) return;
       closeHandlerAttached = true;
-      outgoing.on("close", makeCloseHandler(req, incoming, outgoing, needsBodyCleanup));
+      outgoing.on("close", makeCloseHandler(req2, incoming, outgoing, needsBodyCleanup));
     };
     try {
-      req = newRequest(incoming, options.hostname);
+      req2 = newRequest(incoming, options.hostname);
       needsBodyCleanup = autoCleanupIncoming && !(incoming.method === "GET" || incoming.method === "HEAD");
       if (needsBodyCleanup) {
         incoming[wrapBodyStream] = true;
@@ -29825,7 +30078,7 @@ var getRequestListener = (fetchCallback, options = {}) => {
           });
         };
       }
-      res = fetchCallback(req, {
+      res = fetchCallback(req2, {
         incoming,
         outgoing
       });
@@ -29839,9 +30092,9 @@ var getRequestListener = (fetchCallback, options = {}) => {
     } catch (e) {
       if (!res) if (options.errorHandler) {
         ensureCloseHandler();
-        res = await options.errorHandler(req ? e : toRequestError(e));
+        res = await options.errorHandler(req2 ? e : toRequestError(e));
         if (!res) return;
-      } else if (!req) res = handleRequestError();
+      } else if (!req2) res = handleRequestError();
       else res = handleFetchError(e);
       else return handleResponseError(e, outgoing);
     }
@@ -30124,12 +30377,12 @@ var WebStandardStreamableHTTPServerTransport = class {
    * Validates request headers for DNS rebinding protection.
    * @returns Error response if validation fails, undefined if validation passes.
    */
-  validateRequestHeaders(req) {
+  validateRequestHeaders(req2) {
     if (!this._enableDnsRebindingProtection) {
       return void 0;
     }
     if (this._allowedHosts && this._allowedHosts.length > 0) {
-      const hostHeader = req.headers.get("host");
+      const hostHeader = req2.headers.get("host");
       if (!hostHeader || !this._allowedHosts.includes(hostHeader)) {
         const error62 = `Invalid Host header: ${hostHeader}`;
         this.onerror?.(new Error(error62));
@@ -30137,7 +30390,7 @@ var WebStandardStreamableHTTPServerTransport = class {
       }
     }
     if (this._allowedOrigins && this._allowedOrigins.length > 0) {
-      const originHeader = req.headers.get("origin");
+      const originHeader = req2.headers.get("origin");
       if (originHeader && !this._allowedOrigins.includes(originHeader)) {
         const error62 = `Invalid Origin header: ${originHeader}`;
         this.onerror?.(new Error(error62));
@@ -30150,7 +30403,7 @@ var WebStandardStreamableHTTPServerTransport = class {
    * Handles an incoming HTTP request, whether GET, POST, or DELETE
    * Returns a Response object (Web Standard)
    */
-  async handleRequest(req, options) {
+  async handleRequest(req2, options) {
     if (this._closed) {
       return this.createJsonErrorResponse(404, -32001, "Session not found");
     }
@@ -30158,17 +30411,17 @@ var WebStandardStreamableHTTPServerTransport = class {
       throw new Error("Stateless transport cannot be reused across requests. Create a new transport per request.");
     }
     this._hasHandledRequest = true;
-    const validationError = this.validateRequestHeaders(req);
+    const validationError = this.validateRequestHeaders(req2);
     if (validationError) {
       return validationError;
     }
-    switch (req.method) {
+    switch (req2.method) {
       case "POST":
-        return this.handlePostRequest(req, options);
+        return this.handlePostRequest(req2, options);
       case "GET":
-        return this.handleGetRequest(req);
+        return this.handleGetRequest(req2);
       case "DELETE":
-        return this.handleDeleteRequest(req);
+        return this.handleDeleteRequest(req2);
       default:
         return this.handleUnsupportedRequest();
     }
@@ -30203,22 +30456,22 @@ data:
   /**
    * Handles GET requests for SSE stream
    */
-  async handleGetRequest(req) {
-    const acceptHeader = req.headers.get("accept");
+  async handleGetRequest(req2) {
+    const acceptHeader = req2.headers.get("accept");
     if (!acceptHeader?.includes("text/event-stream")) {
       this.onerror?.(new Error("Not Acceptable: Client must accept text/event-stream"));
       return this.createJsonErrorResponse(406, -32e3, "Not Acceptable: Client must accept text/event-stream");
     }
-    const sessionError = this.validateSession(req);
+    const sessionError = this.validateSession(req2);
     if (sessionError) {
       return sessionError;
     }
-    const protocolError = this.validateProtocolVersion(req);
+    const protocolError = this.validateProtocolVersion(req2);
     if (protocolError) {
       return protocolError;
     }
     if (this._eventStore) {
-      const lastEventId = req.headers.get("last-event-id");
+      const lastEventId = req2.headers.get("last-event-id");
       if (lastEventId) {
         return this.replayEvents(lastEventId);
       }
@@ -30230,7 +30483,7 @@ data:
     const encoder = new TextEncoder();
     let streamController;
     let keepAliveTimer = void 0;
-    const readable = new ReadableStream({
+    const readable2 = new ReadableStream({
       start: (controller) => {
         streamController = controller;
       },
@@ -30267,7 +30520,7 @@ data:
       }
     });
     keepAliveTimer = this.startKeepAlive(streamController, encoder);
-    return new Response(readable, { headers });
+    return new Response(readable2, { headers });
   }
   /**
    * Replays events that would have been sent after the specified event ID
@@ -30305,7 +30558,7 @@ data:
       let keepAliveTimer = void 0;
       let replayedStreamId = void 0;
       let cancelled = false;
-      const readable = new ReadableStream({
+      const readable2 = new ReadableStream({
         start: (controller) => {
           streamController = controller;
         },
@@ -30359,7 +30612,7 @@ data:
       });
       this._resumableStreams.add(replayedStreamId);
       keepAliveTimer = this.startKeepAlive(streamController, encoder);
-      return new Response(readable, { headers });
+      return new Response(readable2, { headers });
     } catch (error62) {
       this.onerror?.(error62);
       return this.createJsonErrorResponse(500, -32e3, "Error replaying events");
@@ -30409,28 +30662,28 @@ data:
   /**
    * Handles POST requests containing JSON-RPC messages
    */
-  async handlePostRequest(req, options) {
+  async handlePostRequest(req2, options) {
     try {
-      const acceptHeader = req.headers.get("accept");
+      const acceptHeader = req2.headers.get("accept");
       if (!acceptHeader?.includes("application/json") || !acceptHeader.includes("text/event-stream")) {
         this.onerror?.(new Error("Not Acceptable: Client must accept both application/json and text/event-stream"));
         return this.createJsonErrorResponse(406, -32e3, "Not Acceptable: Client must accept both application/json and text/event-stream");
       }
-      const ct = req.headers.get("content-type");
+      const ct = req2.headers.get("content-type");
       if (!isJsonContentType(ct)) {
         this.onerror?.(new Error("Unsupported Media Type: Content-Type must be application/json"));
         return this.createJsonErrorResponse(415, -32e3, "Unsupported Media Type: Content-Type must be application/json");
       }
       const requestInfo = {
-        headers: Object.fromEntries(req.headers.entries()),
-        url: new URL(req.url)
+        headers: Object.fromEntries(req2.headers.entries()),
+        url: new URL(req2.url)
       };
       let rawMessage;
       if (options?.parsedBody !== void 0) {
         rawMessage = options.parsedBody;
       } else {
         try {
-          const body = await readRequestBody(req, this._maxRequestBodySize);
+          const body = await readRequestBody(req2, this._maxRequestBodySize);
           if (body.tooLarge) {
             const message = requestBodyTooLargeMessage(this._maxRequestBodySize);
             this.onerror?.(new Error(message));
@@ -30477,11 +30730,11 @@ data:
         }
       }
       if (!isInitializationRequest) {
-        const sessionError = this.validateSession(req);
+        const sessionError = this.validateSession(req2);
         if (sessionError) {
           return sessionError;
         }
-        const protocolError = this.validateProtocolVersion(req);
+        const protocolError = this.validateProtocolVersion(req2);
         if (protocolError) {
           return protocolError;
         }
@@ -30498,7 +30751,7 @@ data:
       }
       const streamId = crypto.randomUUID();
       const initRequest = messages.find((m) => isInitializeRequest(m));
-      const clientProtocolVersion = initRequest ? initRequest.params.protocolVersion : req.headers.get("mcp-protocol-version") ?? DEFAULT_NEGOTIATED_PROTOCOL_VERSION;
+      const clientProtocolVersion = initRequest ? initRequest.params.protocolVersion : req2.headers.get("mcp-protocol-version") ?? DEFAULT_NEGOTIATED_PROTOCOL_VERSION;
       if (this._enableJsonResponse) {
         return new Promise((resolve) => {
           this._streamMapping.set(streamId, {
@@ -30520,7 +30773,7 @@ data:
       const encoder = new TextEncoder();
       let streamController;
       let keepAliveTimer = void 0;
-      const readable = new ReadableStream({
+      const readable2 = new ReadableStream({
         start: (controller) => {
           streamController = controller;
         },
@@ -30589,7 +30842,7 @@ data:
       if (this._streamMapping.get(streamId)?.controller === streamController) {
         keepAliveTimer = this.startKeepAlive(streamController, encoder);
       }
-      return new Response(readable, { status: 200, headers });
+      return new Response(readable2, { status: 200, headers });
     } catch (error62) {
       this.onerror?.(error62);
       return this.createJsonErrorResponse(400, -32700, "Parse error", { data: String(error62) });
@@ -30598,12 +30851,12 @@ data:
   /**
    * Handles DELETE requests to terminate sessions
    */
-  async handleDeleteRequest(req) {
-    const sessionError = this.validateSession(req);
+  async handleDeleteRequest(req2) {
+    const sessionError = this.validateSession(req2);
     if (sessionError) {
       return sessionError;
     }
-    const protocolError = this.validateProtocolVersion(req);
+    const protocolError = this.validateProtocolVersion(req2);
     if (protocolError) {
       return protocolError;
     }
@@ -30618,7 +30871,7 @@ data:
    * Validates session ID for non-initialization requests.
    * Returns Response error if invalid, undefined otherwise
    */
-  validateSession(req) {
+  validateSession(req2) {
     if (this.sessionIdGenerator === void 0) {
       return void 0;
     }
@@ -30626,7 +30879,7 @@ data:
       this.onerror?.(new Error("Bad Request: Server not initialized"));
       return this.createJsonErrorResponse(400, -32e3, "Bad Request: Server not initialized");
     }
-    const sessionId = req.headers.get("mcp-session-id");
+    const sessionId = req2.headers.get("mcp-session-id");
     if (!sessionId) {
       this.onerror?.(new Error("Bad Request: Mcp-Session-Id header is required"));
       return this.createJsonErrorResponse(400, -32e3, "Bad Request: Mcp-Session-Id header is required");
@@ -30650,8 +30903,8 @@ data:
    * For HTTP requests without the MCP-Protocol-Version header:
    * - Accept and default to the version negotiated at initialization
    */
-  validateProtocolVersion(req) {
-    const protocolVersion = req.headers.get("mcp-protocol-version");
+  validateProtocolVersion(req2) {
+    const protocolVersion = req2.headers.get("mcp-protocol-version");
     if (protocolVersion !== null && !SUPPORTED_PROTOCOL_VERSIONS.includes(protocolVersion)) {
       this.onerror?.(new Error(`Bad Request: Unsupported protocol version: ${protocolVersion} (supported versions: ${SUPPORTED_PROTOCOL_VERSIONS.join(", ")})`));
       return this.createJsonErrorResponse(400, -32e3, `Bad Request: Unsupported protocol version: ${protocolVersion} (supported versions: ${SUPPORTED_PROTOCOL_VERSIONS.join(", ")})`);
@@ -30863,15 +31116,15 @@ var StreamableHTTPServerTransport = class {
    * @param res - Node.js ServerResponse
    * @param parsedBody - Optional pre-parsed body from body-parser middleware
    */
-  async handleRequest(req, res, parsedBody) {
-    const authInfo = req.auth;
+  async handleRequest(req2, res, parsedBody) {
+    const authInfo = req2.auth;
     const handler4 = getRequestListener(async (webRequest) => {
       return this._webStandardTransport.handleRequest(webRequest, {
         authInfo,
         parsedBody
       });
     }, { overrideGlobalObjects: false });
-    await handler4(req, res);
+    await handler4(req2, res);
   }
   /**
    * Close an SSE stream for a specific request, triggering client reconnection.
@@ -31264,8 +31517,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path5, errorMaps, issueData } = params;
-  const fullPath = [...path5, ...issueData.path || []];
+  const { data, path: path6, errorMaps, issueData } = params;
+  const fullPath = [...path6, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -31380,11 +31633,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path5, key2) {
+  constructor(parent, value, path6, key2) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path5;
+    this._path = path6;
     this._key = key2;
   }
   get path() {
@@ -34935,11 +35188,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path5) {
-  if (path5.length === 0) {
+function getDotPath(path6) {
+  if (path6.length === 0) {
     return "object root";
   }
-  return path5.reduce((acc, seg, index) => {
+  return path6.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -38935,8 +39188,8 @@ var EMPTY_COMPLETION_RESULT = {
 };
 
 // lib/engine.mjs
-import fs4 from "node:fs";
-import path4 from "node:path";
+import fs5 from "node:fs";
+import path5 from "node:path";
 import os3 from "node:os";
 import crypto2 from "node:crypto";
 
@@ -39066,8 +39319,8 @@ function decodeBase64(input2) {
   const out = new Uint16Array(evenLength / 2);
   for (let index = 0, outIndex = 0; index < evenLength; index += 2) {
     const lo = binary.charCodeAt(index);
-    const hi = binary.charCodeAt(index + 1);
-    out[outIndex++] = lo | hi << 8;
+    const hi2 = binary.charCodeAt(index + 1);
+    out[outIndex++] = lo | hi2 << 8;
   }
   return out;
 }
@@ -39435,16 +39688,16 @@ function determineBranch(decodeTree, current, nodeIndex, char) {
   }
   const packedKeySlots = branchCount + 1 >> 1;
   let lo = 0;
-  let hi = branchCount - 1;
-  while (lo <= hi) {
-    const mid = lo + hi >>> 1;
+  let hi2 = branchCount - 1;
+  while (lo <= hi2) {
+    const mid = lo + hi2 >>> 1;
     const slot = mid >> 1;
     const packed = decodeTree[nodeIndex + slot];
     const midKey = packed >> (mid & 1) * 8 & 255;
     if (midKey < char) {
       lo = mid + 1;
     } else if (midKey > char) {
-      hi = mid - 1;
+      hi2 = mid - 1;
     } else {
       return decodeTree[nodeIndex + packedKeySlots + mid];
     }
@@ -41502,14 +41755,14 @@ function determineBranch2(decodeTree, current, nodeIdx, char) {
     return value < 0 || value >= branchCount ? -1 : decodeTree[nodeIdx + value] - 1;
   }
   let lo = nodeIdx;
-  let hi = lo + branchCount - 1;
-  while (lo <= hi) {
-    const mid = lo + hi >>> 1;
+  let hi2 = lo + branchCount - 1;
+  while (lo <= hi2) {
+    const mid = lo + hi2 >>> 1;
     const midVal = decodeTree[mid];
     if (midVal < char) {
       lo = mid + 1;
     } else if (midVal > char) {
-      hi = mid - 1;
+      hi2 = mid - 1;
     } else {
       return decodeTree[mid + branchCount];
     }
@@ -58709,15 +58962,15 @@ for (const f of ORDER) {
   const file2 = path.join(JS, f);
   vm.runInThisContext(fs.readFileSync(file2, "utf8"), { filename: file2 });
 }
-var CFG = g.AAP_CONFIG;
-var Analyzer = g.AAPAnalyzer;
-var Gen = g.AAPGen;
-var Gfx = g.AAPGfx;
-var Flow = g.AAPFlow;
-var Sources = g.AAPSources;
-var Zip = g.AAPZip;
-var Lessons = g.AAPLessons;
-var tr = (lang2, k, v) => g.AAPi18n.t(lang2, k, v);
+var CFG = g.RL_CONFIG;
+var Analyzer = g.RLAnalyzer;
+var Gen = g.RLGen;
+var Gfx = g.RLGfx;
+var Flow = g.RLFlow;
+var Sources = g.RLSources;
+var Zip = g.RLZip;
+var Lessons = g.RLLessons;
+var tr = (lang2, k, v) => g.RLi18n.t(lang2, k, v);
 
 // lib/messages.mjs
 var M = {
@@ -59112,10 +59365,861 @@ var listLessons = () => {
   }
 };
 
+// lib/release.mjs
+import fs4 from "node:fs";
+import path4 from "node:path";
+init_release_i18n();
+var readJson = (f) => {
+  try {
+    return JSON.parse(fs4.readFileSync(f, "utf8"));
+  } catch {
+    return null;
+  }
+};
+var REQ = readJson(path4.join(ROOT, "data", "store-requirements.json")) || { verified_on: null, requirements: [], countries: [] };
+var PPI_DIR = path4.join(ROOT, "vendor", "play-policy-insights");
+var PPI = { config: readJson(path4.join(PPI_DIR, "resources", "scanner_config.json")), policies: readJson(path4.join(PPI_DIR, "resources", "policies.json")) };
+var ppiAvailable = () => !!(PPI.config && PPI.policies);
+var STORE = { play: "Google Play", apple: "App Store" };
+var SEV_ORDER = { block: 0, warn: 1, check: 2, ok: 3, info: 4 };
+var req = (id) => REQ.requirements.find((r) => r.id === id) || REQ.countries.find((r) => r.id === id) || {};
+var DAY = 864e5;
+var today = () => process.env.ROCKETLAUNCHER_TODAY || new Date(Date.now() - (/* @__PURE__ */ new Date()).getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+var addDays = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * DAY).toISOString().slice(0, 10);
+var daysBetween = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / DAY);
+var isDate = (s) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s + "T00:00:00Z"));
+var vnum = (s) => String(s || "").split(/[^\d]+/).filter(Boolean).map(Number);
+var vcmp = (a, b) => {
+  const x = vnum(a), y = vnum(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    const d = (x[i] || 0) - (y[i] || 0);
+    if (d) return d < 0 ? -1 : 1;
+  }
+  return 0;
+};
+var bumpPatch = (v) => {
+  const n = vnum(v);
+  while (n.length < 3) n.push(0);
+  n[2]++;
+  return n.slice(0, 3).join(".");
+};
+var sortRows = (rows) => rows.sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
+var counts = (rows) => {
+  const c = { block: 0, warn: 0, check: 0, ok: 0, info: 0 };
+  rows.forEach((r) => c[r.severity]++);
+  return c;
+};
+var label = (L, rows) => rows.map((r) => ({ ...r, severity_label: rx(L, "sev." + r.severity) }));
+var stripComments = (s) => s.replace(/("(?:\\.|[^"\\])*")|\/\/[^\n]*|\/\*[\s\S]*?\*\//g, (m, q) => q || "");
+var RR = {
+  /* Apple required-reason API categories → default reason codes */
+  NSPrivacyAccessedAPICategoryUserDefaults: { reason: "CA92.1", code: /\b(NS)?UserDefaults\b/, deps: /\bshared_preferences\b|@capacitor\/preferences|react-native-default-preference/ },
+  NSPrivacyAccessedAPICategoryFileTimestamp: { reason: "C617.1", code: /\b(creationDate|modificationDate|contentModificationDateKey|creationDateKey|NSFileCreationDate|NSFileModificationDate|getattrlist|fileModificationDate)\b/ },
+  NSPrivacyAccessedAPICategorySystemBootTime: { reason: "35F9.1", code: /\b(systemUptime|mach_absolute_time)\b/ },
+  NSPrivacyAccessedAPICategoryDiskSpace: { reason: "E174.1", code: /\b(volumeAvailableCapacity\w*|NSFileSystemFreeSize|NSFileSystemSize|statfs|statvfs)\b/, deps: /\bdisk_space\b|react-native-device-info/ },
+  NSPrivacyAccessedAPICategoryActiveKeyboards: { reason: "54BD.1", code: /\bactiveInputModes\b/ }
+};
+var DELETE_CODE = /\b(deleteAccount|delete_account|deleteUser|accountDeletion|DeleteAccount|purgeUserData|closeAccount|requestDelete|delete_profile|destroy_account)\b|currentUser\??(!)?\.delete\(|\buser\??(!)?\.delete\(/;
+var DELETE_TEXT = /delete (my |your )?account|account deletion|계정 ?삭제|회원 ?탈퇴|ลบบัญชี|删除(账号|帐户|账户)|खाता (हटाएं|हटाएँ|डिलीट)/i;
+var FORCE_UPDATE = /\b(min_?version|minimum_?version|min_supported_version|force_?update|forceUpdate|latest_?version|latestVersion|required_?version|minVersion|minimumVersion)\b/i;
+var UPDATE_LIBS = /\bupgrader\b|\bin_app_update\b|react-native-version-check|sp-react-native-in-app-updates|com\.google\.android\.play:app-update|AppUpdateManager|new_version_plus/;
+var REMOTE_FLAGS = /firebase_remote_config|firebase-config|RemoteConfig|remoteConfig|launchdarkly|growthbook|statsig/;
+var OPTIN_PAGE = /(tester|testing|beta|join|opt-?in)/i;
+var POLICY_FILE = /privacy/i;
+function scanProject(project, A) {
+  const F = project.files || {}, P = Object.keys(F), text = (p) => F[p] && F[p].text || "";
+  const codeP = P.filter((p) => F[p].code), textP = P.filter((p) => F[p].text != null);
+  const X = { v: 1, natives: project.natives || null, notable: project.natives && project.natives.notable || [] };
+  const gradleTxt = P.filter((p) => /\.gradle(\.kts)?$|libs\.versions\.toml$|gradle\.properties$/.test(p)).map(text).join("\n");
+  const m1 = gradleTxt.match(/com\.android\.tools\.build:gradle:([\d.]+)/) || gradleTxt.match(/id\s*\(?\s*["']com\.android\.(?:application|library)["']\s*\)?\s*version\s*["']([\d.]+)/) || gradleTxt.match(/^\s*(?:agp|androidGradlePlugin|android-gradle-plugin|androidGradle)\s*=\s*"([\d.]+)"/m);
+  const ndk = gradleTxt.match(/ndkVersion\s*=?\s*["']([\d.]+)/);
+  let pkg = null;
+  try {
+    const pj = P.filter((p) => /(^|\/)package\.json$/.test(p)).sort((a, b) => a.length - b.length)[0];
+    pkg = pj ? JSON.parse(text(pj)) : null;
+  } catch {
+  }
+  const deps = pkg ? { ...pkg.dependencies || {}, ...pkg.devDependencies || {} } : {};
+  const pubspec = text(P.filter((p) => /(^|\/)pubspec\.yaml$/.test(p)).sort((a, b) => a.length - b.length)[0]);
+  const xcodeHints = [];
+  P.filter((p) => /(^|\/)\.xcode-version$/.test(p)).forEach((p) => {
+    const v = text(p).trim().match(/^(\d+(?:\.\d+)*)/);
+    if (v) xcodeHints.push({ file: p, version: v[1] });
+  });
+  P.filter((p) => /\.github\/workflows\/|codemagic\.ya?ml$/.test(p)).forEach((p) => {
+    const t = text(p);
+    for (const re of [/xcode-version:\s*['"]?(\d+(?:\.\d+)*)/g, /Xcode_(\d+(?:\.\d+)*)\.app/g, /\bxcode:\s*['"]?(\d+(?:\.\d+)*)/g]) {
+      let m;
+      while (m = re.exec(t)) xcodeHints.push({ file: p, version: m[1] });
+    }
+  });
+  P.filter((p) => /(^|\/)eas\.json$/.test(p)).forEach((p) => {
+    const m = text(p).match(/xcode-(\d+(?:\.\d+)*)/);
+    if (m) xcodeHints.push({ file: p, version: m[1] });
+  });
+  const pbx = P.find((p) => /project\.pbxproj$/.test(p));
+  const luc = pbx && text(pbx).match(/LastUpgradeCheck\s*=\s*(\d{4})/);
+  X.build = {
+    agp: m1 ? m1[1] : null,
+    ndk: ndk ? ndk[1] : null,
+    reactNative: deps["react-native"] || null,
+    expo: deps.expo || null,
+    flutter: !!pubspec,
+    xcodeHints,
+    lastUpgradeCheck: luc ? `${+luc[1].slice(0, 2)}.${+luc[1][2]}` : null
+  };
+  const sig = {}, urls = /* @__PURE__ */ new Set();
+  if (PPI.config) {
+    const exts = PPI.config.supported_extensions || [];
+    for (const p of P.filter((p2) => F[p2].text != null && (F[p2].code || /AndroidManifest\.xml$|\.gradle(\.kts)?$/.test(p2)))) {
+      let c = text(p);
+      for (const m of c.matchAll(/"(https?:\/\/[^"]+)"/g)) if (/privacy|support|delete|terms|policy/i.test(m[1])) urls.add(m[1]);
+      c = /\.xml$/i.test(p) ? c.replace(/<!--[\s\S]*?-->/g, "") : exts.some((e) => p.toLowerCase().endsWith(e)) || /\.swift$|\.m$/.test(p) ? stripComments(c) : c;
+      for (const [cat, signals] of Object.entries(PPI.config.signal_categories || {})) for (const [id, pats] of Object.entries(signals)) {
+        const hit = pats.find((x) => c.includes(x));
+        if (!hit) continue;
+        const k = cat === "data_sources" ? id : cat;
+        (sig[k] = sig[k] || []).length < 4 && sig[k].push(`${p} (${hit})`);
+      }
+    }
+  }
+  X.signals = sig;
+  X.urls = [...urls].slice(0, 20);
+  const iosCode = codeP.filter((p) => /\.(swift|m|mm)$/.test(p));
+  const depHay = [JSON.stringify(Object.keys(deps)), pubspec, text(P.find((p) => /(^|\/)Podfile$/.test(p)))].join("\n");
+  X.reasons = {};
+  for (const [cat, r] of Object.entries(RR)) {
+    const files = iosCode.filter((p) => r.code.test(stripComments(text(p)))).slice(0, 4);
+    const dep = r.deps && r.deps.test(depHay);
+    if (files.length || dep) X.reasons[cat] = { reason: r.reason, files, from_sdk: !!dep };
+  }
+  const xp = P.filter((p) => /PrivacyInfo\.xcprivacy$/.test(p));
+  X.manifestApis = [...new Set(xp.flatMap((p) => text(p).match(/NSPrivacyAccessedAPICategory\w+/g) || []))];
+  const strHay = JSON.stringify(A.strings || {});
+  X.deletion = {
+    code: codeP.filter((p) => DELETE_CODE.test(stripComments(text(p)))).slice(0, 5),
+    text: DELETE_TEXT.test(strHay) || codeP.some((p) => DELETE_TEXT.test(text(p))),
+    pages: textP.filter((p) => /\.(html?|md)$/i.test(p) && /delet/i.test(p)).slice(0, 5),
+    urls: [...urls].filter((u) => /delet/i.test(u)).slice(0, 5)
+  };
+  const pol = textP.filter((p) => POLICY_FILE.test(p.split("/").pop()) && /\.(html?|md)$/i.test(p)), polTxt = pol.map(text).join("\n");
+  X.policy = {
+    files: pol.slice(0, 5),
+    location: /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt),
+    ads: /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
+    deletion: /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt),
+    thai: /[\u0E00-\u0E7F]/.test(polTxt)
+  };
+  X.forceUpdate = { code: codeP.filter((p) => FORCE_UPDATE.test(text(p))).slice(0, 5), lib: UPDATE_LIBS.test(depHay + gradleTxt + codeP.map(text).join("\n").slice(0, 3e5)) };
+  X.remoteFlags = REMOTE_FLAGS.test(depHay + gradleTxt + codeP.slice(0, 60).map(text).join("\n"));
+  X.optinPages = textP.filter((p) => /\.(html?|md)$/i.test(p) && OPTIN_PAGE.test(p.split("/").pop() + " " + p)).slice(0, 5).map((p) => ({ path: p, ...optinCheck(text(p)) }));
+  X.scannedAt = (/* @__PURE__ */ new Date()).toISOString();
+  return X;
+}
+function optinCheck(html) {
+  const s = String(html || "");
+  return {
+    play_test_link: /play\.google\.com\/apps\/(internaltest|testing)\//i.test(s),
+    play_store_link: /play\.google\.com\/store\/apps\/details/i.test(s),
+    external_browser_escape: /intent:\/\/|googlechrome:\/\/|openExternalBrowser=1|x-safari-https?:/i.test(s) || /open in (chrome|(your |an external )?browser)|chrome(으)?로 열기|브라우저로 열기|เปิดใน ?(chrome|เบราว์เซอร์)|在 ?chrome ?中打开|在浏览器中打开|chrome में खोलें|ब्राउज़र में खोलें/i.test(s),
+    inapp_detection: /\bLine\/|FBAN|FBAV|Instagram|KAKAOTALK|in-?app browser|webview/i.test(s),
+    mentions_14_days: /14/.test(s)
+  };
+}
+function requirements(st, L, opts = {}) {
+  const A = st.A, X = st.X, an = A.android, io = A.ios, T2 = opts.today || today(), rows = [];
+  const add2 = (id, severity, finding, action, extra = {}) => {
+    const r = req(id);
+    const days = r.date && isDate(r.date) ? daysBetween(T2, r.date) : null;
+    rows.push({
+      id,
+      store: r.store === "play" ? STORE.play : r.store === "apple" ? STORE.apple : "both",
+      severity,
+      rule: r.rule,
+      finding,
+      action: action || void 0,
+      status: r.status,
+      date: r.date || void 0,
+      days_left: days !== null && days > 0 ? days : void 0,
+      conservative: r.conservative || void 0,
+      source: r.source,
+      verified_on: r.verified_on,
+      ...extra
+    });
+  };
+  const stage = (k) => Flow.stageOf(st.dec, k);
+  if (an) {
+    const t = an.targetSdk;
+    if (t && t < 36) add2("play.target_api_36", "block", `targetSdk is ${t}.`, "Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.");
+    else if (t) add2("play.target_api_36", "ok", `targetSdk is ${t}.`);
+    else add2("play.target_api_36", "warn", `targetSdk could not be read (${an.targetSdkRaw || "not set"}).`, "Check the targetSdk your build actually uses; it must be 36 or higher.");
+    if (stage("play") === "live" && t && t < 35) add2("play.existing_api_35", "block", `The live app targets ${t}.`, "Ship an update that targets 36; until then new users on newer Android cannot install it.");
+    if (!X) add2("play.16kb_page_size", "warn", rx(L, "req.rescan"), "Connect the app again.");
+    else {
+      const N = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
+      const bad = N.libs.filter((l) => l.bits === 64 && l.align != null && l.align < 16384), unread = N.libs.filter((l) => l.align == null);
+      const hybrid = ["react-native", "expo", "flutter"].includes(A.framework) || X.build.reactNative || X.build.flutter;
+      const agpOld = X.build.agp && vcmp(X.build.agp, "8.5.1") < 0;
+      if (bad.length) add2("play.16kb_page_size", "block", `${bad.length} 64-bit native librar${bad.length > 1 ? "ies are" : "y is"} aligned to ${Math.min(...bad.map((l) => l.align))} bytes: ${bad.slice(0, 4).map((l) => l.path).join(", ")}.`, "Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.", { files: bad.map((l) => l.path) });
+      else if (N.nativeSrc || unread.length || hybrid || agpOld) add2(
+        "play.16kb_page_size",
+        "warn",
+        [N.nativeSrc ? "The project builds native code (CMake / ndk-build)." : "", hybrid ? `${A.framework} apps ship native libraries at build time.` : "", unread.length ? `${unread.length} native librar${unread.length > 1 ? "ies" : "y"} could not be read.` : "", agpOld ? `Android Gradle Plugin ${X.build.agp} is older than 8.5.1.` : ""].filter(Boolean).join(" "),
+        'Use AGP 8.5.1+ and NDK r28+, update React Native / Flutter / game engines and native SDKs to 16 KB-ready versions, then confirm "Supports 16 KB" in Play Console > App bundle explorer.'
+      );
+      else if (N.libs.length) add2("play.16kb_page_size", "ok", `${N.libs.length} native librar${N.libs.length > 1 ? "ies are" : "y is"} 16 KB aligned.`);
+      else add2("play.16kb_page_size", "ok", "No native code found (Java/Kotlin only apps already support 16 KB).");
+    }
+    add2("play.app_registration", "check", "Rocket Launcher cannot see Play Console.", "Open the Play Console home page and register any app it lists as unregistered. The developer account must be verified.");
+    add2("play.trader_status", "check", "Every developer account must declare trader / non-trader.", "Play Console > Manage account > Account details > About you. Not distributing in the EEA/UK: non-trader is allowed.");
+    if (stage("play") !== "live") add2("play.closed_testing_personal", "info", "Applies to new personal developer accounts only.", "Track it with rocketlauncher_closed_test.");
+    if (A.sdk.location || A.sdk.contacts) add2("play.contacts_location_policy_2027", "check", `The app uses ${[A.sdk.location && "location", A.sdk.contacts && "contacts"].filter(Boolean).join(" and ")}.`, "Re-check the permission declarations against the updated policy before 2027-01-27.");
+  }
+  if (io) {
+    const hints = X && X.build.xcodeHints || [], vers = hints.map((h) => h.version), maxV = vers.sort(vcmp).pop();
+    if (maxV && vcmp(maxV, "26") < 0) add2("apple.xcode_26", "block", `Build config uses Xcode ${maxV} (${hints.map((h) => h.file).join(", ")}).`, "Switch the build machine or CI image to Xcode 26 or later.");
+    else if (maxV) add2("apple.xcode_26", "ok", `Build config uses Xcode ${maxV}.`);
+    else add2("apple.xcode_26", "check", `No Xcode version found in the project${X && X.build.lastUpgradeCheck ? ` (project last opened with Xcode ${X.build.lastUpgradeCheck})` : ""}.`, "Archive with Xcode 26 or later (iOS 26 SDK). For Expo / EAS, use a build image with Xcode 26.");
+    const dep = io.deploymentNum;
+    if (dep && dep < 13) add2("apple.min_target_ios13", "block", `Deployment target is iOS ${io.deployment}.`, "Raise IPHONEOS_DEPLOYMENT_TARGET to 13 or later (15 is needed from April 2027).");
+    else if (dep) add2("apple.min_target_ios13", "ok", `Deployment target is iOS ${io.deployment}.`);
+    add2("apple.ios27_sdk", dep && dep < 15 ? "warn" : "info", dep && dep < 15 ? `Deployment target iOS ${io.deployment} is below 15.` : "Plan the move to Xcode 27 before April 2027.", "From April 2027: build with the iOS 27 SDK and target iOS 15 or later.");
+    if (!io.privacyManifest) add2("apple.privacy_manifest_reasons", "block", "No PrivacyInfo.xcprivacy in the app.", "Add one (rocketlauncher_privacy_check drafts it, including required-reason APIs).");
+    else if (X) {
+      const missing = Object.keys(X.reasons).filter((c2) => !X.manifestApis.includes(c2));
+      if (missing.length) add2("apple.privacy_manifest_reasons", "block", `Required-reason APIs used but not declared: ${missing.map((c2) => c2.replace("NSPrivacyAccessedAPICategory", "")).join(", ")}.`, "Add them to NSPrivacyAccessedAPITypes with an approved reason (rocketlauncher_privacy_check has the entries).");
+      else add2("apple.privacy_manifest_reasons", "ok", "PrivacyInfo.xcprivacy covers the required-reason APIs found in the code.");
+    } else add2("apple.privacy_manifest_reasons", "warn", rx(L, "req.rescan"));
+    if (io.encryption === void 0) add2("apple.export_compliance", "warn", "ITSAppUsesNonExemptEncryption is not set.", "Set it to NO (false) if the app only uses HTTPS and OS encryption; otherwise answer the export questions in App Store Connect.");
+    else add2("apple.export_compliance", "ok", `ITSAppUsesNonExemptEncryption = ${io.encryption}.`);
+    add2("apple.age_rating_social_media", "check", "Answer the social media capability question in the age rating questionnaire.", "No public feed or discovery of other users' posts \u2192 answer No.");
+    add2("apple.age_rating_location_dating", "check", A.sdk.location ? `The app uses location. Showing nearby places is not "Shared Location"; sharing a user's location with other people is.` : "Answer the new Shared Location and Dating & Relationships questions.", "App Store Connect > App Information > Age Rating. Required with the next update; every app by 2027-01-12.");
+    if (X && X.remoteFlags) add2("apple.hidden_features", "warn", "The app uses remote config / feature flags.", "List every feature that can be turned on remotely in the review notes (Guideline 2.5.19); keep store graphics free of prices and unverifiable claims (2.3.14).");
+    else add2("apple.hidden_features", "info", "No remote feature flags found.", "Describe every feature in the review notes (Guideline 2.5.19).");
+    add2("apple.iphone_duo_screenshots", "info", "Upcoming screenshot size.", "When you move to the iOS 27.1 SDK, add iPhone Duo screenshots. Never upload screenshots with an alpha channel.");
+  }
+  if (A.sdk.auth) {
+    const d = deletionStatus(st);
+    const sev = d.inApp && d.web ? "ok" : "block";
+    if (an) add2("play.account_deletion", sev, d.summary, sev === "ok" ? void 0 : "Run rocketlauncher_account_deletion_check.");
+    if (io) add2("apple.account_deletion", d.inApp ? "ok" : "block", d.summary, d.inApp ? void 0 : "Run rocketlauncher_account_deletion_check.");
+  }
+  sortRows(rows);
+  const c = counts(rows);
+  return {
+    title: rx(L, "req.title"),
+    summary: rx(L, "req.summary", { ...c, date: REQ.verified_on }),
+    counts: c,
+    rules_verified_on: REQ.verified_on,
+    today: T2,
+    rows: label(L, rows),
+    rescan_needed: !X || void 0,
+    note: "Dates come from data/store-requirements.json (one table with the official source and the date each rule was checked). Where sources disagree (16 KB pages), Rocket Launcher applies the earliest date."
+  };
+}
+function deletionStatus(st) {
+  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [] };
+  const generated = !!(st.generated && A.sdk.auth);
+  const inApp = D.code.length > 0 || D.text;
+  const web = D.pages.length > 0 || D.urls.length > 0 || generated;
+  const missing = [!inApp && 'no in-app "Delete account" path found', !web && "no web deletion page or URL found"].filter(Boolean);
+  return { inApp, web, generated, D, missing, summary: missing.length ? `Missing: ${missing.join("; ")}.` : "In-app path and web page found." };
+}
+function deletionCheck(st, L) {
+  const A = st.A, X = st.X, sig = X && X.signals || {};
+  const accountSignals = !!(sig.USER_ACCOUNT || sig.ACCOUNT_DELETION);
+  if (!A.sdk.auth && !accountSignals) return { title: rx(L, "del.title"), summary: rx(L, "del.notNeeded"), required: false };
+  const d = deletionStatus(st), rows = [];
+  rows.push({
+    id: "in_app",
+    severity: d.inApp ? "ok" : "block",
+    what: "Delete account inside the app (Play + App Store 5.1.1(v)).",
+    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : ""].filter(Boolean).join(", ")}` : "Not found.",
+    action: d.inApp ? void 0 : "Add Settings > Delete account. It must delete the account and its data (not just sign out), ask once for confirmation and say how long deletion takes.",
+    source: "https://developer.apple.com/support/offering-account-deletion-in-your-app/"
+  });
+  rows.push({
+    id: "web",
+    severity: d.web ? "ok" : A.platforms.android ? "block" : "warn",
+    what: "A web page where users can request deletion without the app (Google Play requires it; enter the URL in Play Console > App content > Data safety).",
+    finding: d.web ? `Found: ${[...d.D.pages, ...d.D.urls, d.generated ? "account-deletion page from rocketlauncher_generate_store_materials" : ""].filter(Boolean).join(", ")}` : "Not found.",
+    action: d.web ? void 0 : "rocketlauncher_generate_store_materials makes account-deletion-<lang>.html. Host it (for example on GitHub Pages, free) and paste its URL in Play Console.",
+    source: "https://support.google.com/googleplay/android-developer/answer/13327111"
+  });
+  rows.push({
+    id: "retention",
+    severity: X && X.policy.deletion ? "ok" : "warn",
+    what: "The privacy policy says what is deleted, what is kept and for how long.",
+    finding: X && X.policy.deletion ? "The privacy policy mentions deletion or retention." : "Not found in the privacy policy.",
+    action: X && X.policy.deletion ? void 0 : 'Add a short "Deleting your account" section (the generated privacy policy has one).',
+    source: "https://support.google.com/googleplay/android-developer/answer/13327111"
+  });
+  if (A.ios && (A.sdk.appleSignIn || A.ios && A.ios.appleSignIn)) rows.push({
+    id: "siwa_revoke",
+    severity: "warn",
+    what: "Sign in with Apple: when an account is deleted, revoke the user's Apple tokens (REST API).",
+    finding: "Sign in with Apple is enabled.",
+    action: "Call Apple's token revocation endpoint from your server when the account is deleted.",
+    source: "https://developer.apple.com/support/offering-account-deletion-in-your-app/"
+  });
+  const notes = "Account deletion: in the app, open Settings > Delete account (no extra steps, the account and its data are deleted). On the web: [https://<your-site>/account-deletion.html].";
+  sortRows(rows);
+  const c = counts(rows);
+  return {
+    title: rx(L, "del.title"),
+    summary: d.missing.length ? rx(L, "del.missing", { missing: d.missing.join("; ") }) : rx(L, "del.ok"),
+    required: true,
+    counts: c,
+    rows: label(L, rows),
+    review_note_text: notes,
+    play_console_field: 'Play Console > Policy and programs > App content > Data safety > "Delete account URL"'
+  };
+}
+function reasonsXml(X) {
+  const cats = /* @__PURE__ */ new Set(["NSPrivacyAccessedAPICategoryUserDefaults", ...Object.keys(X && X.reasons || {})]);
+  return [...cats].map((c) => `		<dict>
+			<key>NSPrivacyAccessedAPIType</key><string>${c}</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key><array><string>${(RR[c] || {}).reason || "CA92.1"}</string></array>
+		</dict>`).join("\n");
+}
+function privacyCheck(st, L) {
+  const A = st.A, X = st.X, an = A.android || null, io = A.ios || null, R = A.review || {}, rows = [];
+  const add2 = (id, severity, finding, action, source) => rows.push({ id, severity, finding, action: action || void 0, source: source || void 0 });
+  const perms = an && an.permissions || [], usage = io && io.usage || {};
+  const fine = perms.some((p) => /ACCESS_FINE_LOCATION/.test(p)), coarse = perms.some((p) => /ACCESS_COARSE_LOCATION/.test(p)), bg = perms.some((p) => /ACCESS_BACKGROUND_LOCATION/.test(p));
+  const po = Flow.privacyOpts(A, st.dec), sent = R.locationSent || po.location === "server";
+  if (A.sdk.location) {
+    if (io && !usage.NSLocationWhenInUseUsageDescription && !usage.NSLocationAlwaysAndWhenInUseUsageDescription) add2("loc.ios_string", "block", "Location is used but Info.plist has no NSLocationWhenInUseUsageDescription.", 'Add a purpose string that says why (for example "Shows fuel stations near you.").', "https://developer.apple.com/documentation/bundleresources/information-property-list/nslocationwheninuseusagedescription");
+    if (io && usage.NSLocationAlwaysAndWhenInUseUsageDescription && !bg && an) add2("loc.always_mismatch", "warn", "iOS asks for Always location, Android does not ask for background location.", "Use When In Use on iOS unless the feature really needs background location.");
+    if (bg) add2("loc.background", "block", "ACCESS_BACKGROUND_LOCATION is declared.", "Remove it unless a core feature needs it; otherwise fill the Play location permissions declaration with a video.", "https://support.google.com/googleplay/android-developer/answer/9799150");
+    if (sent && st.dec.location === "device") add2("loc.datasafety_device", "block", "The code sends location to a server, but the Data safety answer says it stays on the device.", "Answer that location is collected (app functionality) in Data safety and App Privacy.", "https://support.google.com/googleplay/android-developer/answer/10787469");
+    if (sent && fine) add2("loc.precise", "warn", "ACCESS_FINE_LOCATION is declared and location is sent to the server.", 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', "https://support.google.com/googleplay/android-developer/answer/10787469");
+    if (X && !X.policy.location) add2("loc.policy", "warn", "The privacy policy does not mention location.", "Say what location is used for, whether it is sent and how long it is kept.");
+    if (!X || X && !rows.some((r) => r.id.startsWith("loc."))) add2("loc.ok", "ok", `Location: ${sent ? "sent to the server" : "used on the device"}; permission texts and declarations line up.`);
+  }
+  if (io) {
+    const tr2 = Analyzer.tracking(A);
+    if (tr2.state === "mixed") add2("att.mixed", "block", `Tracking setup is mixed. Found: ${tr2.found.join(", ")}. Missing: ${tr2.missing.join(", ")}.`, 'Pick one story: no tracking (remove the ATT string/prompt, NSPrivacyTracking=false, non-personalized ads) or full tracking (prompt before any tracking + string + manifest + App Privacy "Yes").', "https://developer.apple.com/app-store/user-privacy-and-data-use/");
+    else if (tr2.state === "tracking") add2("att.tracking", "warn", "The app tracks users with ATT.", 'App Privacy must say "Yes, we track"; the prompt must appear before any tracking and the app must work if the user declines.');
+    else if (A.sdk.ads && !R.npa) add2("att.npa", "warn", "Ads without ATT: ad requests should be non-personalized.", 'Request non-personalized ads (npa=1) and answer "No, we do not track" in App Privacy.');
+    else add2("att.ok", "ok", A.sdk.ads ? "Ads are non-personalized and there is no ATT prompt: consistent." : "No tracking.");
+  }
+  if (A.sdk.ads && X && !X.policy.ads && X.policy.files.length) add2("ads.policy", "warn", "The app shows ads but the privacy policy does not mention advertising.", "Mention the ad provider and the advertising ID in the privacy policy.");
+  if (perms.some((p) => /READ_MEDIA_IMAGES|READ_MEDIA_VIDEO/.test(p))) add2("photo.play", "warn", "READ_MEDIA_IMAGES / READ_MEDIA_VIDEO are declared.", "Use the Android photo picker unless photo access is the app's core purpose, then remove the permissions (or file the Photo and Video Permissions declaration).", "https://support.google.com/googleplay/android-developer/answer/14115180");
+  if (io && A.sdk.photos && !usage.NSPhotoLibraryUsageDescription && !usage.NSPhotoLibraryAddUsageDescription && perms.some((p) => /READ_MEDIA_IMAGES|READ_EXTERNAL_STORAGE/.test(p))) add2("photo.ios_string", "warn", "Android reads photos but Info.plist has no photo library purpose string.", "Use PHPicker (no permission) or add NSPhotoLibraryUsageDescription.");
+  const items = Gen.dataSafety(A, "en", po), declared = JSON.stringify(items.rows).toLowerCase();
+  if (X && X.signals) {
+    const map2 = { CONTACTS: "contacts", CALENDAR: "calendar", HEALTH: "health", FITNESS: "fitness", SMS_CALL_LOG: "sms", PHOTOS: "photo", VIDEOS: "video", AUDIO: "audio", PHONE: "phone" };
+    for (const [k, word] of Object.entries(map2)) if (X.signals[k] && !declared.includes(word)) add2("ds." + k.toLowerCase(), "warn", `Google's scanner patterns found ${k.toLowerCase().replace(/_/g, " ")} access (${X.signals[k][0]}), but the Data safety draft does not list it.`, "If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.", "https://support.google.com/googleplay/android-developer/answer/10787469");
+  }
+  if (io) {
+    const used = Object.keys(X && X.reasons || {}), declaredApis = X && X.manifestApis || [];
+    const miss = used.filter((c2) => !declaredApis.includes(c2));
+    if (!io.privacyManifest) add2("xcprivacy.missing", "block", "No PrivacyInfo.xcprivacy.", "Add the draft below to the app target.", "https://developer.apple.com/documentation/bundleresources/privacy-manifest-files");
+    else if (miss.length) add2("xcprivacy.reasons", "block", `Required-reason APIs used but not declared: ${miss.join(", ")}.`, "Add the entries from privacy_manifest_reasons below.", "https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api");
+    else if (X) add2("xcprivacy.ok", "ok", "PrivacyInfo.xcprivacy declares the required-reason APIs found in the code.");
+    const sdkFrom = Object.entries(X && X.reasons || {}).filter(([, v]) => v.from_sdk).map(([k]) => k);
+    if (sdkFrom.length) add2("xcprivacy.sdk", "info", `Plugins that use required-reason APIs: ${sdkFrom.join(", ")}.`, "Update these SDKs to versions that ship their own privacy manifest (Apple's commonly used SDK list).", "https://developer.apple.com/support/third-party-SDK-requirements/");
+  }
+  sortRows(rows);
+  const c = counts(rows);
+  const appleItems = [];
+  for (const r of items.rows) appleItems.push(r);
+  const xc = io ? Gen.xcprivacy(A, po).replace(/\t<key>NSPrivacyAccessedAPITypes<\/key>\n\t<array>[\s\S]*?\n\t<\/array>\n<\/dict>/, `	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+${reasonsXml(X)}
+	</array>
+</dict>`) : void 0;
+  return {
+    title: rx(L, "pv.title"),
+    summary: rx(L, "pv.summary", c),
+    counts: c,
+    rows: label(L, rows),
+    drafts: {
+      data_safety: { rows: items.rows, not_collected: items.notCollected, note: 'Paste into Play Console > App content > Data safety. Data that never leaves the device is not "collected".' },
+      app_privacy: io ? { tracking: po.tracking ? "Yes, we track" : "No, we do not track", data: items.rows.map((r) => ({ type: r.label, purposes: r.purposes, linked_to_user: !!r.linked, used_for_tracking: !!r.tracking })) } : void 0,
+      privacy_manifest_reasons: io ? Object.fromEntries(Object.entries(X && X.reasons || { NSPrivacyAccessedAPICategoryUserDefaults: { reason: "CA92.1", files: [] } }).map(([k, v]) => [k, { reason: v.reason, found_in: v.files.length ? v.files : v.from_sdk ? ["plugin dependency"] : [] }])) : void 0,
+      privacy_manifest: xc
+    },
+    rescan_needed: !X || void 0
+  };
+}
+var PPI_DOMAINS = {
+  permissions_and_apis: {
+    policies: ["location_access_policy", "photo_video_access_policy", "contacts_access_policy", "sms_call_log_policy", "all_files_access_policy", "package_visibility_policy", "audio_recording_policy", "files_and_docs_policy", "exact_alarm_policy", "foreground_services_policy", "accessibility_api_policy", "target_api_level"],
+    signals: ["PRECISE_LOCATION", "APPROX_LOCATION", "CONTACTS", "SMS_CALL_LOG", "PHOTOS", "VIDEOS", "AUDIO", "FILES_AND_DOCS", "APPS_ON_DEVICE", "exact_alarm", "foreground_service", "accessibility"]
+  },
+  user_account: { policies: ["account_deletion", "login_credentials"], signals: ["USER_ACCOUNT", "ACCOUNT_DELETION"] },
+  data_safety: { policies: ["data_safety_section", "prominent_disclosure_policy"], signals: ["NAME", "EMAIL", "PHONE", "ADDRESS", "HEALTH", "FITNESS", "CREDIT_DEBIT_BANK_ACCOUNT_NUMBER", "PURCHASE_HISTORY", "APP_INTERACTIONS", "CRASH_LOGS", "DEVICE_ID", "USER_GENERATED_CONTENT", "network_transmission"] }
+};
+var PERM_POLICY = [
+  [/ACCESS_(FINE|COARSE|BACKGROUND)_LOCATION/, "location_access_policy"],
+  [/READ_MEDIA_(IMAGES|VIDEO)/, "photo_video_access_policy"],
+  [/READ_CONTACTS|WRITE_CONTACTS/, "contacts_access_policy"],
+  [/READ_SMS|RECEIVE_SMS|SEND_SMS|READ_CALL_LOG|PROCESS_OUTGOING_CALLS/, "sms_call_log_policy"],
+  [/MANAGE_EXTERNAL_STORAGE/, "all_files_access_policy"],
+  [/QUERY_ALL_PACKAGES/, "package_visibility_policy"],
+  [/RECORD_AUDIO/, "audio_recording_policy"],
+  [/SCHEDULE_EXACT_ALARM|USE_EXACT_ALARM/, "exact_alarm_policy"],
+  [/FOREGROUND_SERVICE/, "foreground_services_policy"],
+  [/BIND_ACCESSIBILITY_SERVICE/, "accessibility_api_policy"]
+];
+function policyAudit(st, L) {
+  const A = st.A, X = st.X;
+  const attribution = { name: "Play Policy Insights", by: "Google LLC (The Android Open Source Project)", license: "Apache-2.0", upstream: "https://github.com/android/skills/tree/main/play/play-policy-insights", bundled_at: PPI_DIR, notice: path4.join(PPI_DIR, "NOTICE") };
+  if (!A.android) return { title: rx(L, "pa.title"), summary: rx(L, "pa.noAndroid"), applies: false, attribution };
+  const P = PPI.policies || {}, sig = X && X.signals || {}, perms = A.android.permissions || [];
+  const pol = (id) => P[id] ? { id, name: P[id].name, url: (P[id].urls || [])[0] } : { id };
+  const domains = {};
+  for (const [dom, def] of Object.entries(PPI_DOMAINS)) {
+    const found = def.signals.filter((s) => sig[s]).map((s) => ({ signal: s, where: sig[s] }));
+    const policies = new Set(found.length ? [] : []);
+    for (const [re, id] of PERM_POLICY) if (def.policies.includes(id) && perms.some((p) => re.test(p))) policies.add(id);
+    if (dom === "permissions_and_apis" && A.android.targetSdk && A.android.targetSdk < 36) policies.add("target_api_level");
+    if (dom === "user_account" && (A.sdk.auth || sig.USER_ACCOUNT)) {
+      policies.add("account_deletion");
+      policies.add("login_credentials");
+    }
+    if (dom === "data_safety") policies.add("data_safety_section");
+    if (dom === "data_safety" && found.length && !sig.disclosure && (sig.PRECISE_LOCATION || sig.CONTACTS || sig.PHOTOS)) policies.add("prominent_disclosure_policy");
+    domains[dom] = { signals: found, review_against: [...policies].map(pol) };
+  }
+  const n = Object.values(domains).reduce((s, d) => s + d.review_against.length, 0);
+  return {
+    title: rx(L, "pa.title"),
+    summary: rx(L, "pa.summary", { n }),
+    applies: true,
+    quick_scan: domains,
+    login_for_review: A.sdk.auth ? "If any feature needs sign-in, add working review credentials in Play Console > App content > App access (Rocket Launcher never stores passwords)." : 'No sign-in found: answer "All functionality is available without special access" in App access.',
+    full_audit: ppiAvailable() ? {
+      skill: path4.join(PPI_DIR, "SKILL.md"),
+      how: "For the complete audit, ask your AI agent to read and follow this SKILL.md with app_dir set to the Android app folder. It runs locally with Python 3 (standard library only) and writes its report to a .scratch folder in the workspace. Its report step also reads the app's public Play Store page when one exists and continues without it when offline. Free; no account or key.",
+      other_ways: ["npx skills add android/skills --skill play-policy-insights", "Android Studio: Code > Inspect for Play Policy Insights (lint)"]
+    } : { missing: "The bundled skill folder was not found." },
+    caution: "Google: AI can make mistakes. The audit is a checklist to review, not a Play review decision.",
+    attribution,
+    rescan_needed: !X || void 0
+  };
+}
+var NEED_TESTERS = 12;
+var NEED_DAYS = 14;
+var LABEL_RE = /^[^\n]{1,60}$/;
+function closedTestRecord(st, { testers, feedback, account_type, test_started }) {
+  const C = st.closedTest = st.closedTest || { testers: {}, feedback: [], account_type: null };
+  let n = 0;
+  if (account_type) C.account_type = account_type;
+  if (test_started && isDate(test_started)) C.test_started = test_started;
+  for (const t of testers || []) {
+    const lab = String(t.label || "").trim();
+    if (!LABEL_RE.test(lab)) throw new Error("Each tester needs a short label (a nickname or initials; no e-mail needed).");
+    if (t.opted_in && !isDate(t.opted_in)) throw new Error(`opted_in must be YYYY-MM-DD (${lab}).`);
+    if (t.opted_out && !isDate(t.opted_out)) throw new Error(`opted_out must be YYYY-MM-DD (${lab}).`);
+    const cur = C.testers[lab] || { history: [] };
+    if (t.opted_in) {
+      if (cur.opted_in && cur.opted_out && t.opted_in > cur.opted_out) cur.history.push({ opted_in: cur.opted_in, opted_out: cur.opted_out });
+      cur.opted_in = t.opted_in;
+      if (!t.opted_out && cur.opted_out && cur.opted_out < t.opted_in) delete cur.opted_out;
+    }
+    if (t.opted_out) cur.opted_out = t.opted_out;
+    if (t.remove) {
+      delete C.testers[lab];
+      n++;
+      continue;
+    }
+    C.testers[lab] = cur;
+    n++;
+  }
+  for (const f of feedback || []) if (f && f.text) C.feedback.push({ date: isDate(f.date) ? f.date : today(), text: String(f.text).slice(0, 500), from: f.from ? String(f.from).slice(0, 60) : void 0 });
+  return n;
+}
+function closedTestStatus(st, L, T2 = today()) {
+  const C = st.closedTest || { testers: {}, feedback: [] }, A = st.A;
+  if (C.account_type && C.account_type !== "personal_new") return { title: rx(L, "ct.title"), summary: rx(L, "ct.notNeeded"), required: false };
+  const list = Object.entries(C.testers).map(([label2, t]) => {
+    const active2 = !!t.opted_in && !(t.opted_out && t.opted_out >= t.opted_in);
+    const days = active2 ? Math.max(0, daysBetween(t.opted_in, T2)) : 0;
+    return { label: label2, opted_in: t.opted_in || null, opted_out: active2 ? void 0 : t.opted_out, active: active2, continuous_days: days, qualifies: active2 && days >= NEED_DAYS, restarted: t.history && t.history.length ? t.history.length : void 0 };
+  }).sort((a, b) => (a.opted_in || "9").localeCompare(b.opted_in || "9"));
+  const active = list.filter((t) => t.active), q = list.filter((t) => t.qualifies).length;
+  let left, earliest = null;
+  if (active.length >= NEED_TESTERS) {
+    earliest = addDays(active[NEED_TESTERS - 1].opted_in, NEED_DAYS);
+    if (earliest < T2) earliest = T2;
+    left = q >= NEED_TESTERS ? "" : rx(L, "ct.left.days", { date: earliest, days: daysBetween(T2, earliest) });
+  } else {
+    earliest = addDays(T2, NEED_DAYS);
+    left = rx(L, "ct.left.need", { n: NEED_TESTERS - active.length, date: earliest });
+  }
+  const warnings = [];
+  if (active.length < NEED_TESTERS + 3) warnings.push("Recruit 15\u201320 testers: anyone who leaves restarts their 14 days, and the 12 must be opted in on the day you apply.");
+  if (list.some((t) => t.restarted)) warnings.push("Some testers left and joined again; only their latest continuous period counts.");
+  if ((C.feedback || []).length < 3) warnings.push("Google also looks at engagement. Ask testers to really use the app and send feedback (Play testing feedback or your own channel); log it with action=record so the application draft can summarize it.");
+  warnings.push("Store nicknames only. Rocket Launcher keeps this list on this computer and never needs testers' e-mails.");
+  const ready = q >= NEED_TESTERS;
+  return {
+    title: rx(L, "ct.title"),
+    summary: ready ? rx(L, "ct.ready") : rx(L, "ct.summary", { q, left }),
+    required: C.account_type ? true : "only for personal Play accounts created after 2023-11-13 (pass account_type)",
+    ready_to_apply: ready,
+    qualified_testers: q,
+    active_testers: active.length,
+    earliest_apply_date: ready ? T2 : earliest,
+    today: T2,
+    testers: list,
+    feedback_logged: (C.feedback || []).length,
+    warnings,
+    next: ready ? "Draft the application with action=application_draft, then the user applies in Play Console." : "Share the recruiting message (action=recruit_copy) and record opt-ins with action=record.",
+    source: req("play.closed_testing_personal").source,
+    app: A && A.appName
+  };
+}
+function closedTestDraft(st, L, T2 = today()) {
+  const A = st.A, S = closedTestStatus(st, L, T2), C = st.closedTest || { feedback: [] };
+  const feats = (Gen.features ? Gen.features(A, "en") : []).slice(0, 5).map((f) => typeof f === "string" ? f : f.title || f.t || "").filter(Boolean);
+  const fb = (C.feedback || []).slice(-8).map((f) => `- ${f.date}: ${f.text}`).join("\n") || "- [summarize what testers reported]";
+  const cat = (A.categories || [])[0] || "app";
+  return {
+    title: rx(L, "ct.title"),
+    ready_to_apply: S.ready_to_apply,
+    status: S.summary,
+    note: "Draft answers for Play Console > Dashboard > Apply for production. Edit them so they are true; the user submits the form. Google reviews within about 7 days.",
+    sections: {
+      about_your_closed_test: {
+        recruiting: "How easy was it to recruit testers? \u2192 [pick the option that is true]",
+        engagement: `${S.active_testers} testers were opted in; ${S.qualified_testers} stayed in for 14+ days in a row. Testers used the main features: ${feats.join("; ") || "[list the main features]"}. [Say whether their usage matched how real users will use the app and any differences.]`,
+        feedback_summary: `Feedback was collected through Google Play testing feedback and [your channel]. Main points:
+${fb}`
+      },
+      about_your_app: {
+        target_audience: `[Who it is for, as specific as possible \u2014 for example: drivers in Thailand who want the cheapest ${cat === "travel" ? "route" : "nearby option"}.]`,
+        value: `${A.appName}: ${A.tagline && A.tagline.en || "[one-sentence value]"}${feats.length ? " Main features: " + feats.join("; ") + "." : ""}`,
+        installs_first_year: "[pick an honest estimate]"
+      },
+      about_your_production_readiness: {
+        changes_from_test: "[List what you changed after the closed test: fixed crashes, clearer texts, performance, etc.]",
+        why_ready: `The app ran for ${S.qualified_testers >= NEED_TESTERS ? "14+" : "[n]"} days with ${S.active_testers} testers without blocking issues, the reported problems are fixed, the store listing, Data safety and content rating are complete, and the pre-launch report shows no critical issues. [Edit to match reality.]`
+      }
+    },
+    source: req("play.closed_testing_personal").source
+  };
+}
+function recruitCopy(st, link) {
+  const app = st.A && st.A.appName || "my app", l = link || '[opt-in link from Play Console > Closed testing > Testers > "Join on the web"]';
+  return Object.fromEntries(Object.entries(RECRUIT).map(([k, v]) => [k, v.replace("{app}", app).replace("{link}", l)]));
+}
+function optinReport(html, where) {
+  const c = html && typeof html === "object" ? html : optinCheck(html), rows = [];
+  rows.push({ id: "link", severity: c.play_test_link ? "ok" : "block", finding: c.play_test_link ? "Play opt-in link found." : "No Play testing opt-in link (play.google.com/apps/testing/<package>) found." });
+  rows.push({
+    id: "in_app_browser",
+    severity: c.external_browser_escape ? "ok" : "warn",
+    finding: c.external_browser_escape ? "The page helps people leave in-app browsers (Open in Chrome / intent link / LINE openExternalBrowser=1)." : "No way out of in-app browsers found.",
+    action: c.external_browser_escape ? void 0 : 'Add an "Open in Chrome" button (intent://\u2026 or a plain instruction), and add ?openExternalBrowser=1 to links you share in LINE.',
+    evidence: "Developer field reports: the Play opt-in can fail inside LINE, Facebook or Instagram in-app browsers. Google does not document this."
+  });
+  rows.push({ id: "days", severity: c.mentions_14_days ? "ok" : "warn", finding: c.mentions_14_days ? "The page tells testers about the 14 days." : "The page does not say testers must stay opted in for 14 days.", action: c.mentions_14_days ? void 0 : 'Add: "Please stay in the test for 14 days in a row."' });
+  return { checked: where, rows: sortRows(rows) };
+}
+function reviewerNotes(st, L, { default_location, demo_account, extra } = {}) {
+  const A = st.A, X = st.X || {}, io = A.ios || {}, an = A.android || {}, d = st.dec || {};
+  const l0 = "en", base = Flow.reviewNotes(A, d, l0);
+  const lines = [base];
+  if (A.sdk.location) lines.push(`Location: the app uses location only to ${"[say why, e.g. show fuel stations near you]"}. ${default_location ? `If location is denied or the reviewer is outside our service area, the app shows ${default_location} by default so every feature can be tested.` : "[Reviewers are usually in the US. Say what the app shows outside your service area, or add a default region so reviewers can test every feature.]"}`);
+  const perms = Object.entries(io.usage || {}).map(([k, v]) => `${k}: ${v || "[purpose]"}`);
+  if (perms.length) lines.push("Permissions requested and why:\n" + perms.map((x) => "- " + x).join("\n"));
+  lines.push(X.remoteFlags ? "Remote configuration is used only for [list: e.g. minimum version, prices of public data]. No features are hidden or enabled after review (Guideline 2.5.19)." : "All features are visible in this build. There are no hidden or remotely enabled features (Guideline 2.5.19).");
+  if (extra) lines.push(String(extra).slice(0, 1500));
+  const needLogin = Flow.loginRequired(A, d) || demo_account === "needed";
+  const playAccess = needLogin ? "Some functionality is restricted. Add instructions in Play Console > App content > App access: username [review account], password [type it only in Play Console], plus any steps (for example a one-time code that is not needed for this account)." : "All functionality is available without special access.";
+  const stores = Flow.storesOf(A).map((k) => STORE[k]).join(" + ");
+  const checklist = [
+    needLogin ? "Create a working review account that never expires and needs no 2-step code. Type its password only in the console." : "No demo account needed: the core features work without signing in.",
+    A.sdk.location ? "Make sure the app works for a reviewer outside your country (default region or demo data)." : null,
+    A.sdk.auth ? 'Point to the in-app "Delete account" path in the notes.' : null,
+    (A.review || {}).byok ? "Attach a review-only API key in the notes field of the console (never in code or chat)." : null
+  ].filter(Boolean);
+  return {
+    title: rx(L, "rn.title"),
+    summary: rx(L, "rn.summary", { stores }),
+    language_note: "Notes are in English because store reviewers read English.",
+    apple_review_notes: A.ios ? lines.join("\n\n") : void 0,
+    play_app_access: A.android ? playAccess : void 0,
+    play_review_notes: A.android ? lines.filter((x) => !/Guideline 2\.5\.19/.test(x)).join("\n\n") : void 0,
+    checklist
+  };
+}
+var SECRET_LIKE = /-----BEGIN|\b(store|key)?pass(word|wd)?\s*[:=]|\bpwd\s*[:=]|\bsecret\s*[:=]|\btoken\s*[:=]|[A-Za-z0-9+/]{40,}={0,2}/i;
+function moveRecord(st, { key_backup_location }) {
+  const v = String(key_backup_location || "").trim();
+  if (!v) throw new Error("key_backup_location is empty.");
+  if (v.length > 200 || SECRET_LIKE.test(v)) throw new Error('This looks like a secret (password, key or token). Save only WHERE the backup is kept, for example "1Password vault: Android keys" or "USB drive in the office safe". Never paste the key or its passwords.');
+  st.move = { ...st.move || {}, key_backup_location: v, recorded_at: today() };
+  return st.move;
+}
+function movePlan(st, L, { path: chosen, has_ads, account_type, stores: only } = {}) {
+  const A = st.A, X = st.X || {}, S = A.sdk || {}, notable = X.notable || [];
+  const ads = has_ads === void 0 ? !!(S.ads || A.ios && A.ios.gad) : !!has_ads;
+  const storesHere = Flow.storesOf(A).filter((k) => !only || only.includes(k));
+  const play = storesHere.includes("play"), apple = storesHere.includes("apple");
+  const push2 = !!S.notifications && /firebase-messaging|firebase_messaging|aps-environment|APNs/i.test(JSON.stringify(A.android && A.android.deps || []) + JSON.stringify(A.ios || {}));
+  const files = (re) => notable.filter((p2) => re.test(p2));
+  const keyNote = st.move && st.move.key_backup_location ? `Recorded backup location: ${st.move.key_backup_location}.` : "Record WHERE the signing key backup is kept with action=record_key_location (location only, never the key or passwords).";
+  const step = (id, title, detail, extra = {}) => ({ id, title, detail, ...extra });
+  const transfer = {
+    id: "transfer",
+    name: "Transfer the existing app",
+    keeps: ["Package name / bundle ID", "Installs, ratings and reviews", "Existing users get updates normally", "Play App Signing key (moves with the app)"],
+    costs: ["Both accounts must be in good standing; Play needs the registration transaction ID of BOTH accounts", "Firebase, AdMob, Google Analytics and Google Cloud links do not move: relink by hand", "Play test tracks / tester lists do not move", "Apple: the app must meet the transfer criteria; TestFlight data and some services do not move", "Support replies in about 2 business days (Play)"],
+    steps: [
+      play && step("play_ids", "Find both Play registration transaction IDs", 'Old and new owner: search mail for "Developer registration fee" or open Google Payments > Activity > "Google Play Developer". Formats: \u2026.token.\u2026, 0.G.\u2026, Registration-\u2026, PDS.\u2026.', { source: "https://support.google.com/googleplay/android-developer/answer/6230247" }),
+      play && step("play_request", "Request the transfer (the old owner does this)", "Use the app transfer request in Play Console help (Users and permissions is not a transfer). Have the target account ready; Google replies in about 2 business days.", { source: "https://support.google.com/googleplay/android-developer/answer/6230247" }),
+      apple && step("apple_check", "Check Apple's transfer criteria", "Account Holder: App Store Connect > the app > App Information > Transfer App. The app must meet every app transfer criterion first.", { source: "https://developer.apple.com/help/app-store-connect/transfer-an-app/overview-of-app-transfer" }),
+      apple && step("apple_request", "Start the transfer with the recipient's Team ID and Account Holder Apple Account", "The recipient accepts within 60 days.", { source: "https://developer.apple.com/help/app-store-connect/transfer-an-app/initiate-an-app-transfer" }),
+      step("relink", "Relink services in the new account", ["Firebase: add the new owner as project Owner, or move the project to the new Google account", play && "Link the app again in Play Console > Setup > Linked services (Google Cloud / Firebase)", S.analytics && "Google Analytics: grant access to the new owner", ads && "AdMob (only because the app shows ads): link the app to the new AdMob account and update app-ads.txt"].filter(Boolean).join("; ") + "."),
+      step("testers", "Recreate test tracks", "Tester lists do not move; set up internal/closed testing again."),
+      step("key", "Signing key backup", keyNote)
+    ].filter(Boolean)
+  };
+  const needsCT = !account_type || account_type === "personal_new";
+  const newReg = {
+    id: "new_registration",
+    name: "Register again as a new app",
+    keeps: ["Nothing is shared with the old app: clean start in the new account", "No dependency on the old account or support tickets"],
+    costs: ["Starts with 0 installs, ratings and reviews", "Existing users must install the new app (old app cannot update into it)", "New personal Play accounts must run the 12 testers \xD7 14 days closed test before production", "The old app name may stay taken on the App Store until the old app is removed"],
+    steps: [
+      step("ids", "Choose a new package name / bundle ID", `Old: ${A.pkg || "(not found)"}. Play package names are never reusable; Apple bundle IDs are not reusable once a build was uploaded. Update applicationId / namespace, PRODUCT_BUNDLE_IDENTIFIER (and app.json / pubspec settings).`, { files: files(/AndroidManifest|build\.gradle|project\.pbxproj|app\.json/) }),
+      step("signing", "Create a new upload key and enroll in Play App Signing", "Generate a new upload keystore for the new app (Android Studio > Generate Signed Bundle), enroll in Play App Signing, and for iOS let Xcode create new certificates and profiles in the new team. " + keyNote, { source: "https://support.google.com/googleplay/android-developer/answer/9842756", key_files_found: files(/\.(jks|keystore|p12|p8|mobileprovision)$|key\.properties$/) }),
+      step("firebase", "Create a new Firebase project and config", "Register the new package / bundle ID, download new google-services.json and GoogleService-Info.plist, replace the old ones" + (S.googleSignIn ? ", and add the new SHA-1 and SHA-256 (upload key AND Play app signing key) for Google Sign-In" : "") + ".", { files: files(/google-services\.json|GoogleService-Info\.plist/) }),
+      files(/assetlinks\.json|apple-app-site-association/).length ? step("links", "Update App Links / Universal Links", "Put the new package name + SHA-256 in assetlinks.json and the new Team ID + bundle ID in apple-app-site-association.", { files: files(/assetlinks\.json|apple-app-site-association/) }) : null,
+      push2 ? step("push", "Push notifications", "Upload a new APNs key from the new team to the new Firebase project; FCM works with the new config.") : null,
+      S.billing ? step("iap", "In-app products (only because the app sells something)", "Create the products / subscriptions again in the new app; purchases from the old app do not carry over \u2014 plan restore by account if needed.") : null,
+      ads ? step("admob", "AdMob (optional: only because the app shows ads)", "Add the new app in AdMob, replace the app ID and ad unit IDs, and publish app-ads.txt on the developer website.", { optional: true, files: files(/app-ads\.txt/) }) : null,
+      play && needsCT ? step("closed_test", "Closed test: 12 testers \xD7 14 days (new personal Play accounts)", "Track it with rocketlauncher_closed_test.", { source: req("play.closed_testing_personal").source }) : null,
+      step("listing", "Recreate the store listings", "Name, descriptions, screenshots, Data safety, App Privacy, content rating, privacy policy and deletion URLs: rocketlauncher_generate_store_materials makes them again."),
+      step("old_app", "Plan the old app", "Show existing users an in-app notice with a link to the new app, then unpublish/remove it (rocketlauncher_remove_app_guide). Do this only when the owner decides.")
+    ].filter(Boolean)
+  };
+  const p = chosen === "transfer" ? transfer : chosen === "new_registration" ? newReg : null;
+  return {
+    title: rx(L, "mv.title"),
+    summary: p ? rx(L, chosen === "transfer" ? "mv.transfer" : "mv.new") : rx(L, "mv.neutral"),
+    chosen: p ? p.id : null,
+    paths: p ? void 0 : [transfer, newReg].map((x) => ({ id: x.id, name: x.name, keeps: x.keeps, costs: x.costs })),
+    plan: p || void 0,
+    ads_step: ads ? "included (the app shows ads)" : "not included (no ads found; pass has_ads=true if the app will show ads)",
+    notable_files: notable.length ? notable : void 0,
+    safety: "Rocket Launcher only plans. It never moves, deletes, creates accounts or changes permissions, and it never reads or copies keys or passwords."
+  };
+}
+function removeGuide(L, store2) {
+  const play = {
+    store: STORE.play,
+    unpublish: ["Before you start: accept the latest Developer Distribution Agreement and turn off Managed publishing for the app.", "Play Console > the app > Test and release > Setup > Advanced settings > App availability > Unpublish.", "Existing users keep the app and still receive updates you publish; new users cannot find or install it.", "You can publish it again later."],
+    delete: [
+      "Unpublish first. Self-service deletion needs: the app unpublished, nothing in review, fewer than 1,000 active devices (used in the last 30 days), not rejected, blocked or suspended.",
+      "Monetized apps (paid, in-app purchases or subscriptions) can be deleted this way only if they have zero lifetime installs; otherwise contact Play support.",
+      "Only the account owner: Test & release > Advanced settings > App availability > Delete app. Enter the package name and the developer registration transaction ID.",
+      `Transaction ID: search the owner's mail for "Developer registration fee" or Google Payments > Activity. Formats: \u2026.token.\u2026, 0.G.\u2026, Registration-\u2026, PDS.\u2026. Remove the first part ("0.G.", or the digits before "token" / "Registration") before entering it.`,
+      "You can restore it within 7 days; after that it is permanent. A deleted app cannot be transferred.",
+      "Package name: freed for anyone only if the app had zero lifetime installs; with any installs it can never be reused, not even by you."
+    ],
+    source: "https://support.google.com/googleplay/android-developer/answer/9859350",
+    delete_source: "https://support.google.com/googleplay/android-developer/answer/16483176"
+  };
+  const apple = {
+    store: STORE.apple,
+    unpublish: ["App Store Connect > the app > Pricing and Availability > remove it from sale in all countries.", "It disappears from the App Store for new users; people who already installed it keep it. You can make it available again later."],
+    delete: ["First remove it from sale everywhere and remove in-app purchases.", "Not possible while the app is Ready for Review, Waiting for Review, In Review, Metadata Rejected or Rejected.", "App Store Connect > the app > App Information > Remove App.", "You lose the app name (others can take it); the SKU can never be reused; the bundle ID cannot be reused if a build was ever uploaded.", 'It can be restored later from the "Removed Apps" filter if the name is still free.'],
+    source: "https://developer.apple.com/help/app-store-connect/create-an-app-record/remove-an-app/"
+  };
+  return { title: rx(L, "rm.title"), summary: rx(L, "rm.summary"), guides: [(!store2 || store2 === "play") && play, (!store2 || store2 === "apple") && apple].filter(Boolean) };
+}
+var readable = (v) => v != null && /^\d+(\.\d+)*$/.test(String(v).trim());
+async function storeLookup(bundleId, country) {
+  try {
+    const r = await fetch(`https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(bundleId)}${country ? "&country=" + encodeURIComponent(country) : ""}`, { signal: AbortSignal.timeout(8e3) });
+    const j = await r.json();
+    const x = j.results && j.results[0];
+    return x ? { found: true, version: x.version, released: x.currentVersionReleaseDate } : { found: false };
+  } catch (e) {
+    return { error: String(e.message || e) };
+  }
+}
+async function versionSync(st, L, args = {}, others = []) {
+  const A = st.A, an = A.android || null, io = A.ios || null, rows = [];
+  const add2 = (id, severity, finding, action) => rows.push({ id, severity, finding, action: action || void 0 });
+  const V = st.versions = st.versions || { used: [], codes: [], builds: [] };
+  for (const v of args.used_versions || []) if (readable(v) && !V.used.includes(String(v))) V.used.push(String(v));
+  for (const c2 of args.used_version_codes || []) if (Number.isInteger(+c2) && !V.codes.includes(+c2)) V.codes.push(+c2);
+  const cur = { android_versionName: an && an.versionName, android_versionCode: an && an.versionCode, ios_version: io && io.version, ios_build: io && io.build, app: A.version };
+  if (an && an.versionName && !readable(an.versionName)) add2("android.name_unreadable", "info", `versionName is "${an.versionName}" (set at build time).`, "Check the value your build tool injects (pubspec.yaml / app.json).");
+  if (io && io.version && !readable(io.version)) add2("ios.version_unreadable", "info", `MARKETING_VERSION is "${io.version}" (set at build time).`, "Check the value your build tool injects (pubspec.yaml / app.json).");
+  const vA = an && readable(an.versionName) ? an.versionName : null, vI = io && readable(io.version) ? io.version : null;
+  if (vA && vI && vcmp(vA, vI) !== 0) add2("cross_platform", "warn", `Android ${vA} and iOS ${vI} differ.`, "Use the same version name on both stores so support and force-update rules stay simple.");
+  else if (vA && vI) add2("cross_platform", "ok", `Android and iOS both use ${vA}.`);
+  const planned = args.planned_version && readable(args.planned_version) ? String(args.planned_version) : null;
+  const all = [...V.used, vA, vI].filter(Boolean);
+  for (const u of V.used) for (const w of [planned, vI].filter(Boolean)) if (u !== w && vcmp(u, w) === 0) add2("apple_equivalent", "block", `"${w}" and "${u}" are the same version for Apple.`, `App Store Connect treats ${u} and ${w} as one version; pick a higher one.`);
+  if (planned) {
+    const max = V.used.length ? [...V.used].sort(vcmp).pop() : null;
+    if (max && vcmp(planned, max) <= 0) add2("planned_not_higher", "block", `Planned ${planned} is not higher than ${max}, which was already used.`, `Use ${bumpPatch(max)} or higher.`);
+    else add2("planned", "ok", `Planned version ${planned} is new.`);
+  }
+  if (an && an.versionCode) {
+    const vc = +an.versionCode, maxC = V.codes.length ? Math.max(...V.codes) : null;
+    if (maxC != null && vc <= maxC) add2("version_code", "block", `versionCode ${vc} is not higher than ${maxC}, already uploaded.`, `Set versionCode to ${maxC + 1} or higher (Play rejects reused or lower codes).`);
+  }
+  if (io && io.build && readable(io.build)) add2("ios_build", "info", `iOS build number is ${io.build}.`, "Each upload for the same version needs a higher build number.");
+  const family = others.map((o) => ({ project: o.id, name: o.A && o.A.appName, android: o.A && o.A.android && o.A.android.versionName, ios: o.A && o.A.ios && o.A.ios.version })).filter((o) => o.name);
+  const famVers = family.flatMap((f) => [f.android, f.ios]).filter(readable);
+  if (family.length) {
+    const hi2 = [...famVers, ...all].filter(readable).sort(vcmp).pop();
+    if (famVers.some((v) => vA && vcmp(v, vA) !== 0) || famVers.some((v) => vI && vcmp(v, vI) !== 0)) add2("family", "warn", `Related apps use other versions: ${family.map((f) => `${f.name} ${[f.android, f.ios].filter(Boolean).join("/")}`).join(", ")}.`, `To keep them in sync, release the next update of all of them as ${bumpPatch(hi2)}.`);
+    else add2("family", "ok", "Related apps use the same version.");
+  }
+  const next = bumpPatch([...all, ...famVers, planned].filter(readable).sort(vcmp).pop() || A.version || "1.0.0");
+  let store2 = args.store_visible ? { version: String(args.store_visible), from: "you" } : null;
+  if (!store2 && args.check_store && io && io.bundleId) {
+    const r = await storeLookup(io.bundleId, args.country);
+    if (r.found) store2 = { version: r.version, from: "App Store lookup (free, public)", released: r.released };
+    else if (r.error) add2("store_lookup", "info", `App Store lookup failed: ${r.error}.`);
+    else add2("store_lookup", "info", "The app was not found on the App Store (not released yet, or not in that country).");
+  }
+  const X = st.X || {};
+  const fu = X.forceUpdate || { code: [], lib: false };
+  if (fu.code.length || fu.lib) add2("force_update.found", "info", `Force-update logic found${fu.code.length ? ": " + fu.code.join(", ") : ""}${fu.lib ? " (update library)" : ""}.`);
+  for (const [k, sev] of [["server_min_version", "block"], ["server_latest_version", "warn"]]) {
+    const v = args[k];
+    if (!v) continue;
+    if (!store2) add2(k, "warn", `${k} = ${v}, but the version visible in the store is unknown.`, "Pass store_visible (or check_store=true for iOS). Raise the server value only after the new build is live in every store and country.");
+    else if (vcmp(v, store2.version) > 0) add2(k, sev, `${k} ${v} is higher than the store version ${store2.version} (${store2.from}).`, sev === "block" ? "Users would be forced to update to a version they cannot download yet. Lower it until the new build is live everywhere (Play rollouts and Apple phased release take days)." : "Users would be asked to update to a version they cannot download yet.");
+    else add2(k, "ok", `${k} ${v} \u2264 store version ${store2.version}.`);
+  }
+  sortRows(rows);
+  const c = counts(rows);
+  return {
+    title: rx(L, "vs.title"),
+    summary: rx(L, "vs.summary", { issues: c.block + c.warn, next }),
+    counts: c,
+    rows: label(L, rows),
+    current: cur,
+    suggested_next: { version: next, android_versionCode: an && an.versionCode ? Math.max(+an.versionCode, ...V.codes.length ? V.codes : [0]) + 1 : void 0 },
+    used_versions: V.used,
+    used_version_codes: V.codes,
+    related_apps: family.length ? family : void 0,
+    store_visible: store2 || void 0,
+    force_update_rule: rx(L, "vs.forceUpdate")
+  };
+}
+function countryCheck(st, L, { countries, developer_country } = {}) {
+  const A = st.A, X = st.X || {}, S = A.sdk || {}, R = A.review || {}, rows = [];
+  const want = (countries && countries.length ? countries : ["KR", "EU", "TH"]).map((c2) => String(c2).toUpperCase());
+  const po = Flow.privacyOpts(A, st.dec), sent = R.locationSent || po.location === "server";
+  const storesHere = Flow.storesOf(A);
+  const dev = developer_country ? String(developer_country).toUpperCase() : null;
+  const personal = S.auth || S.analytics || S.crash || S.ads || S.location && sent || S.cloudDb;
+  for (const r of REQ.countries.filter((r2) => want.includes(r2.country))) {
+    if (r.store !== "both" && !storesHere.includes(r.store)) continue;
+    let sev, finding;
+    switch (r.applies) {
+      case "location_sent":
+        if (!S.location) {
+          sev = "ok";
+          finding = "The app does not use location.";
+        } else if (R.locationSent || (st.dec || {}).location === "server") {
+          sev = "warn";
+          finding = "Location is sent to a server.";
+        } else if ((st.dec || {}).location === "device") {
+          sev = "ok";
+          finding = "Location stays on the device: no report needed.";
+        } else {
+          sev = "check";
+          finding = "The app uses location; decide whether it is sent to a server.";
+        }
+        break;
+      case "developer_in_kr":
+        if (!dev) {
+          sev = "check";
+          finding = "Only if the developer is based in South Korea (pass developer_country).";
+        } else if (dev === "KR") {
+          sev = "warn";
+          finding = "The developer is based in South Korea.";
+        } else {
+          sev = "ok";
+          finding = `The developer is based in ${dev}: not required.`;
+        }
+        break;
+      case "games_entertainment":
+        if ((A.categories || []).some((c2) => /game|entertain/i.test(c2))) {
+          sev = "check";
+          finding = `Category: ${A.categories[0]}.`;
+        } else {
+          sev = "info";
+          finding = "Not a game / entertainment app.";
+        }
+        break;
+      case "personal_data":
+        if (!personal) {
+          sev = "ok";
+          finding = "No personal data collection found.";
+        } else if (!X.policy || !X.policy.files.length) {
+          sev = "warn";
+          finding = "The app handles personal data; no privacy policy file found in the project.";
+        } else if (!X.policy.thai) {
+          sev = "warn";
+          finding = "The privacy policy has no Thai version.";
+        } else {
+          sev = "ok";
+          finding = "A Thai privacy policy was found.";
+        }
+        break;
+      default:
+        sev = "check";
+        finding = "Applies to every developer account.";
+    }
+    rows.push({ id: r.id, country: r.country, store: r.store === "both" ? "both" : STORE[r.store], severity: sev, finding, rule: r.rule, source: r.source, also: r.also, verified_on: r.verified_on });
+  }
+  sortRows(rows);
+  const c = counts(rows);
+  return {
+    title: rx(L, "cc.title"),
+    summary: rx(L, "cc.summary", { n: rows.filter((r) => !["ok", "info"].includes(r.severity)).length }),
+    countries: want,
+    counts: c,
+    rows: label(L, rows),
+    note: "Legal summaries, not legal advice. Check the source before acting."
+  };
+}
+function releaseChecks(st, L) {
+  const q = requirements(st, L), p = privacyCheck(st, L), d = deletionCheck(st, L);
+  const all = [...q.rows, ...p.rows, ...d.rows || []];
+  const c = counts(all);
+  return {
+    summary: rx(L, "rc.note", c),
+    counts: c,
+    rules_verified_on: REQ.verified_on,
+    must_fix: all.filter((r) => r.severity === "block").map((r) => ({ id: r.id, finding: r.finding, action: r.action, source: r.source })),
+    to_check: all.filter((r) => r.severity === "warn").map((r) => ({ id: r.id, finding: r.finding, action: r.action })),
+    rescan_needed: !st.X || void 0
+  };
+}
+function guideStep(st, L) {
+  const r = releaseChecks(st, L);
+  return {
+    id: "release-checks",
+    title: rx(L, "rc.step.t"),
+    detail: rx(L, "rc.step.d"),
+    status: r.counts.block ? "todo" : "done",
+    counts: r.counts,
+    items: r.must_fix.map((x) => `${x.finding}${x.action ? " \u2192 " + x.action : ""}`),
+    tools: ["rocketlauncher_check_requirements", "rocketlauncher_privacy_check", "rocketlauncher_account_deletion_check", "rocketlauncher_reviewer_notes"]
+  };
+}
+
 // lib/engine.mjs
 var LANGS = ["en", "ko", "th", "zh", "hi"];
-var HOME = process.env.ROCKETLAUNCHER_HOME || path4.join(os3.homedir(), ".rocketlauncher");
-var PROJ = path4.join(HOME, "projects");
+var HOME = process.env.ROCKETLAUNCHER_HOME || path5.join(os3.homedir(), ".rocketlauncher");
+var PROJ = path5.join(HOME, "projects");
 var normLang = (l) => {
   const p = String(l || "").trim().toLowerCase().split(/[-_]/)[0];
   return LANGS.includes(p) ? p : "en";
@@ -59129,50 +60233,50 @@ var UserError = class extends Error {
   }
 };
 var idOk = (id) => typeof id === "string" && /^[a-z0-9][\w.-]{2,80}$/i.test(id);
-var dirOf = (id) => path4.join(PROJ, id);
+var dirOf = (id) => path5.join(PROJ, id);
 function save(st) {
-  fs4.mkdirSync(dirOf(st.id), { recursive: true });
+  fs5.mkdirSync(dirOf(st.id), { recursive: true });
   st.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
-  fs4.writeFileSync(path4.join(dirOf(st.id), "state.json"), JSON.stringify(st));
+  fs5.writeFileSync(path5.join(dirOf(st.id), "state.json"), JSON.stringify(st));
 }
 function load(id, lang2) {
   if (!idOk(id)) throw new UserError(msg(normLang(lang2), "noProject", { id }), "noProject");
-  const f = path4.join(dirOf(id), "state.json");
-  if (!fs4.existsSync(f)) throw new UserError(msg(normLang(lang2), "noProject", { id }), "noProject");
-  return JSON.parse(fs4.readFileSync(f, "utf8"));
+  const f = path5.join(dirOf(id), "state.json");
+  if (!fs5.existsSync(f)) throw new UserError(msg(normLang(lang2), "noProject", { id }), "noProject");
+  return JSON.parse(fs5.readFileSync(f, "utf8"));
 }
 var T = (lang2) => (k, v) => tr(lang2, k, v);
 var appName = (st, lang2) => Gen.nameOf(st.A, lang2);
 async function walkDir(root) {
-  const top = path4.basename(path4.resolve(root)) || "project";
+  const top = path5.basename(path5.resolve(root)) || "project";
   const out = [];
   async function walk(dir, rel) {
     let ents;
     try {
-      ents = await fs4.promises.readdir(dir, { withFileTypes: true });
+      ents = await fs5.promises.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const e of ents) {
       if (out.length > 2e4) return;
-      const abs = path4.join(dir, e.name), r = rel ? rel + "/" + e.name : e.name;
+      const abs = path5.join(dir, e.name), r = rel ? rel + "/" + e.name : e.name;
       if (e.isDirectory()) {
         if (!SKIP_DIRS.has(e.name)) await walk(abs, r);
       } else if (e.isFile()) {
         let size = 0;
         try {
-          size = (await fs4.promises.stat(abs)).size;
+          size = (await fs5.promises.stat(abs)).size;
         } catch {
           continue;
         }
         out.push({ name: e.name, webkitRelativePath: top + "/" + r, size, arrayBuffer: async () => {
-          const b = await fs4.promises.readFile(abs);
+          const b = await fs5.promises.readFile(abs);
           return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
         } });
       }
     }
   }
-  await walk(path4.resolve(root), "");
+  await walk(path5.resolve(root), "");
   return out;
 }
 async function connect({ source, github_url, path: p, lang: lang2, store_stage }, { allowPath }) {
@@ -59184,11 +60288,11 @@ async function connect({ source, github_url, path: p, lang: lang2, store_stage }
     else if (source === "github") project = await Sources.fromGitHub(github_url || "");
     else if (source === "path") {
       if (!allowPath) throw new UserError(msg(L, "pathDisabled"), "pathDisabled");
-      const abs = path4.resolve(String(p || "").replace(/^~(?=$|\/)/, os3.homedir()));
-      const stat = fs4.statSync(abs);
+      const abs = path5.resolve(String(p || "").replace(/^~(?=$|\/)/, os3.homedir()));
+      const stat = fs5.statSync(abs);
       if (stat.isFile() && /\.zip$/i.test(abs)) {
-        const b = fs4.readFileSync(abs);
-        project = await Sources.fromZipFile({ name: path4.basename(abs), arrayBuffer: async () => b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) });
+        const b = fs5.readFileSync(abs);
+        project = await Sources.fromZipFile({ name: path5.basename(abs), arrayBuffer: async () => b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) });
       } else if (stat.isDirectory()) project = await Sources.fromFileList(await walkDir(abs));
       else throw new UserError(t("err.noapp"), "noapp");
     } else throw new UserError("source must be sample | github | path", "badsource");
@@ -59202,6 +60306,12 @@ async function connect({ source, github_url, path: p, lang: lang2, store_stage }
   A.brandColor = A.brandColor || (hasGraphics ? await Gfx.avgColor(A.icon && A.icon.dataUrl) : "#2f6f5e");
   const id = Flow.slugOf(A).toLowerCase().replace(/[^a-z0-9.-]+/g, "-").slice(0, 40).replace(/^[^a-z0-9]+/, "app") + "-" + crypto2.randomBytes(5).toString("hex");
   const st = { id, v: 1, createdAt: (/* @__PURE__ */ new Date()).toISOString(), lang: L, sample: source === "sample", source: project.source, A, dec: {}, approved: {}, review: {}, generated: null };
+  try {
+    st.X = scanProject(project, A);
+  } catch (e) {
+    st.X = null;
+    st.scanError = String(e.message || e);
+  }
   if (store_stage) {
     for (const k of Flow.storesOf(A)) {
       const v = typeof store_stage === "string" ? store_stage : store_stage[k];
@@ -59305,9 +60415,17 @@ function report(st, lang2) {
       why: t("iss." + i.id + ".w", i.vars),
       ai_fix: i.fix && i.fix !== "info" ? t("iss." + i.id + ".f", i.vars) : null
     })),
+    release_checks: releaseSafe(st, L),
     ...learned(st, L),
     next: stageNext(st, L) || msg(L, "nextDecide", { n: Flow.decisions(A, st.dec).length })
   };
+}
+function releaseSafe(st, L) {
+  try {
+    return releaseChecks(st, L);
+  } catch (e) {
+    return { error: "Release checks could not run: " + e.message };
+  }
 }
 function learned(st, L) {
   const rel = relevantLessons(st.A, Flow.stores(st.A, st.dec), L);
@@ -59520,14 +60638,14 @@ async function preview(st, kind, lang2) {
   const L = normLang(lang2 || st.lang);
   const g2 = await graphics(st, L, [kind]);
   if (!g2) return { note: msg(L, "noGraphics"), images: [] };
-  const dir = path4.join(dirOf(st.id), "previews");
-  fs4.mkdirSync(dir, { recursive: true });
+  const dir = path5.join(dirOf(st.id), "previews");
+  fs5.mkdirSync(dir, { recursive: true });
   const t = T(L);
   const imgs = [];
-  const put = (name, url2, label) => {
-    const f = path4.join(dir, name);
-    fs4.writeFileSync(f, Buffer.from(b64(url2), "base64"));
-    imgs.push({ file: f, label, data: b64(url2) });
+  const put = (name, url2, label2) => {
+    const f = path5.join(dir, name);
+    fs5.writeFileSync(f, Buffer.from(b64(url2), "base64"));
+    imgs.push({ file: f, label: label2, data: b64(url2) });
   };
   if (kind === "icons") g2.icons.forEach((u, k) => put(`icon-${k}-${STYLE2.icon[k]}.png`, u, `${k}: ${t("icon." + STYLE2.icon[k])} (512\xD7512)`));
   else if (kind === "feature") g2.features.forEach((u, k) => put(`feature-${k}-${STYLE2.feature[k]}-${L}.png`, u, `${k}: ${t("feat." + STYLE2.feature[k])} (1024\xD7500)`));
@@ -59555,18 +60673,18 @@ ${t("zip.readme")}
 
 Feedback: ${CFG.feedbackUrl}
 ` });
-  const base = output_dir && allowPath ? path4.resolve(String(output_dir).replace(/^~(?=$|\/)/, os3.homedir())) : path4.join(dirOf(st.id), "store-materials");
-  const slug = Flow.slugOf(A), folder = path4.join(base, "rocketlauncher-" + slug);
-  fs4.rmSync(folder, { recursive: true, force: true });
+  const base = output_dir && allowPath ? path5.resolve(String(output_dir).replace(/^~(?=$|\/)/, os3.homedir())) : path5.join(dirOf(st.id), "store-materials");
+  const slug = Flow.slugOf(A), folder = path5.join(base, "rocketlauncher-" + slug);
+  fs5.rmSync(folder, { recursive: true, force: true });
   for (const f of files) {
-    const p = path4.join(folder, f.path);
-    fs4.mkdirSync(path4.dirname(p), { recursive: true });
-    fs4.writeFileSync(p, f.data);
+    const p = path5.join(folder, f.path);
+    fs5.mkdirSync(path5.dirname(p), { recursive: true });
+    fs5.writeFileSync(p, f.data);
   }
   const zipBlob = Zip.writeZip(files.map((f) => ({ path: f.path, data: typeof f.data === "string" ? f.data : new Uint8Array(f.data) })));
   const zipBuf = Buffer.from(await zipBlob.arrayBuffer());
   const zipPath = folder + ".zip";
-  fs4.writeFileSync(zipPath, zipBuf);
+  fs5.writeFileSync(zipPath, zipBuf);
   st.generated = { at: (/* @__PURE__ */ new Date()).toISOString(), folder, zip: zipPath, lang: L };
   save(st);
   const listing = {}, keepListing = C.keep.title || C.keep.short;
@@ -59632,9 +60750,17 @@ function guide(st, store2, lang2) {
       how: t("g." + s.id + ".how").split("|").filter((x) => x && !x.startsWith("g.")),
       final: !!s.final || void 0,
       locked: locked || void 0,
-      fields: locked ? [] : s.fields.map(([label, value]) => ({ label, value: String(value) }))
+      fields: locked ? [] : s.fields.map(([label2, value]) => ({ label: label2, value: String(value) }))
     };
   });
+  try {
+    const g2 = guideStep(st, L), fin = steps.findIndex((s) => s.final);
+    if (fin >= 0) steps.splice(fin, 0, { n: 0, id: g2.id, title: g2.title, what: g2.detail, how: g2.tools, status: g2.status, fields: g2.items.map((x, k) => ({ label: String(k + 1), value: x })) });
+    steps.forEach((s, k) => {
+      s.n = k + 1;
+    });
+  } catch {
+  }
   const rel = relevantLessons(st.A, { [store2]: true }, L).filter((r) => r.store === store2);
   const rv = steps.find((s) => s.id === "a-review");
   const nf = rv && rv.fields.find((f) => f.label === t("f.reviewNotes"));
@@ -59790,7 +60916,7 @@ function status(id, lang2) {
   }
   let ids = [];
   try {
-    ids = fs4.readdirSync(PROJ);
+    ids = fs5.readdirSync(PROJ);
   } catch {
   }
   const list = ids.map((i) => {
@@ -59809,9 +60935,110 @@ function forgetLesson(id, lang2) {
   if (!r || !r.removed) throw new UserError(msg(L, "lessonNotFound", { id }), "lessonNotFound");
   return { removed: id, message: msg(L, "lessonForgotten", { id }), lessons: listLessons() };
 }
+var needAndroid = (st, L) => {
+  if (!st.A.android) throw new UserError(RL_noAndroid(L), "noAndroid");
+};
+function RL_noAndroid(L) {
+  return policyAudit({ A: { android: null } }, L).summary;
+}
+var listProjects = () => {
+  try {
+    return fs5.readdirSync(PROJ).filter(idOk);
+  } catch {
+    return [];
+  }
+};
+async function release(tool, id, args = {}, lang2) {
+  const st = load(id, lang2), L = normLang(lang2 || args.lang || st.lang);
+  switch (tool) {
+    case "requirements":
+      return { project_id: id, ...requirements(st, L) };
+    case "privacy":
+      return { project_id: id, ...privacyCheck(st, L) };
+    case "policy":
+      return { project_id: id, ...policyAudit(st, L) };
+    case "notes":
+      return { project_id: id, ...reviewerNotes(st, L, args) };
+    case "deletion":
+      return { project_id: id, ...deletionCheck(st, L) };
+    case "countries":
+      return { project_id: id, ...countryCheck(st, L, args) };
+    case "closed_test": {
+      needAndroid(st, L);
+      const a = args.action || "status";
+      if (a === "record") {
+        let n;
+        try {
+          n = closedTestRecord(st, args);
+        } catch (e) {
+          throw new UserError(e.message, "badValue");
+        }
+        save(st);
+        return { project_id: id, saved: closedTestStatus(st, L).title, message: (await Promise.resolve().then(() => (init_release_i18n(), release_i18n_exports))).rx(L, "ct.recorded", { n }), ...closedTestStatus(st, L) };
+      }
+      if (a === "application_draft") return { project_id: id, ...closedTestDraft(st, L) };
+      if (a === "recruit_copy") return { project_id: id, messages: recruitCopy(st, args.opt_in_link), tip: 'For LINE, add ?openExternalBrowser=1 to the link (or share the link to your own web page with an "Open in Chrome" button). Field reports say the opt-in may fail inside LINE / Facebook / Instagram browsers; Google does not document this.' };
+      if (a === "check_optin_page") return { project_id: id, ...await optinPage(st, args) };
+      if (a === "status") {
+        if (args.account_type) {
+          st.closedTest = st.closedTest || { testers: {}, feedback: [] };
+          st.closedTest.account_type = args.account_type;
+          save(st);
+        }
+        return { project_id: id, ...closedTestStatus(st, L) };
+      }
+      throw new UserError("action must be status | record | application_draft | recruit_copy | check_optin_page", "badValue");
+    }
+    case "move": {
+      if (args.key_backup_location) {
+        try {
+          moveRecord(st, args);
+        } catch (e) {
+          throw new UserError(e.message, "badValue");
+        }
+        save(st);
+      }
+      return { project_id: id, ...movePlan(st, L, args), key_backup_location: st.move && st.move.key_backup_location || void 0 };
+    }
+    case "version": {
+      const others = (args.other_project_ids || []).filter((x) => x !== id).map((x) => {
+        try {
+          return load(x, L);
+        } catch {
+          return null;
+        }
+      }).filter(Boolean);
+      const r = await versionSync(st, L, args, others);
+      save(st);
+      return { project_id: id, ...r, other_projects_on_this_computer: others.length ? void 0 : listProjects().filter((x) => x !== id).slice(0, 20) };
+    }
+    default:
+      throw new UserError("unknown release tool " + tool, "badValue");
+  }
+}
+async function optinPage(st, { url: url2, file: file2, html }) {
+  if (html) return optinReport(String(html).slice(0, 5e5), "html");
+  if (url2) {
+    if (!/^https:\/\//i.test(url2)) throw new UserError("url must start with https://", "badValue");
+    let body;
+    try {
+      const r = await fetch(url2, { signal: AbortSignal.timeout(1e4), headers: { "User-Agent": "Rocket-Launcher-optin-check" } });
+      body = (await r.text()).slice(0, 5e5);
+    } catch (e) {
+      throw new UserError("Could not open the page: " + e.message, "fetch");
+    }
+    return optinReport(body, url2);
+  }
+  const pages = (st.X && st.X.optinPages || []).filter((p) => !file2 || p.path === file2);
+  if (pages.length) return { checked: "tester pages found in the project", pages: pages.map((p) => optinReport(p, p.path)) };
+  return { checked: null, note: "Pass url (your public tester page) or html. No tester page was found in the project." };
+}
+function removeGuide2(store2, lang2) {
+  return removeGuide(normLang(lang2), store2);
+}
 
 // lib/tools.mjs
-var VERSION = "0.1.0";
+var VERSION = "0.2.0";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.
@@ -59822,6 +61049,7 @@ How to use it:
 5. The final submit step stays locked until the user explicitly approves; then call rocketlauncher_approve_submission. Rocket Launcher never submits to any store itself: the user presses the submit button in Play Console / App Store Connect.
 6. When the user reports the review result, call rocketlauncher_report_review (submitted / rejected with the store's message / resubmitted / approved). When every chosen store is live, the job is done. In App Store Connect an "Information Needed" request also shows as Rejected; it asks for a reply, not always a new build. Never reply to Apple or Google yourself: draft the reply and let the user send it.
 7. Reported review results are learned automatically: an unknown rejection becomes a generalized lesson (store, guideline/ITMS codes, short advice from a fixed table) saved on this computer, and known ones are counted. To improve checks for every user, when a lessons API is configured (js/config.js lessonsApiUrl, or the ROCKETLAUNCHER_LESSONS_API environment variable) each real (non-demo) learned result also sends an anonymized event to that lessons API containing only the store, guideline/ITMS/Play policy codes and a fixed advice id (field lesson.shared shows the exact payload); the store message, app name, bundle/package id, project id, e-mail and any free text are never sent. The aggregated feed from other users is fetched and cached on this computer. Reports, choices, submission guides and review notes show relevant lessons as warnings or pre-submit checks (field learned_lessons): source "local" = from the user's own reviews, "shared" = from other Rocket Launcher users' reviews; tell the user which is which. Lessons never become must-fix items and never override the default checks (for example they never mean "add ATT because of ads"). If the lessons API is not configured or cannot be reached, everything still works locally. rocketlauncher_status lists the local lessons; rocketlauncher_forget_lesson removes one if the user asks.
+8. Release checks (0.2.0, free, offline except where noted, no API keys): rocketlauncher_get_report includes release_checks and the submission guide has a "Release checks" step. Details: rocketlauncher_check_requirements (store deadlines from a dated table with official sources), rocketlauncher_privacy_check (Data safety / App Privacy / PrivacyInfo.xcprivacy / permission texts consistency + drafts), rocketlauncher_play_policy_audit (Google's Apache-2.0 Play Policy Insights rules, bundled), rocketlauncher_reviewer_notes, rocketlauncher_account_deletion_check, rocketlauncher_closed_test (12 testers \xD7 14 days for new personal Play accounts), rocketlauncher_version_sync, rocketlauncher_country_check, rocketlauncher_move_app_plan and rocketlauncher_remove_app_guide. These only advise: never unpublish, delete, transfer, create accounts, change permissions or apply for production yourself; the account owner does that in the console after choosing. For moving an app, present both paths (transfer / new registration) neutrally and let the user choose; never default to one. Never ask for or store passwords, keys or tokens; for the signing key only the place where its backup is kept.
 App Store review rules the analysis follows (explain them in plain words when they come up):
 - Tracking, ATT, PrivacyInfo.xcprivacy, the App Privacy form and real behavior must match from the first submit. Default for apps with ads: no ATT prompt or NSUserTrackingUsageDescription, NSPrivacyTracking=false with no tracking domains, every ad request non-personalized (npa=1), App Privacy "No, we do not track". Never suggest adding ATT just because the app shows ads. Keep an already fully aligned tracking setup, but never leave a mixed one.
 - Core features should work without login (5.1.1(v)); third-party login on iOS needs Sign in with Apple; accounts need in-app and web deletion; the Support URL must show a contact method; ads are mentioned only in the privacy policy; no "free" or other brands' names in subtitle/keywords; review notes for user-supplied API keys say there is no IAP and the developer does not sell keys, with a review-only key the user attaches (never put real keys anywhere).
@@ -59941,6 +61169,101 @@ function createServer2({ allowPath = true, inlineZip = false } = {}) {
     inputSchema: { lesson_id: external_exports.string().min(1).describe("id from rocketlauncher_status lessons"), lang },
     annotations: { ...W, destructiveHint: true, idempotentHint: true }
   }, wrap(async (a) => ok(forgetLesson(a.lesson_id, a.lang))));
+  const rt = (tool) => wrap(async (a) => {
+    await ensureShared();
+    return ok(await release(tool, a.project_id, a, a.lang));
+  });
+  server.registerTool("rocketlauncher_check_requirements", {
+    title: "Store requirements and deadlines",
+    description: "Check the connected app against current Google Play and App Store technical requirements with dates: target API level, 16 KB page size (reads native .so alignment), app registration / developer verification, trader status, Xcode / SDK version, minimum iOS, required-reason APIs in PrivacyInfo.xcprivacy, export compliance, new age-rating questions, account deletion. Every row has the official source URL and the date the rule was verified. Where sources disagree it uses the earliest date. Read-only, offline.",
+    inputSchema: { project_id: pid, lang },
+    annotations: RO
+  }, rt("requirements"));
+  server.registerTool("rocketlauncher_privacy_check", {
+    title: "Privacy consistency check + drafts",
+    description: "Cross-check Data safety, App Privacy, PrivacyInfo.xcprivacy, permissions, iOS purpose strings and the privacy policy against the code: location (precise / background / sent vs on-device), ATT and tracking, photos, required-reason APIs, and data types Google's scanner patterns detect. Returns mismatches with fixes plus drafts: Data safety rows, App Privacy answers, required-reason entries and a full PrivacyInfo.xcprivacy. Read-only, offline.",
+    inputSchema: { project_id: pid, lang },
+    annotations: RO
+  }, rt("privacy"));
+  server.registerTool("rocketlauncher_play_policy_audit", {
+    title: "Google Play policy audit (Play Policy Insights)",
+    description: "Quick Google Play policy scan using Google's open-source Play Policy Insights rules (Apache-2.0, bundled with attribution): finds policy signals (sensitive permissions, account / login, data types) and lists the Play policies to review with links. Also returns how to run Google's full offline audit skill (bundled SKILL.md, Python 3). Read-only, offline, free.",
+    inputSchema: { project_id: pid, lang },
+    annotations: RO
+  }, rt("policy"));
+  server.registerTool("rocketlauncher_reviewer_notes", {
+    title: "Notes for store reviewers",
+    description: "Draft App Review notes (App Store) and App access + notes (Google Play) in English: what the app does, why each permission is used, what reviewers outside the service area see, account deletion path, no hidden features (2.5.19). Placeholders like [review account] stay placeholders: never put real passwords in chat; the user types them only in the console.",
+    inputSchema: { project_id: pid, default_location: external_exports.string().max(120).optional().describe('What the app shows when location is denied or the reviewer is outside the service area, e.g. "Bangkok"'), demo_account: external_exports.enum(["needed", "not_needed"]).optional().describe("Whether reviewers need a sign-in to reach every feature"), extra: external_exports.string().max(1500).optional().describe("Anything else the reviewer should know"), lang },
+    annotations: RO
+  }, rt("notes"));
+  server.registerTool("rocketlauncher_account_deletion_check", {
+    title: "Account deletion check",
+    description: "If the app has sign-up / login, check that it offers account deletion inside the app (App Store 5.1.1(v), Google Play) and a web deletion page / URL (Google Play), and that the privacy policy covers deletion and retention. Returns what is missing, a review-note line and where to paste the URL in Play Console. Read-only.",
+    inputSchema: { project_id: pid, lang },
+    annotations: RO
+  }, rt("deletion"));
+  server.registerTool("rocketlauncher_closed_test", {
+    title: "Closed test tracker (12 testers \xD7 14 days)",
+    description: `Track Google Play's closed test for new personal developer accounts: at least 12 testers opted in for 14 days in a row before applying for production. action=status (count and earliest apply date), record (save testers as {label, opted_in, opted_out} with YYYY-MM-DD dates; a tester who opted out restarts their 14 days; plus optional feedback notes; nicknames only, never e-mails), application_draft (draft answers for "Apply for production"; the user submits it), recruit_copy (tester invitation texts in en/ko/th/zh/hi), check_optin_page (checks a tester web page for the Play opt-in link, in-app-browser escape and the 14-day notice). Stored only on this computer.`,
+    inputSchema: {
+      project_id: pid,
+      action: external_exports.enum(["status", "record", "application_draft", "recruit_copy", "check_optin_page"]).optional().describe("Default status"),
+      account_type: external_exports.enum(["personal_new", "personal_old", "organization"]).optional().describe("personal_new = personal account created after 2023-11-13 (the rule applies)"),
+      testers: external_exports.array(external_exports.object({ label: external_exports.string().min(1).max(60).describe("Nickname or initials"), opted_in: external_exports.string().optional().describe("YYYY-MM-DD"), opted_out: external_exports.string().optional().describe("YYYY-MM-DD"), remove: external_exports.boolean().optional() })).max(200).optional(),
+      feedback: external_exports.array(external_exports.object({ date: external_exports.string().optional(), text: external_exports.string().max(500), from: external_exports.string().max(60).optional() })).max(50).optional(),
+      opt_in_link: external_exports.string().max(300).optional().describe("For recruit_copy"),
+      url: external_exports.string().max(500).optional().describe("For check_optin_page: public https page to check"),
+      html: external_exports.string().max(5e5).optional(),
+      file: external_exports.string().optional().describe("For check_optin_page: a page path inside the project"),
+      lang
+    },
+    annotations: { ...W, idempotentHint: true, openWorldHint: true }
+  }, rt("closed_test"));
+  server.registerTool("rocketlauncher_version_sync", {
+    title: "Version and build numbers",
+    description: "Check version names and build numbers across Android, iOS and related apps (e.g. country variants connected on this computer): mismatches, numbers already used (Apple treats 1.2 and 1.2.0 as the same), versionCode must grow, and a suggested next version. Force-update safety: warns when the server's minimum / latest version is higher than what the store shows (check_store=true does a free public App Store lookup). Saves used numbers on this computer.",
+    inputSchema: {
+      project_id: pid,
+      other_project_ids: external_exports.array(external_exports.string()).max(20).optional().describe("Related Rocket Launcher projects to keep in sync"),
+      used_versions: external_exports.array(external_exports.string()).max(200).optional().describe("Version names already released or uploaded"),
+      used_version_codes: external_exports.array(external_exports.number().int()).max(200).optional(),
+      planned_version: external_exports.string().optional(),
+      server_min_version: external_exports.string().optional().describe("Force-update minimum version the server will return"),
+      server_latest_version: external_exports.string().optional(),
+      store_visible: external_exports.string().optional().describe("Version users can download now"),
+      check_store: external_exports.boolean().optional().describe("Look up the App Store version (public, free)"),
+      country: external_exports.string().length(2).optional(),
+      lang
+    },
+    annotations: { ...W, idempotentHint: true, openWorldHint: true }
+  }, rt("version"));
+  server.registerTool("rocketlauncher_country_check", {
+    title: "Country rules",
+    description: "Country-specific rules that apply to the app, with official sources: Korea (location-based service report when location is sent to a server, App Store seller info for Korea-based developers, GRAC ratings), EU (DSA trader status on both stores), Thailand (PDPA privacy notice, developer verification). Legal summaries only, not legal advice.",
+    inputSchema: { project_id: pid, countries: external_exports.array(external_exports.enum(["KR", "EU", "TH"])).optional().describe("Default all"), developer_country: external_exports.string().length(2).optional().describe("Where the developer is based, e.g. KR, TH"), lang },
+    annotations: RO
+  }, rt("countries"));
+  server.registerTool("rocketlauncher_move_app_plan", {
+    title: "Plan moving an app to another developer account",
+    description: "Plan moving an app to another developer account. Two paths, shown neutrally (neither is the default): path=transfer (keeps package, users and reviews; Play needs both accounts' registration transaction IDs; Firebase / AdMob / Analytics must be relinked) or path=new_registration (new package / bundle ID, new signing key, new Firebase project, closed test 12\xD714 for new personal Play accounts, store listing recreated; AdMob only if the app shows ads). Without path it compares both so the user can choose. key_backup_location saves only WHERE the signing key backup is kept (values that look like secrets are refused). Plans only: never transfers, deletes or creates anything.",
+    inputSchema: {
+      project_id: pid,
+      path: external_exports.enum(["transfer", "new_registration"]).optional().describe("Only after the user chose"),
+      has_ads: external_exports.boolean().optional().describe("Default: detected from the code"),
+      account_type: external_exports.enum(["personal_new", "personal_old", "organization"]).optional().describe("The receiving Play account"),
+      stores: external_exports.array(external_exports.enum(["play", "apple"])).optional(),
+      key_backup_location: external_exports.string().max(200).optional().describe('Where the signing key backup is kept, e.g. "password manager vault: Android keys". Never the key or passwords'),
+      lang
+    },
+    annotations: { ...W, idempotentHint: true }
+  }, rt("move"));
+  server.registerTool("rocketlauncher_remove_app_guide", {
+    title: "Unpublish or delete an app (guide)",
+    description: "Step-by-step guide to unpublish or delete an app on Google Play and the App Store, with the conditions (Play: fewer than 1,000 active devices, transaction ID format, 7-day restore, package name reuse only with zero installs; Apple: remove from sale first, states that block removal, name / SKU / bundle ID consequences). Guide only: Rocket Launcher never removes anything.",
+    inputSchema: { store: external_exports.enum(["play", "apple"]).optional().describe("Default both"), lang },
+    annotations: RO
+  }, wrap(async (a) => ok(removeGuide2(a.store, a.lang))));
   server.registerPrompt("launch_my_app", {
     title: "Launch my app with Rocket Launcher",
     description: "Start the Rocket Launcher flow for an app the user already built: first submit, waiting in review, rejected, or a live app update.",
@@ -59975,16 +61298,16 @@ if (!argv.includes("--http")) {
     res.writeHead(code, { "content-type": "application/json" });
     res.end(JSON.stringify(obj));
   };
-  const srv = http.createServer(async (req, res) => {
-    const url2 = new URL(req.url, "http://x");
-    if (allowedHosts.length && !allowedHosts.includes(req.headers.host)) return send(res, 403, { error: "host not allowed" });
-    const origin = req.headers.origin;
+  const srv = http.createServer(async (req2, res) => {
+    const url2 = new URL(req2.url, "http://x");
+    if (allowedHosts.length && !allowedHosts.includes(req2.headers.host)) return send(res, 403, { error: "host not allowed" });
+    const origin = req2.headers.origin;
     if (origin && !allowedOrigins.includes(origin)) return send(res, 403, { jsonrpc: "2.0", error: { code: -32e3, message: "origin not allowed" }, id: null });
-    if (url2.pathname === "/" && req.method === "GET") return send(res, 200, { name: "Rocket Launcher MCP", version: VERSION, endpoint: "/mcp", transport: "streamable-http" });
+    if (url2.pathname === "/" && req2.method === "GET") return send(res, 200, { name: "Rocket Launcher MCP", version: VERSION, endpoint: "/mcp", transport: "streamable-http" });
     if (url2.pathname !== "/mcp") return send(res, 404, { error: "not found" });
-    if (req.method !== "POST") return send(res, 405, { jsonrpc: "2.0", error: { code: -32e3, message: "Method not allowed (stateless server: POST only)" }, id: null });
+    if (req2.method !== "POST") return send(res, 405, { jsonrpc: "2.0", error: { code: -32e3, message: "Method not allowed (stateless server: POST only)" }, id: null });
     let body = "";
-    for await (const c of req) {
+    for await (const c of req2) {
       body += c;
       if (body.length > 2e6) return send(res, 413, { error: "too large" });
     }
@@ -60002,7 +61325,7 @@ if (!argv.includes("--http")) {
     });
     try {
       await server.connect(transport);
-      await transport.handleRequest(req, res, parsed);
+      await transport.handleRequest(req2, res, parsed);
     } catch (e) {
       log(e);
       if (!res.headersSent) send(res, 500, { jsonrpc: "2.0", error: { code: -32603, message: "Internal error" }, id: null });

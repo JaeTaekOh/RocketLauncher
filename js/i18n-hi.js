@@ -1,5 +1,5 @@
-window.AAP_I18N = window.AAP_I18N || {};
-window.AAP_I18N.hi = {
+window.RL_I18N = window.RL_I18N || {};
+window.RL_I18N.hi = {
   copied: 'कॉपी हो गया', copy: 'कॉपी करें', 'sev.block': 'ठीक करना ज़रूरी', 'sev.warn': 'जाँचना बेहतर', 'sev.tip': 'जानने लायक', bothStores: 'दोनों स्टोर',
   'ad.label': 'विज्ञापन की जगह · जल्द आ रहा है', 'ad.note': 'बाद में यहाँ एक बैनर दिख सकता है। यह कभी भी बटन या सामग्री को नहीं ढकेगा।',
   'step.analyze': 'विश्लेषण', 'step.decide': 'फ़ैसला', 'step.assets': 'सामग्री', 'step.submit': 'सबमिट', 'step.review': 'समीक्षा', 'step.done': 'लाइव',

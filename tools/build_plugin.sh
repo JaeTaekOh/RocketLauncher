@@ -17,6 +17,8 @@ cp -r "$ROOT/fonts/plex-sans" "$ROOT/fonts/plex-thai" "$ROOT/fonts/LICENSES" "$O
 cp "$ROOT/mcp/dist/rocket-launcher-mcp.mjs" "$OUT/mcp/dist/"
 cp "$ROOT"/mcp/fonts/* "$OUT/mcp/fonts/"
 cp "$ROOT/assets/favicon.svg" "$OUT/assets/logo.svg"
+# 0.2.0: dated store-requirements table + Google's Play Policy Insights (Apache-2.0, with LICENSE/NOTICE)
+cp -r "$ROOT/data" "$ROOT/vendor" "$OUT/"
 # 512px PNG 로고 (제출 양식의 1:1 PNG 용)
 (cd "$ROOT/mcp" && node -e "
 const {createCanvas,loadImage}=require('@napi-rs/canvas');const fs=require('fs');
@@ -48,6 +50,7 @@ NPM="$ROOT/plugin-package/npm/rocket-launcher-mcp"
 rm -rf "$ROOT/plugin-package/npm" && mkdir -p "$NPM"/{js,fonts,mcp/dist,mcp/fonts}
 cp "$OUT"/js/*.js "$NPM/js/"; cp -r "$OUT"/fonts/* "$NPM/fonts/"; cp "$OUT/mcp/dist/rocket-launcher-mcp.mjs" "$NPM/mcp/dist/"; cp "$OUT"/mcp/fonts/* "$NPM/mcp/fonts/"
 cp "$OUT/README.md" "$OUT/PRIVACY.md" "$OUT/CHANGELOG.md" "$OUT/LICENSE" "$NPM/"
+cp -r "$OUT/data" "$OUT/vendor" "$NPM/"
 cat > "$NPM/package.json" <<JSON
 {
   "name": "rocket-launcher-mcp",
@@ -55,7 +58,7 @@ cat > "$NPM/package.json" <<JSON
   "description": "Rocket Launcher MCP server: from a finished app to launched on Google Play / App Store. You only pick and approve. Free, no API keys.",
   "type": "module",
   "bin": { "rocket-launcher-mcp": "mcp/dist/rocket-launcher-mcp.mjs" },
-  "files": ["mcp", "js", "fonts", "README.md", "PRIVACY.md", "CHANGELOG.md", "LICENSE"],
+  "files": ["mcp", "js", "fonts", "data", "vendor", "README.md", "PRIVACY.md", "CHANGELOG.md", "LICENSE"],
   "engines": { "node": ">=20" },
   "optionalDependencies": { "@napi-rs/canvas": "^1.1.0" },
   "keywords": ["mcp", "mcp-server", "google-play", "app-store", "app-launch", "privacy-policy", "data-safety"],
@@ -70,10 +73,12 @@ JSON
 for d in "$OUT" "$NPM"; do
   for l in $I18N_LANGS; do test -f "$d/js/i18n-$l.js" || { echo "ERROR: js/i18n-$l.js missing in $d" >&2; exit 1; }; done
   test -f "$d/LICENSE" || { echo "ERROR: LICENSE missing in $d" >&2; exit 1; }
+  test -f "$d/data/store-requirements.json" || { echo "ERROR: data/store-requirements.json missing in $d" >&2; exit 1; }
+  for f in LICENSE.txt NOTICE SKILL.md resources/policies.json resources/scanner_config.json; do test -f "$d/vendor/play-policy-insights/$f" || { echo "ERROR: vendor/play-policy-insights/$f missing in $d" >&2; exit 1; }; done
 done
 node -e "
 const p=require('$NPM/package.json');
-const ok=p.license==='MIT'&&p.files.includes('LICENSE')&&p.repository.url==='git+https://github.com/JaeTaekOh/rocketlauncher.git'&&p.bugs&&p.homepage&&p.author==='Prezentree'&&!/ by /i.test(p.description)&&p.version==='$VER';
+const ok=p.license==='MIT'&&p.files.includes('LICENSE')&&p.files.includes('data')&&p.files.includes('vendor')&&p.repository.url==='git+https://github.com/JaeTaekOh/rocketlauncher.git'&&p.bugs&&p.homepage&&p.author==='Prezentree'&&!/ by /i.test(p.description)&&p.version==='$VER';
 if(!ok){console.error('ERROR: npm package.json metadata regressed');process.exit(1);}"
 
 (cd "$ROOT/plugin-package/npm" && npm pack ./rocket-launcher-mcp --silent >/dev/null && ls rocket-launcher-mcp-*.tgz)

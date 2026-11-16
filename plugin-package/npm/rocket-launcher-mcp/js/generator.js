@@ -393,5 +393,5 @@ ${types.join('\n')}
     return REJECTIONS.find(r => (!store || r.store === store) && r.match.test(t)) || REJECTIONS.find(r => r.match.test(t)) || null;
   }
 
-  window.AAPGen = { LANGS, CAT, listing, features, dataSafety, dataSafetyCsv, rating, privacyPolicy, deletionPage, supportPage, patches, xcprivacy, REJECTIONS, matchRejection, asoClean, asoIssues, nameOf, tagOf, clip, esc };
+  window.RLGen = { LANGS, CAT, listing, features, dataSafety, dataSafetyCsv, rating, privacyPolicy, deletionPage, supportPage, patches, xcprivacy, REJECTIONS, matchRejection, asoClean, asoIssues, nameOf, tagOf, clip, esc };
 })();

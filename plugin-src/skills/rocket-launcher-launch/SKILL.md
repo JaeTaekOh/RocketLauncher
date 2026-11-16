@@ -33,6 +33,13 @@ Rocket Launcher takes an app the user already built and gets it to "launched" on
 
 Use `rocketlauncher_status` to resume in a new conversation.
 
+## Release checks (0.2.0)
+- Before step 6, show `release_checks` from the report: every "Must fix" item comes first. The submission guide also has a "Release checks" step before the final submit.
+- Details on request: `rocketlauncher_check_requirements` (deadlines with official sources and the date each rule was verified), `rocketlauncher_privacy_check` (mismatches + Data safety / App Privacy / PrivacyInfo.xcprivacy drafts), `rocketlauncher_play_policy_audit` (Google's Play Policy Insights rules, Apache-2.0, bundled), `rocketlauncher_reviewer_notes`, `rocketlauncher_account_deletion_check`, `rocketlauncher_country_check`, `rocketlauncher_version_sync`.
+- New personal Play account: track the 12 testers × 14 days with `rocketlauncher_closed_test` (nicknames only). The user applies for production; you only draft the answers.
+- Moving an app to another account: call `rocketlauncher_move_app_plan` without `path` first and present both paths (transfer / new registration) neutrally; never pick one for the user. AdMob steps appear only if the app shows ads. Record only where the signing key backup is kept, never the key or its passwords.
+- Unpublish or delete: `rocketlauncher_remove_app_guide` is a guide only. Never unpublish, delete, transfer, create accounts or change permissions yourself.
+
 ## Learning from review results
 - Every reported review result is learned on this computer automatically; there is no separate save step. A rejection the tools do not know becomes a generalized lesson and returns a fix plan (`matched: "learned"`); a known one returns the built-in plan and is counted. An approval records that the learned checks were part of a later approval.
 - Show `learned_lessons` from the report, decisions, guide and generated materials to the user: warnings when the app has related signals, otherwise checks to do before submitting. They add to the built-in checks and never replace them (for example, never suggest ATT because of ads).

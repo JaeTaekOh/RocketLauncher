@@ -8,6 +8,7 @@ import { Analyzer, Gen, Gfx, Flow, Sources, Zip, CFG, tr, hasGraphics, Lessons }
 import { msg } from './messages.mjs';
 import { withLessons, relevantLessons, listLessons } from './lessons.mjs';
 import { shareLesson } from './shared.mjs';
+import * as RL from './release.mjs';
 
 /* Texts come in five languages; English is the default whenever lang is omitted or unknown. */
 export const LANGS = ['en', 'ko', 'th', 'zh', 'hi'];
@@ -75,6 +76,8 @@ export async function connect({ source, github_url, path: p, lang, store_stage }
   A.brandColor = A.brandColor || (hasGraphics ? await Gfx.avgColor(A.icon && A.icon.dataUrl) : '#2f6f5e');
   const id = Flow.slugOf(A).toLowerCase().replace(/[^a-z0-9.-]+/g, '-').slice(0, 40).replace(/^[^a-z0-9]+/, 'app') + '-' + crypto.randomBytes(5).toString('hex');
   const st = { id, v: 1, createdAt: new Date().toISOString(), lang: L, sample: source === 'sample', source: project.source, A, dec: {}, approved: {}, review: {}, generated: null };
+  /* 0.2.0: code scan for release checks (native libraries, required-reason APIs, deletion path, policy signals). Paths only, never secrets. */
+  try { st.X = RL.scanProject(project, A); } catch (e) { st.X = null; st.scanError = String(e.message || e); }
   /* Optional store_stage: a stage for every store ('live') or per store ({ play: 'live', apple: 'in_review' }). Never guessed silently. */
   if (store_stage) {
     for (const k of Flow.storesOf(A)) {
@@ -148,10 +151,12 @@ export function report(st, lang) {
     readiness: A.readiness, counts: c,
     issues: issues.map(i => ({ key: i.fix && i.fix !== 'info' ? Flow.issueKey(i) : null, severity: t('sev.' + i.sev), sev: i.sev, store: i.plat === 'android' ? 'Google Play' : i.plat === 'ios' ? 'App Store' : 'both',
       title: t('iss.' + i.id + '.t', i.vars), why: t('iss.' + i.id + '.w', i.vars), ai_fix: i.fix && i.fix !== 'info' ? t('iss.' + i.id + '.f', i.vars) : null })),
+    release_checks: releaseSafe(st, L),
     ...learned(st, L),
     next: stageNext(st, L) || msg(L, 'nextDecide', { n: Flow.decisions(A, st.dec).length })
   };
 }
+function releaseSafe(st, L) { try { return RL.releaseChecks(st, L); } catch (e) { return { error: 'Release checks could not run: ' + e.message }; } }
 /* Lessons learned on this machine from earlier store reviews (any project). Warnings or reminders only; built-in checks stay the default. */
 function learned(st, L) {
   const rel = relevantLessons(st.A, Flow.stores(st.A, st.dec), L);
@@ -358,6 +363,12 @@ export function guide(st, store, lang) {
     return { n: k + 1, id: s.id, title: t('g.' + s.id + '.t'), what: t('g.' + s.id + '.d'), how: t('g.' + s.id + '.how').split('|').filter(x => x && !x.startsWith('g.')),
       final: !!s.final || undefined, locked: locked || undefined, fields: locked ? [] : s.fields.map(([label, value]) => ({ label, value: String(value) })) };
   });
+  try {
+    const g = RL.guideStep(st, L), fin = steps.findIndex(s => s.final);
+    /* only when there is something to submit (not while waiting in review) */
+    if (fin >= 0) steps.splice(fin, 0, { n: 0, id: g.id, title: g.title, what: g.detail, how: g.tools, status: g.status, fields: g.items.map((x, k) => ({ label: String(k + 1), value: x })) });
+    steps.forEach((s, k) => { s.n = k + 1; });
+  } catch { /* release checks never block the guide */ }
   const rel = relevantLessons(st.A, { [store]: true }, L).filter(r => r.store === store);
   const rv = steps.find(s => s.id === 'a-review'); const nf = rv && rv.fields.find(f => f.label === t('f.reviewNotes')); if (nf) nf.value = withLearnedNotes(nf.value, rel);
   if (rel.length) {
@@ -468,3 +479,54 @@ export function forgetLesson(id, lang) {
   if (!r || !r.removed) throw new UserError(msg(L, 'lessonNotFound', { id }), 'lessonNotFound');
   return { removed: id, message: msg(L, 'lessonForgotten', { id }), lessons: listLessons() };
 }
+
+/* ---------- 0.2.0 release tools ---------- */
+const needAndroid = (st, L) => { if (!st.A.android) throw new UserError(RL_noAndroid(L), 'noAndroid'); };
+function RL_noAndroid(L) { return RL.policyAudit({ A: { android: null } }, L).summary; }
+const listProjects = () => { try { return fs.readdirSync(PROJ).filter(idOk); } catch { return []; } };
+export async function release(tool, id, args = {}, lang) {
+  const st = load(id, lang), L = normLang(lang || args.lang || st.lang);
+  switch (tool) {
+    case 'requirements': return { project_id: id, ...RL.requirements(st, L) };
+    case 'privacy': return { project_id: id, ...RL.privacyCheck(st, L) };
+    case 'policy': return { project_id: id, ...RL.policyAudit(st, L) };
+    case 'notes': return { project_id: id, ...RL.reviewerNotes(st, L, args) };
+    case 'deletion': return { project_id: id, ...RL.deletionCheck(st, L) };
+    case 'countries': return { project_id: id, ...RL.countryCheck(st, L, args) };
+    case 'closed_test': {
+      needAndroid(st, L);
+      const a = args.action || 'status';
+      if (a === 'record') {
+        let n; try { n = RL.closedTestRecord(st, args); } catch (e) { throw new UserError(e.message, 'badValue'); }
+        save(st); return { project_id: id, saved: RL.closedTestStatus(st, L).title, message: (await import('./release-i18n.mjs')).rx(L, 'ct.recorded', { n }), ...RL.closedTestStatus(st, L) };
+      }
+      if (a === 'application_draft') return { project_id: id, ...RL.closedTestDraft(st, L) };
+      if (a === 'recruit_copy') return { project_id: id, messages: RL.recruitCopy(st, args.opt_in_link), tip: 'For LINE, add ?openExternalBrowser=1 to the link (or share the link to your own web page with an "Open in Chrome" button). Field reports say the opt-in may fail inside LINE / Facebook / Instagram browsers; Google does not document this.' };
+      if (a === 'check_optin_page') return { project_id: id, ...(await optinPage(st, args)) };
+      if (a === 'status') { if (args.account_type) { st.closedTest = st.closedTest || { testers: {}, feedback: [] }; st.closedTest.account_type = args.account_type; save(st); } return { project_id: id, ...RL.closedTestStatus(st, L) }; }
+      throw new UserError('action must be status | record | application_draft | recruit_copy | check_optin_page', 'badValue');
+    }
+    case 'move': {
+      if (args.key_backup_location) { try { RL.moveRecord(st, args); } catch (e) { throw new UserError(e.message, 'badValue'); } save(st); }
+      return { project_id: id, ...RL.movePlan(st, L, args), key_backup_location: st.move && st.move.key_backup_location || undefined };
+    }
+    case 'version': {
+      const others = (args.other_project_ids || []).filter(x => x !== id).map(x => { try { return load(x, L); } catch { return null; } }).filter(Boolean);
+      const r = await RL.versionSync(st, L, args, others); save(st);
+      return { project_id: id, ...r, other_projects_on_this_computer: others.length ? undefined : listProjects().filter(x => x !== id).slice(0, 20) };
+    }
+    default: throw new UserError('unknown release tool ' + tool, 'badValue');
+  }
+}
+async function optinPage(st, { url, file, html }) {
+  if (html) return RL.optinReport(String(html).slice(0, 500000), 'html');
+  if (url) {
+    if (!/^https:\/\//i.test(url)) throw new UserError('url must start with https://', 'badValue');
+    let body; try { const r = await fetch(url, { signal: AbortSignal.timeout(10000), headers: { 'User-Agent': 'Rocket-Launcher-optin-check' } }); body = (await r.text()).slice(0, 500000); } catch (e) { throw new UserError('Could not open the page: ' + e.message, 'fetch'); }
+    return RL.optinReport(body, url);
+  }
+  const pages = ((st.X && st.X.optinPages) || []).filter(p => !file || p.path === file);
+  if (pages.length) return { checked: 'tester pages found in the project', pages: pages.map(p => RL.optinReport(p, p.path)) };
+  return { checked: null, note: 'Pass url (your public tester page) or html. No tester page was found in the project.' };
+}
+export function removeGuide(store, lang) { return RL.removeGuide(normLang(lang), store); }

@@ -1,6 +1,6 @@
 {
   "name": "rocket-launcher",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Rocket Launcher \u2014 a free web tool that takes your app to launch; you just decide",
   "type": "module",
