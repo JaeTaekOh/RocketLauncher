@@ -1,0 +1,49 @@
+---
+name: rocket-launcher-launch
+description: Publish an app the user already built (Android and/or iOS) to Google Play and the App Store with the Rocket Launcher tools, at any stage (first submit, waiting in review, rejected, or an update of a live app). Use when the user says their app is finished, is in review, was rejected or needs an update, asks how to release or publish it, needs store listing text, a privacy policy, Data safety or App Privacy answers, a content rating, store graphics, or help with a store rejection.
+---
+
+# Launch an app with Rocket Launcher
+
+Rocket Launcher takes an app the user already built and gets it to "launched" on Google Play and/or the App Store. It stops at launch. It is free and never needs API keys, tokens, or passwords.
+
+## Rules
+- The user does not fill forms. Connect the app once, then only show choices. The user picks, approves, or rejects.
+- Call `rocketlauncher_decide` only with options the user actually chose. Use `accept_all_recommended` only when the user says to accept all recommendations.
+- Never say the app was submitted. Rocket Launcher never submits. The user presses the submit button in Play Console or App Store Connect after approving with `rocketlauncher_approve_submission`.
+- Tool texts come in five languages: `en` (English, the default), `ko` (Korean), `th` (Thai), `zh` (Simplified Chinese) and `hi` (Hindi). Pass the user's language as `lang` on every call; if you leave it out, texts are in English. Reply to the user in their language.
+- Store listings default to English (`langs: ["en"]`, the recommended choice). Korean (`ko`), Thai (`th`), Simplified Chinese (`zh`) or Hindi (`hi`) listings for the user's app can be added when the user picks them.
+
+## Store stage first (every store)
+- Ask where the app is now in each store: `not_submitted`, `in_review`, `rejected` or `live`. Pass `store_stage` on connect if the user already said it, otherwise record `stage:play` / `stage:apple` with `rocketlauncher_decide`. `store_stage` in the report shows hints and a recommendation; never assume a first launch, and `accept_all_recommended` never picks a stage when there are hints.
+- `in_review`: nothing to submit, no new app record, no new build unless the user picks `binary:<store>` = `new_build` (warn that replacing the build can withdraw or delay the review). Help them wait, draft a reply for Information Needed (the user sends it), and fix metadata that needs no build.
+- `rejected`: right after connecting, ask the user to paste the store's message and call `rocketlauncher_report_review` (event `rejected`). Follow the fix plan and the resubmit guide; there is no closed-test step.
+- `live`: an update. No closed testing; recommend `keep` for the listing (name, descriptions, category, languages, graphics, privacy URL). The guide covers the new version and "What's new"; technical checks still apply.
+- `not_submitted`: the first-submit flow below, including closed-test advice for new personal Play accounts.
+
+## Flow
+1. `rocketlauncher_connect_app`: use a public GitHub URL (`source: "github"`), a folder or .zip on the computer running the server (`source: "path"`), or the demo (`source: "sample"`). Keep the returned `project_id`.
+2. Summarize the readiness percentage and must-fix items in plain words.
+3. `rocketlauncher_get_decisions`: present the options, recommended first. Use `rocketlauncher_preview_graphics` to show icon, feature graphic, and screenshot options.
+4. `rocketlauncher_decide` with the user's picks. Repeat until `open_count` is 0.
+5. `rocketlauncher_generate_store_materials`: show the listing text and tell the user where the folder and ZIP are.
+6. `rocketlauncher_submission_guide` for each store: walk through the steps and the values to paste.
+7. When the user explicitly approves, call `rocketlauncher_approve_submission`. This unlocks the final step.
+8. `rocketlauncher_report_review` with `submitted`, `rejected` (with the store's message, which returns a fix plan and a reply), `resubmitted`, or `approved`. When every chosen store is live, congratulate the user. The job is done.
+
+Use `rocketlauncher_status` to resume in a new conversation.
+
+## Learning from review results
+- Every reported review result is learned on this computer automatically; there is no separate save step. A rejection the tools do not know becomes a generalized lesson and returns a fix plan (`matched: "learned"`); a known one returns the built-in plan and is counted. An approval records that the learned checks were part of a later approval.
+- Show `learned_lessons` from the report, decisions, guide and generated materials to the user: warnings when the app has related signals, otherwise checks to do before submitting. They add to the built-in checks and never replace them (for example, never suggest ATT because of ads).
+- Lessons contain no original store message. Each real (non-demo) learned result also sends an anonymized record to `the configured lessons API`: store, guideline / ITMS / Play policy codes and a fixed advice id only (`lesson.shared` shows it). The store message, app name, bundle / package id, project id and any free text are never sent. Sharing is always on; if the user asks, explain exactly what is and is not sent (see PRIVACY.md).
+- `learned_lessons` items have `source`: `local` ("From your reviews") or `shared` ("From other reviews", other Rocket Launcher users' anonymized counts). Tell the user which is which. Shared ones are reminders or warnings only, never must-fix, and never a reason to add ATT.
+- Use `rocketlauncher_forget_lesson` only when the user asks to drop a local lesson. Still never reply to a store yourself.
+
+## App Store review rules to explain (the tools already check them)
+- Tracking must tell one story from the first submit: ATT, `PrivacyInfo.xcprivacy`, the App Privacy form, and what the app really does. For apps with ads the default is no ATT prompt and no `NSUserTrackingUsageDescription`, `NSPrivacyTracking` false with no tracking domains, non-personalized ad requests (`npa=1`), and App Privacy "No, we do not track". Never tell the user to add ATT just because the app shows ads. A mixed setup leads to ITMS-91064 or a Guideline 2.1 rejection. If the app already has a fully aligned tracking setup, keep it aligned.
+- The App Privacy form is separate from the build. Remind the user to check it right before submitting.
+- Core features should work without signing in (Guideline 5.1.1(v)). A third-party login on iOS also needs Sign in with Apple. Apps with accounts need deletion both in the app and on a web page.
+- The Support URL must open a page that shows a contact method. Mention ads only in the privacy policy. Keep "free" and other brands' names out of the subtitle and keywords, and keep Android out of App Store text.
+- If users bring their own AI API key, the review notes must say there is no in-app purchase or subscription, that users get the key from a third party, and that the developer does not sell keys. Ask the user to attach a review-only key. Never write a real key anywhere.
+- In App Store Connect, "Information Needed" also shows as Rejected. It asks for a reply, often without a new build. Draft the reply; the user sends it. Never reply to a store yourself.

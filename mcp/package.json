@@ -1,0 +1,47 @@
+{
+  "name": "rocket-launcher-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rocket Launcher MCP server: connect an app once, decide, and get store materials through launch. Free, no API keys.",
+  "bin": {
+    "rocket-launcher-mcp": "server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@napi-rs/canvas": "^1.1.0",
+    "linkedom": "^0.18.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "http": "node server.mjs --http",
+    "test": "node test/run.mjs && node test/lessons.mjs && node test/learning.mjs && node test/shared.mjs && node test/stage.mjs && node ../workers/lessons/test/worker.test.mjs",
+    "bundle": "esbuild server.mjs --bundle --platform=node --format=esm --target=node20 --external:@napi-rs/canvas --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\" --outfile=dist/rocket-launcher-mcp.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "google-play",
+    "app-store",
+    "app-launch",
+    "aso",
+    "privacy-policy",
+    "data-safety"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaeTaekOh/rocketlauncher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JaeTaekOh/rocketlauncher/issues"
+  },
+  "homepage": "https://github.com/JaeTaekOh/rocketlauncher"
+}

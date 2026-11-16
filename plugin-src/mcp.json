@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "node",
+      "args": [
+        "${CURSOR_PLUGIN_ROOT}/mcp/dist/rocket-launcher-mcp.mjs"
+      ]
+    }
+  }
+}

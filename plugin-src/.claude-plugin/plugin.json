@@ -1,0 +1,20 @@
+{
+  "name": "rocket-launcher",
+  "displayName": "Rocket Launcher",
+  "version": "0.1.0",
+  "description": "Get an app you already built with AI onto Google Play and the App Store, or through review, a rejection or a live update: connect once, pick and approve, never auto-submitted. Free, no API keys.",
+  "keywords": [
+    "app-launch",
+    "google-play",
+    "app-store",
+    "mcp"
+  ],
+  "mcpServers": {
+    "rocket-launcher": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp/dist/rocket-launcher-mcp.mjs"
+      ]
+    }
+  }
+}
