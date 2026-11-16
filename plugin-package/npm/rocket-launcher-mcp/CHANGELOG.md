@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+Listing metadata only; no tool or behavior changes.
+
+- npm package now carries `mcpName` (`io.github.JaeTaekOh/rocket-launcher`) so it can be listed in the official MCP Registry (`server.json` in the repo).
+- `glama.json` and a `Dockerfile` for MCP directory listings.
+
 ## 0.2.0
 
 Release checks before you submit. All free, no API keys, nothing is submitted or deleted for you.

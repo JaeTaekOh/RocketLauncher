@@ -61044,7 +61044,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.0";
+var VERSION = "0.2.1";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.

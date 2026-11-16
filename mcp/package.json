@@ -1,6 +1,6 @@
 {
   "name": "rocket-launcher-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "Rocket Launcher MCP server: connect an app once, decide, and get store materials through launch. Free, no API keys.",

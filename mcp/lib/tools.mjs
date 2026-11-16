@@ -5,7 +5,7 @@ import * as E from './engine.mjs';
 import { CFG } from './runtime.mjs';
 import { ensureShared } from './shared.mjs';
 
-export const VERSION = '0.2.0';
+export const VERSION = '0.2.1';
 
 export const INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:

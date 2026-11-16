@@ -8,7 +8,7 @@ A free **MCP server** and **web tool** that helps people who already built an An
 
 You connect the app once. From then on you only **pick, approve, or reject**. Nothing is submitted to a store automatically. The final step of the guide unlocks only after you approve, and you press the store’s Submit button yourself.
 
-[![Version 0.2.0](https://img.shields.io/badge/version-0.2.0-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
+[![Version 0.2.1](https://img.shields.io/badge/version-0.2.1-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
 [![npm](https://img.shields.io/npm/v/rocket-launcher-mcp?style=flat-square&color=F4A261)](https://www.npmjs.com/package/rocket-launcher-mcp)
 [![MCP](https://img.shields.io/badge/MCP-server-171717?style=flat-square)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/license-MIT-171717?style=flat-square)](LICENSE)
