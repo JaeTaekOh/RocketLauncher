@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon.jpg" alt="Rocket Launcher" width="128"></p>
+
 # Rocket Launcher
 
 A free web tool and MCP server that helps people who built an Android or iOS app with AI get it all the way to **launched on the stores**: a first submit, an app waiting in review, a rejected app, or an update of a live app.
