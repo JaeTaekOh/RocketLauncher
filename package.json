@@ -2,7 +2,7 @@
   "name": "rocket-launcher",
   "version": "0.1.0",
   "private": true,
-  "description": "Rocket Launcher — a free web tool that takes your app to launch; you just decide",
+  "description": "Rocket Launcher \u2014 a free web tool that takes your app to launch; you just decide",
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
@@ -25,5 +25,6 @@
   "bugs": {
     "url": "https://github.com/JaeTaekOh/rocketlauncher/issues"
   },
-  "homepage": "https://github.com/JaeTaekOh/rocketlauncher"
+  "homepage": "https://github.com/JaeTaekOh/rocketlauncher",
+  "author": "Prezentree"
 }

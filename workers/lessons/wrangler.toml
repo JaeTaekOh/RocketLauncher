@@ -1,13 +1,11 @@
-# Rocket Launcher shared lessons API (Cloudflare Worker template).
-# Deploy on the project owner's Cloudflare account, then set js/config.js
-# lessonsApiUrl (and/or the ROCKETLAUNCHER_LESSONS_API env var) to the public URL.
-# Do not point this at a previous product domain or any third-party zone.
+# Rocket Launcher shared lessons API (Cloudflare Worker).
+# Deployed on the project owner's Cloudflare account (Prezentree).
+# Public URL is set in js/config.js lessonsApiUrl (and/or ROCKETLAUNCHER_LESSONS_API).
 name = "rocket-launcher-lessons"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 workers_dev = true
 
-# Uncomment and fill in after creating a KV namespace on the owner's account:
-# [[kv_namespaces]]
-# binding = "LESSONS"
-# id = "YOUR_KV_NAMESPACE_ID"
+[[kv_namespaces]]
+binding = "LESSONS"
+id = "262973ba4e6c4a9e9d8478a630a69870"

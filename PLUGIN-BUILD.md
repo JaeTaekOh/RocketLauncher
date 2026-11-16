@@ -12,4 +12,4 @@ Results:
 - `plugin-package/npm/rocket-launcher-mcp/` — npm package (`npx -y rocket-launcher-mcp`)
 - `plugin-package/npm/rocket-launcher-mcp-0.1.0.tgz`
 
-The shared lessons API URL (`js/config.js` `lessonsApiUrl`, overridable with `ROCKETLAUNCHER_LESSONS_API`) must be filled in with the owner’s own server **before** `npm publish`. Do not publish while it is empty.
+The shared lessons API URL (`js/config.js` `lessonsApiUrl`, default `https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons`, overridable with `ROCKETLAUNCHER_LESSONS_API`) is set on the owner’s Cloudflare Worker. Do not `npm publish` until the owner asks.

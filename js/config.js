@@ -4,9 +4,8 @@ window.AAP_CONFIG = {
   feedbackUrl: 'https://github.com/JaeTaekOh/rocketlauncher/issues',
   /* Ad-slot placeholder only (no real ad network). Set false to hide it. */
   showAdSlotPlaceholder: true,
-  /* Shared review-lessons API base URL.
-     Leave empty until the new server (on the project owner's account) is live.
+  /* Shared review-lessons API base URL (owner's Cloudflare Worker).
      The MCP server may also override this with ROCKETLAUNCHER_LESSONS_API.
      When empty or unreachable, learning stays on this device only. */
-  lessonsApiUrl: ''
+  lessonsApiUrl: 'https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons'
 };

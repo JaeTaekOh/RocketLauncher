@@ -59,6 +59,7 @@ cat > "$NPM/package.json" <<JSON
   "engines": { "node": ">=20" },
   "optionalDependencies": { "@napi-rs/canvas": "^1.1.0" },
   "keywords": ["mcp", "mcp-server", "google-play", "app-store", "app-launch", "privacy-policy", "data-safety"],
+  "author": "Prezentree",
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/JaeTaekOh/rocketlauncher.git" },
   "bugs": { "url": "https://github.com/JaeTaekOh/rocketlauncher/issues" },
@@ -72,7 +73,7 @@ for d in "$OUT" "$NPM"; do
 done
 node -e "
 const p=require('$NPM/package.json');
-const ok=p.license==='MIT'&&p.files.includes('LICENSE')&&p.repository.url==='git+https://github.com/JaeTaekOh/rocketlauncher.git'&&p.bugs&&p.homepage&&!('author' in p)&&!/ by /i.test(p.description)&&p.version==='$VER';
+const ok=p.license==='MIT'&&p.files.includes('LICENSE')&&p.repository.url==='git+https://github.com/JaeTaekOh/rocketlauncher.git'&&p.bugs&&p.homepage&&p.author==='Prezentree'&&!/ by /i.test(p.description)&&p.version==='$VER';
 if(!ok){console.error('ERROR: npm package.json metadata regressed');process.exit(1);}"
 
 (cd "$ROOT/plugin-package/npm" && npm pack ./rocket-launcher-mcp --silent >/dev/null && ls rocket-launcher-mcp-*.tgz)

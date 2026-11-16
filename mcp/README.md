@@ -5,4 +5,6 @@
 - How to connect: `../PLUGIN.md`
 - The analysis and generation logic loads the web app's `../js/*.js` as-is (`lib/runtime.mjs`).
 - Languages: the optional `lang` argument accepts `en` (default), `ko`, `th`, `zh` (Simplified Chinese) and `hi` (Hindi). Omitted → English. Store listings default to English; ko/th/zh/hi listings are optional.
-- Shared lessons API: `ROCKETLAUNCHER_LESSONS_API` or `lessonsApiUrl` in `js/config.js`. Leave empty until the new server URL is set.
+- Shared lessons API: `ROCKETLAUNCHER_LESSONS_API` or `lessonsApiUrl` in `js/config.js` (default `https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons`).
+
+© Prezentree

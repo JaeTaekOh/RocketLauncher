@@ -115,7 +115,7 @@ Cursor IDE asks you to approve the server the first time.
 | `ROCKETLAUNCHER_ALLOW_PATH` | on for stdio / off for HTTP | Allow connecting local folders and ZIPs |
 | `ROCKETLAUNCHER_ALLOWED_ORIGINS` | none | Origins allowed in HTTP mode (comma separated) |
 | `ROCKETLAUNCHER_ALLOWED_HOSTS` | localhost port | Hosts allowed in HTTP mode |
-| `ROCKETLAUNCHER_LESSONS_API` | `lessonsApiUrl` in `js/config.js` (empty until the new server is set) | Shared review-lessons API base URL |
+| `ROCKETLAUNCHER_LESSONS_API` | `lessonsApiUrl` in `js/config.js` (`https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons`) | Shared review-lessons API base URL |
 
 Tool texts come in `en` (default), `ko`, `th`, `zh` (Simplified Chinese) and `hi` (Hindi). The AI passes the user's language as the optional `lang` argument on each call; when it is left out, texts are in English. Store listings for the user's app default to English (`langs: ["en"]`, recommended); Korean, Thai, Chinese and Hindi listings can be added if the user picks them.
 

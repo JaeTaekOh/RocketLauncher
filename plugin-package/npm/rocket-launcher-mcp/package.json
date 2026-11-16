@@ -8,6 +8,7 @@
   "engines": { "node": ">=20" },
   "optionalDependencies": { "@napi-rs/canvas": "^1.1.0" },
   "keywords": ["mcp", "mcp-server", "google-play", "app-store", "app-launch", "privacy-policy", "data-safety"],
+  "author": "Prezentree",
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/JaeTaekOh/rocketlauncher.git" },
   "bugs": { "url": "https://github.com/JaeTaekOh/rocketlauncher/issues" },

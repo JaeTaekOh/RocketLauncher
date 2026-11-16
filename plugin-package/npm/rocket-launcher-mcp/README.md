@@ -54,4 +54,4 @@ Ask your assistant: *"Use Rocket Launcher with the sample app."* or *"My app is 
 
 - Languages: tool texts come in English (default), Korean, Thai, Simplified Chinese and Hindi (`lang`: `en`, `ko`, `th`, `zh`, `hi`); without `lang` they are in English. Store listings default to English.
 
-See PRIVACY.md. Source: https://github.com/JaeTaekOh/rocketlauncher · MIT License (see LICENSE).
+See PRIVACY.md. Source: https://github.com/JaeTaekOh/rocketlauncher · MIT License (see LICENSE). © Prezentree

@@ -56,7 +56,7 @@ npm start            # = node server.mjs
 | `tools/` | Sample data build, sample images, screenshot automation, plugin build |
 | `sample-output/` | Example ZIP you get after finishing the sample |
 | `mcp/` | MCP server (for Grok Bot, Claude, Cursor) |
-| `workers/lessons/` | Cloudflare Worker template for the shared, anonymized review-lessons API (deploy on the owner's account, then set the URL) |
+| `workers/lessons/` | Cloudflare Worker for the shared, anonymized review-lessons API (live on the owner's account) |
 | `plugin-src/` | Plugin source (`bash tools/build_plugin.sh` writes `plugin-package/`) |
 
 ## Settings
@@ -65,7 +65,7 @@ npm start            # = node server.mjs
 
 - `feedbackUrl`: where the feedback button points (GitHub issues until a dedicated site exists)
 - `showAdSlotPlaceholder`: ad space placeholder (not a real ad). Set `false` to hide it
-- `lessonsApiUrl`: base URL of the shared review-lessons API (for example `https://<host>/api/lessons`). **Leave empty until that server is live.** The MCP server can also override it with `ROCKETLAUNCHER_LESSONS_API`. When empty or unreachable, learning stays on this device only.
+- `lessonsApiUrl`: base URL of the shared review-lessons API (`https://rocket-launcher-lessons.prezentree.workers.dev/api/lessons`). The MCP server can also override it with `ROCKETLAUNCHER_LESSONS_API`. When empty or unreachable, learning stays on this device only.
 
 ## Rebuild the sample / recapture screens
 
@@ -83,4 +83,4 @@ npm run shots    # needs the server running; updates preview screenshots
 
 ## License
 
-MIT (see LICENSE). Feedback: https://github.com/JaeTaekOh/rocketlauncher/issues
+MIT (see LICENSE). © Prezentree. Feedback: https://github.com/JaeTaekOh/rocketlauncher/issues
