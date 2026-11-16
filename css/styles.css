@@ -1,8 +1,8 @@
 /* Rocket Launcher — phone-clean theme: white canvas, ink, burgundy accent. */
 :root {
   --bg: #ffffff; --surface: #ffffff; --ink: #171717; --muted: #6B6B6B; --line: #E8E8E8; --soft: #F7F7F7;
-  --accent: #911E3D; --accent-soft: #F8EEF1;
-  --brand: #911E3D; --brand-soft: #F8EEF1; --brand-ink: #911E3D; --on-brand: #ffffff; --brand-glow: transparent;
+  --accent: #F4A261; --accent-soft: #FEF3EA;
+  --brand: #F4A261; --brand-soft: #FEF3EA; --brand-ink: #B85A17; --on-brand: #171717; --brand-glow: transparent;
   --dark: #171717; --dark-2: #2A2A2A; --on-dark: #ffffff;
   --ok: #12805c; --warn: #b45309; --danger: #c62828; --ok-soft: #e3f4ec; --warn-soft: #fdf0dc; --danger-soft: #fbe5e5;
   --radius: 16px; --radius-lg: 24px; --shadow: 0 1px 2px rgba(23, 23, 23, .04), 0 8px 24px -12px rgba(23, 23, 23, .10);
@@ -65,7 +65,7 @@ button { font: inherit; color: inherit; }
 .st-done .st-n { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 .st-done button { color: var(--ink); }
 .st-cur button { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); font-weight: 650; }
-.st-cur .st-n { background: var(--accent); border-color: var(--accent); color: #fff; }
+.st-cur .st-n { background: var(--accent); border-color: var(--accent); color: #171717; }
 .step-mini { display: none; flex: 1; font-size: 14px; font-weight: 600; text-align: center; color: var(--muted); }
 .lang { position: relative; }
 .lang-btn { min-height: 40px; font-size: 13px; letter-spacing: .04em; }
@@ -94,7 +94,7 @@ button { font: inherit; color: inherit; }
 .home { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: start; padding-top: 18px; }
 .home-hero h1 { font-size: clamp(34px, 5.6vw, 58px); line-height: 1.08; letter-spacing: -.035em; margin-bottom: 18px; }
 html[lang="th"] .home-hero h1 { line-height: 1.25; letter-spacing: -.01em; }
-.home-hero h1 em { font-style: normal; color: var(--brand); text-decoration: underline; text-decoration-thickness: .06em; text-underline-offset: .14em; text-decoration-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+.home-hero h1 em { font-style: normal; background: linear-gradient(transparent 58%, var(--brand) 58%, var(--brand) 92%, transparent 92%); padding: 0 .06em; }
 .lead { font-size: 18px; color: var(--muted); max-width: 34em; }
 .flow { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
 .flow::before { content: ''; position: absolute; left: 18px; right: 18px; top: 17px; height: 2px; background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px); }
