@@ -52,3 +52,10 @@ print('wrote', dst)
 PY
 
 echo "Built $APP"
+
+# Cache-busting: append ?v=<build time> to local CSS/JS links so updates show without a hard refresh.
+V="$(date +%Y%m%d%H%M%S)"
+for f in "$DOC/index.html" "$APP/index.html" "$DOC/privacy.html" "$APP/privacy.html"; do
+  [[ -f "$f" ]] || continue
+  sed -i -E "s#((href|src)=\"[^\"?:]+\.(css|js))(\?v=[0-9]+)?\"#\1?v=$V\"#g" "$f"
+done
