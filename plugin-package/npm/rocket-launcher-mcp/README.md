@@ -30,6 +30,22 @@ Rocket Launcher is for apps at every stage, per store: **not submitted yet** (fi
 - Rejected: paste the store's message first (`rocketlauncher_report_review`); you get a fix plan, a reply draft and a resubmit guide, using the local and (when configured) shared review lessons.
 - Live: an update. No closed test; the live listing (name, descriptions, category, languages, graphics, privacy URL) is kept, and the guide covers the new version and "What's new". Technical checks still run.
 
+### Optional project file: `rocketlauncher.json`
+
+Put this file at the root of your app to record what the code cannot show. It always wins over guesses:
+
+```json
+{
+  "privacy_url": "https://example.com/privacy",
+  "support_url": "https://example.com/support",
+  "category": "navigation",
+  "store_stage": { "play": "live" },
+  "app_store_state": "WAITING_FOR_REVIEW"
+}
+```
+
+`app_store_state` and `play_state` accept the names App Store Connect and Play Console show (for example `WAITING_FOR_REVIEW`, `READY_FOR_SALE`, `METADATA_REJECTED`). With nothing recorded and no store hints, the stage is shown as **unknown — please confirm**, never silently as a first submit.
+
 ## Tools
 
 | Tool | What it does |

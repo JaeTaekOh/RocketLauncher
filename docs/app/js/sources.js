@@ -12,7 +12,7 @@
     /fastlane\/metadata\/.*\.txt$/i, /(^|\/)fastlane\/(Appfile|Deliverfile)$/i, /(^|\/)variables\.gradle$/i, /AppIcon\.appiconset\/Contents\.json$/i, /(^|\/)lib\/l10n\/.*\.arb$/i,
     /(^|\/)(support|contact)[^/]*\.(md|html?)$/i, /(^|\/)(support|contact)\/index\.(md|html?)$/i,
     /* 0.2.0: release checks (Xcode version hints, CI images, AGP/Gradle versions, deletion / tester pages) */
-    /(^|\/)\.xcode-version$/i, /(^|\/)\.github\/workflows\/[^/]+\.ya?ml$/i, /(^|\/)codemagic\.ya?ml$/i, /(^|\/)gradle-wrapper\.properties$/i,
+    /(^|\/)\.?rocketlauncher\.json$/i, /(^|\/)\.xcode-version$/i, /(^|\/)\.github\/workflows\/[^/]+\.ya?ml$/i, /(^|\/)codemagic\.ya?ml$/i, /(^|\/)gradle-wrapper\.properties$/i,
     /(^|\/)[^/]*(delete|deletion|tester|testing|beta|join|opt-?in)[^/]*\.(html?|md)$/i, /(^|\/)(delete|deletion|delete-account|testers?|beta|join)\/index\.html?$/i
   ];
   /* App source code: read a limited number of files so review checks can see runtime behavior
@@ -100,7 +100,7 @@
     const code = picked.filter(e => e.kind === 'code' && e.size <= MAX_CODE_SIZE)
       .sort((a, b) => (CODE_HINT_RE.test(b.rel.split('/').pop()) - CODE_HINT_RE.test(a.rel.split('/').pop())) || (a.rel.split('/').length - b.rel.split('/').length) || a.rel.localeCompare(b.rel))
       .slice(0, MAX_CODE);
-    picked = picked.filter(e => e.kind !== 'code').filter(e => (e.kind === 'text' ? e.size <= MAX_TEXT : e.size <= MAX_IMG)).slice(0, MAX_FILES).concat(code);
+    picked = picked.filter(e => e.kind !== 'code').sort((a, b) => /(^|\/)\.?rocketlauncher\.json$/i.test(b.rel) - /(^|\/)\.?rocketlauncher\.json$/i.test(a.rel)).filter(e => (e.kind === 'text' ? e.size <= MAX_TEXT : e.size <= MAX_IMG)).slice(0, MAX_FILES).concat(code);
     const files = {};
     for (const e of picked) {
       onStep && onStep(e.rel);

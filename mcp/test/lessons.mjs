@@ -4,6 +4,7 @@
    privacy labels (on-device location, no grouping), BYOK review notes, login gate, store-copy rules, encryption key,
    iPad screenshots, Information Needed handling.
    Run: node test/lessons.mjs */
+process.env.ROCKETLAUNCHER_VERIFY_URLS = process.env.ROCKETLAUNCHER_VERIFY_URLS || '0';   // no link checks to fixture hosts
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 
 const HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'rocket-launcher-lessons-'));

@@ -1,5 +1,6 @@
 /* Rocket Launcher 0.1.5 — store stage tests: first submit, in review, rejected, live update; targetSdk from variables.gradle; unread targetSdk.
    In-process, local fixture projects, shared-lessons API pointed at a dead local port (never a production host). Run: node test/stage.mjs */
+process.env.ROCKETLAUNCHER_VERIFY_URLS = process.env.ROCKETLAUNCHER_VERIFY_URLS || '0';   // no link checks to fixture hosts
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 
 const HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'rocketlauncher-stage-'));
@@ -52,15 +53,18 @@ check(/could not read targetSdk/.test(E.report(st, 'en').issues.find(i => /could
 st = await connect({ 'android/variables.gradle': null, 'android/app/build.gradle': GRADLE(34) });
 check(st.A.issues.some(i => i.id === 'targetSdk' && i.sev === 'block'), 'targetSdk read as 34 → still a block (real check)');
 
-console.log('\n[3] not_submitted (no store hints): today\'s first-submit path');
+console.log('\n[3] no store hints: stage is unknown and must be confirmed (0.2.3), then the first-submit path');
 st = await connect({});
 let rep = E.report(st, 'en');
-check(rep.store_stage['Google Play'].recommended === 'not_submitted' && /stage:play/.test(rep.next), 'stage asked first; recommended not_submitted without hints', rep.store_stage);
+check(rep.store_stage['Google Play'].recommended === 'unknown' && /please confirm/.test(rep.store_stage['Google Play'].recommended_label) && /stage:play/.test(rep.next) && /unknown — please confirm/.test(rep.next), 'stage asked first; recommended = unknown — please confirm (never a silent not_submitted)', rep.store_stage);
 const w = await connect({ 'android/app/build.gradle': GRADLE('rootProject.ext.targetSdkVersion', 5) });
 check(E.decide(w, { accept_all_recommended: true }, 'en').stage_not_picked && !w.dec['stage:play'], 'versionCode 5 alone (earlier uploads?) → stage still asked, not assumed');
 check(keys(st)[0] === 'stage:play', 'stage:play is the first decision');
 let r = E.decide(st, { accept_all_recommended: true }, 'en');
-check(st.dec['stage:play'] === 'not_submitted' && st.dec.track === 'closed' && r.open_count === 0, 'no hints: accept-all may use not_submitted; closed test recommended');
+check(!st.dec['stage:play'] && r.stage_not_picked && r.applied.length === 0, 'no hints: accept-all does NOT pick not_submitted (unknown stage is asked)', r);
+E.decide(st, { choices: [{ key: 'stage:play', value: 'not_submitted' }] }, 'en');
+r = E.decide(st, { accept_all_recommended: true }, 'en');
+check(st.dec['stage:play'] === 'not_submitted' && st.dec.track === 'closed' && r.open_count === 0, 'user says not submitted → accept-all fills the rest; closed test recommended');
 await E.generate(st, {}, { allowPath: true });
 let g = E.guide(st, 'play', 'en');
 check(ids(g.steps).includes('p-closed') && ids(g.steps).includes('p-create'), 'first-submit guide keeps create + closed test', ids(g.steps));

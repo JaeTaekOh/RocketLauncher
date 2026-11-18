@@ -13,11 +13,38 @@
      not_submitted = first submit · in_review = uploaded, waiting · rejected = fix and resubmit · live = update of a live app */
   const STAGES = ['not_submitted', 'in_review', 'rejected', 'live'];
   const storesOf = A => ['play', 'apple'].filter(k => (k === 'play' ? A.platforms.android : A.platforms.ios));
+  /* 0.2.3: store states as App Store Connect / Play Console name them (or as people write them) → Rocket Launcher stage. */
+  const STATE_MAP = {
+    not_submitted: /^(not[ _-]?submitted|prepare[ _]for[ _]submission|developer[ _]rejected|draft)$/i,
+    in_review: /^(in[ _-]?review|waiting[ _]for[ _]review|ready[ _]for[ _]review|in[ _]review|submitted|pending[ _](developer|apple)[ _]release|processing[ _]for[ _](app[ _]store|distribution)|waiting[ _]for[ _]export[ _]compliance|pending[ _]contract|pending[ _]publication|under[ _]review|reviewing)$/i,
+    rejected: /^(rejected|metadata[ _]rejected|invalid[ _]binary|not[ _]approved)$/i,
+    live: /^(live|ready[ _]for[ _](sale|distribution)|published|completed|in[ _]?progress|available|on[ _]sale|replaced[ _]with[ _]new[ _]version)$/i
+  };
+  function stageFromState(v) { const x = String(v == null ? '' : v).trim(); if (!x) return null; for (const [k, re] of Object.entries(STATE_MAP)) if (re.test(x)) return k; return null; }
+  /* A stage recorded for this project outside the code: project config (store_stage / app_store_state / play_state) or an earlier
+     Rocket Launcher project for the same app (A.stageRecords, filled by the MCP server). */
+  function stageRecorded(A, store) {
+    const c = A.projectConfig || {}, ss = c.store_stage;
+    const v = (ss && typeof ss === 'object' ? ss[store] : typeof ss === 'string' ? ss : null) || (store === 'apple' ? c.app_store_state || c.appStoreState : c.play_state || c.playState);
+    const st = stageFromState(v);
+    if (st) return { stage: st, source: 'project config (' + (c._file || 'rocketlauncher.json') + ')', raw: String(v) };
+    const r = (A.stageRecords || {})[store];
+    return r && STAGES.includes(r.stage) ? r : null;
+  }
   function stageHints(A, store) {
     const L = (A.listing || {})[store] || { evidence: [] };
-    return { evidence: L.evidence || [], weak: L.weak || null, url: L.url || null };
+    return { evidence: L.evidence || [], weak: L.weak || null, url: L.url || null, recorded: stageRecorded(A, store) };
   }
-  function stageRec(A, store) { const h = stageHints(A, store); return h.evidence.length ? 'live' : 'not_submitted'; }
+  /* Recommended stage. Never guessed: the user's choice, then a recorded state, then store evidence (live); with nothing to go on the
+     answer is 'unknown' and the user must confirm (the demo sample alone is a known first submit). */
+  function stageRec(A, store, dec) {
+    const cur = (dec || {})['stage:' + store]; if (cur) return cur;
+    const h = stageHints(A, store);
+    if (h.recorded) return h.recorded.stage;
+    if (h.evidence.length) return 'live';
+    if (A.source && A.source.kind === 'sample') return 'not_submitted';
+    return 'unknown';
+  }
   const stageOf = (dec, store) => (dec || {})['stage:' + store] || null;
   /* Stage of every chosen store; a store whose stage is not chosen yet counts as unknown (null). */
   function stagesOf(A, dec) { const o = {}; storesOf(A).forEach(k => { o[k] = stageOf(dec, k); }); return o; }
@@ -30,7 +57,7 @@
     const list = [];
     /* Stage first: required, per store, recommended from hints. "ask" = hints exist, so accept-all must not pick it for the user. */
     storesOf(A).forEach(k => { const h = stageHints(A, k), rec = stageRec(A, k);
-      list.push({ key: 'stage:' + k, group: 'stage', store: k, opts: STAGES.slice(), rec: STAGES.indexOf(rec), hints: h, ask: !!(h.evidence.length || h.weak) }); });
+      list.push({ key: 'stage:' + k, group: 'stage', store: k, opts: STAGES.slice(), rec: STAGES.indexOf(rec), hints: h, ask: !!(h.evidence.length || h.weak || h.recorded) || rec === 'unknown' }); });
     storesOf(A).forEach(k => { if (stageOf(dec, k) === 'in_review') list.push({ key: 'binary:' + k, group: 'stage', store: k, opts: ['wait', 'new_build'], rec: 0 }); });
     const keep = hasListing(A, dec);
     issuesFor(A, dec).filter(i => i.fix && i.fix !== 'info').forEach(i => {
@@ -63,7 +90,7 @@
   }
   function recValue(d) {
     if (d.keep && d.keepRec !== false) return 'keep';
-    if (d.opts) return d.opts[d.rec];
+    if (d.opts) return d.rec >= 0 ? d.opts[d.rec] : undefined;
     if (d.key === 'langs') return DEFAULT_LANGS.slice();
     if (['shots', 'privacy', 'safety', 'rating'].includes(d.key)) return 'ok';
     return d.rec;
@@ -227,5 +254,5 @@
   }
   const slugOf = A => (A.pkg || A.appName).replace(/[^\w.-]+/g, '-');
 
-  window.RLFlow = { issuesFor, STAGES, storesOf, stageHints, stageRec, stageOf, stagesOf, hasListing, firstSubmit, KEEPABLE, WHATS_NEW, LANGS, DEFAULT_LANGS, issueKey, decisions, recValue, defaultStores, stores, chosen, guide, ratingTxt, appliedFixes, patchText, textFiles, slugOf, trackingOn, locationAnswer, loginRequired, privacyOpts, reviewNotes };
+  window.RLFlow = { issuesFor, STAGES, storesOf, stageHints, stageRec, stageFromState, stageRecorded, stageOf, stagesOf, hasListing, firstSubmit, KEEPABLE, WHATS_NEW, LANGS, DEFAULT_LANGS, issueKey, decisions, recValue, defaultStores, stores, chosen, guide, ratingTxt, appliedFixes, patchText, textFiles, slugOf, trackingOn, locationAnswer, loginRequired, privacyOpts, reviewNotes };
 })();

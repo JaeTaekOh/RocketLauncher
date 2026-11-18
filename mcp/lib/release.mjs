@@ -1,4 +1,4 @@
-/* Rocket Launcher 0.2.2 — release checks.
+/* Rocket Launcher 0.2.3 — release checks.
    Every function here only reads the connected project and the bundled rule tables, and returns guidance.
    Nothing is submitted, uploaded, deleted or sent to a store. No API keys. */
 import fs from 'node:fs';

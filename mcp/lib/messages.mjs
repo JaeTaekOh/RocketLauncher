@@ -160,7 +160,7 @@ export const M = {
 const STAGE_M = {
   en: {
     stageFirst: 'First ask the user where the app is now in each store (required): rocketlauncher_decide with key {keys} = not_submitted | in_review | rejected | live. Recommended from the project: {rec}. Hints are only hints; never assume a first launch.',
-    stageAsk: 'Store stage was not picked automatically because the project shows signs the app may already be in a store. Ask the user: {keys}.',
+    stageAsk: 'Store stage was not picked automatically: it is unknown from the project, or the project shows signs the app may already be in a store. Never assume a first submit. Ask the user: {keys}.',
     nextRejected: 'Next: ask the user to paste the store’s rejection message and call rocketlauncher_report_review with event=rejected and rejection_text ({store}). That gives the fix plan and the resubmit guide (not a first-submit guide).',
     nextInReview: 'Next: nothing to submit for {store}. Do not create a new app record or upload a new build. Show rocketlauncher_submission_guide (wait / Information Needed / metadata-only fixes) and report the result with rocketlauncher_report_review (approved or rejected) when it arrives.',
     nextLive: 'This is an update of a live app on {store}: no closed testing, and the current listing is kept. Next: rocketlauncher_get_decisions.',
@@ -168,7 +168,7 @@ const STAGE_M = {
   },
   ko: {
     stageFirst: '먼저 사용자에게 스토어별로 앱이 지금 어디쯤인지 물어보세요(필수): rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live. 프로젝트 기준 추천: {rec}. 힌트는 힌트일 뿐, 첫 출시라고 가정하지 마세요.',
-    stageAsk: '프로젝트에 이미 스토어에 있을 수 있는 흔적이 있어서 스토어 단계는 자동으로 고르지 않았어요. 사용자에게 물어보세요: {keys}.',
+    stageAsk: '프로젝트만으로는 스토어 단계를 알 수 없거나, 이미 스토어에 있을 수 있는 흔적이 있어서 자동으로 고르지 않았어요. 첫 제출이라고 가정하지 말고 사용자에게 물어보세요: {keys}.',
     nextRejected: '다음: 사용자에게 스토어 반려 메시지를 붙여 달라고 하고 rocketlauncher_report_review (event=rejected, rejection_text, {store})를 부르세요. 수정 계획과 재제출 안내(첫 제출 안내 아님)가 나와요.',
     nextInReview: '다음: {store}에는 지금 제출할 것이 없어요. 새 앱 레코드를 만들거나 새 빌드를 올리지 마세요. rocketlauncher_submission_guide (대기 / 정보 필요 / 빌드 없는 메타데이터 수정)를 보여 주고, 결과가 오면 rocketlauncher_report_review (approved 또는 rejected)로 알려 주세요.',
     nextLive: '{store}에 출시된 앱의 업데이트예요: 비공개 테스트 없음, 현재 스토어 정보 유지. 다음: rocketlauncher_get_decisions.',
@@ -176,7 +176,7 @@ const STAGE_M = {
   },
   th: {
     stageFirst: 'ก่อนอื่นถามผู้ใช้ว่าแอปอยู่ขั้นไหนในแต่ละสโตร์ (จำเป็น): rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live คำแนะนำจากโปรเจกต์: {rec} คำใบ้เป็นแค่คำใบ้ อย่าถือว่าเป็นการเปิดตัวครั้งแรก',
-    stageAsk: 'ไม่ได้เลือกขั้นสโตร์อัตโนมัติ เพราะโปรเจกต์มีร่องรอยว่าแอปอาจอยู่ในสโตร์แล้ว ถามผู้ใช้: {keys}',
+    stageAsk: 'ไม่ได้เลือกขั้นสโตร์อัตโนมัติ เพราะดูจากโปรเจกต์ไม่ได้ หรือมีร่องรอยว่าแอปอาจอยู่ในสโตร์แล้ว อย่าถือว่าเป็นการส่งครั้งแรก ถามผู้ใช้: {keys}',
     nextRejected: 'ถัดไป: ขอให้ผู้ใช้วางข้อความปฏิเสธจากสโตร์ แล้วเรียก rocketlauncher_report_review (event=rejected, rejection_text, {store}) จะได้แผนแก้ไขและคำแนะนำการส่งใหม่ (ไม่ใช่การส่งครั้งแรก)',
     nextInReview: 'ถัดไป: ตอนนี้ไม่มีอะไรต้องส่งที่ {store} อย่าสร้างแอปใหม่หรืออัปโหลดบิลด์ใหม่ แสดง rocketlauncher_submission_guide (รอ / Information Needed / แก้เมทาดาทา) และแจ้งผลด้วย rocketlauncher_report_review (approved หรือ rejected) เมื่อได้รับ',
     nextLive: 'นี่คืออัปเดตของแอปที่เผยแพร่แล้วบน {store}: ไม่มีการทดสอบแบบปิด และคงข้อมูลสโตร์เดิม ถัดไป: rocketlauncher_get_decisions',
@@ -184,7 +184,7 @@ const STAGE_M = {
   },
   zh: {
     stageFirst: '先问用户应用在每个商店现在处于哪一步（必填）：rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live。根据项目推荐：{rec}。线索只是线索，不要假设是首次上架。',
-    stageAsk: '项目显示应用可能已在商店中，因此没有自动选择商店阶段。请询问用户：{keys}。',
+    stageAsk: '无法从项目判断商店阶段，或项目显示应用可能已在商店中，因此没有自动选择。不要假设是首次提交，请询问用户：{keys}。',
     nextRejected: '下一步：请用户粘贴商店的拒绝消息，并调用 rocketlauncher_report_review（event=rejected，rejection_text，{store}）。会得到修正计划和重新提交指南（不是首次提交指南）。',
     nextInReview: '下一步：{store} 现在无需提交。不要创建新的应用记录或上传新构建。展示 rocketlauncher_submission_guide（等待 / Information Needed / 无需构建的元数据修正），结果到达后用 rocketlauncher_report_review（approved 或 rejected）报告。',
     nextLive: '这是 {store} 上已上架应用的更新：无封闭测试，保留当前商店信息。下一步：rocketlauncher_get_decisions。',
@@ -192,7 +192,7 @@ const STAGE_M = {
   },
   hi: {
     stageFirst: 'पहले उपयोगकर्ता से पूछें कि हर स्टोर में ऐप अभी कहाँ है (ज़रूरी): rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live। प्रोजेक्ट से सुझाव: {rec}। संकेत सिर्फ़ संकेत हैं; पहला लॉन्च मानकर न चलें।',
-    stageAsk: 'प्रोजेक्ट में संकेत हैं कि ऐप शायद पहले से स्टोर में है, इसलिए स्टोर चरण अपने-आप नहीं चुना गया। उपयोगकर्ता से पूछें: {keys}।',
+    stageAsk: 'प्रोजेक्ट से स्टोर चरण पता नहीं चला, या संकेत हैं कि ऐप शायद पहले से स्टोर में है, इसलिए यह अपने-आप नहीं चुना गया। पहला सबमिट मानकर न चलें; उपयोगकर्ता से पूछें: {keys}।',
     nextRejected: 'आगे: उपयोगकर्ता से स्टोर का अस्वीकृति संदेश पेस्ट करवाएँ और rocketlauncher_report_review (event=rejected, rejection_text, {store}) कॉल करें। इससे सुधार योजना और दोबारा सबमिट गाइड मिलेगी (पहला सबमिट गाइड नहीं)।',
     nextInReview: 'आगे: {store} पर अभी कुछ सबमिट नहीं करना। नया ऐप रिकॉर्ड न बनाएँ, नया बिल्ड अपलोड न करें। rocketlauncher_submission_guide (इंतज़ार / Information Needed / बिना बिल्ड मेटाडेटा सुधार) दिखाएँ और नतीजा आने पर rocketlauncher_report_review (approved या rejected) से बताएँ।',
     nextLive: 'यह {store} पर लाइव ऐप का अपडेट है: कोई क्लोज़्ड टेस्ट नहीं, मौजूदा लिस्टिंग वैसी ही। आगे: rocketlauncher_get_decisions।',

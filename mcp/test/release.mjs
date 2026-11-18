@@ -1,5 +1,6 @@
 /* Rocket Launcher 0.2.0 release-check tests: a fixture app with location, ads, sign-in, Swift required-reason APIs,
    a 4 KB-aligned native library and a tester opt-in page. Run: node test/release.mjs */
+process.env.ROCKETLAUNCHER_VERIFY_URLS = process.env.ROCKETLAUNCHER_VERIFY_URLS || '0';   // no link checks to fixture hosts
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 const HOME = fs.mkdtempSync(path.join(os.tmpdir(), 'rocketlauncher-release-'));
 process.env.ROCKETLAUNCHER_HOME = HOME;

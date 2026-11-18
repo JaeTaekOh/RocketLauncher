@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.3
+
+- **Icons.** The iOS 1024 App Store icon and the Android launcher icon are now read pixel by pixel. A blank, single-color or near-uniform icon gets a warning (a found file is no longer enough to pass), and an iOS icon that does not look like the Android icon is flagged. Store graphics are built from the icon with artwork. Pixels are read with a small built-in PNG decoder, or with the optional graphics package for other formats.
+- **Ads.** An ad SDK counts only when it is really declared: Gradle or version-catalog dependencies, package.json, pubspec, Podfile or Package.swift, installed Capacitor / Cordova plugins, the AndroidManifest ads `APPLICATION_ID` meta-data or Info.plist `GADApplicationIdentifier`. A name that appears only in app code (a config placeholder, a bundled or minified script) is shown as an info-level hint and no longer triggers the "contains ads" or ATT / non-personalized-ads warnings.
+- **Category.** New Maps & Navigation (Play) / Navigation (App Store) category. Fuel, gas station, map, route and parking apps are recognized in English, Korean, Thai, Chinese and Hindi. The app name and README title weigh more, words like "App Store" no longer count as shopping, and the second suggestion is a related category instead of always Productivity.
+- **Privacy policy URL.** Sources are ranked: `rocketlauncher.json`, store metadata (fastlane), app config (app.json, Info.plist, strings, config scripts), then the README. Archived, old, backup and build folders are skipped. A URL seen only in a loose website page is listed for you to confirm instead of being used, URLs that disagree are all listed with a warning, and the chosen URL is checked with a short HEAD request (never fatal; `ROCKETLAUNCHER_VERIFY_URLS=0` turns it off).
+- **Store stage.** With no store hints the stage is now "unknown — please confirm" instead of "not submitted", and "accept all recommended" never picks an unknown stage. A stage recorded in `rocketlauncher.json` (including App Store Connect / Play Console state names) is used as recorded, a stage already chosen for the project is the recommendation, and an earlier Rocket Launcher project for the same app on this computer that is in review, rejected or live is offered as the recommendation for you to confirm.
+- New optional project file `rocketlauncher.json` (`privacy_url`, `support_url`, `category`, `store_stage`, `app_store_state`, `play_state`).
+
 ## 0.2.2
 
 - Broader account-deletion and location-sharing detection, including Capacitor / Cordova / Ionic web assets, i18n keys, HTTP DELETE helpers, and lat/lng query strings passed to wrapper fetch functions. Uncertain findings are marked for confirmation instead of counted as a pass.

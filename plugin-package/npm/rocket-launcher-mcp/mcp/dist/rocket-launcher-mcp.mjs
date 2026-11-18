@@ -3502,9 +3502,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex3 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex3)) {
-            const normalizedHex = hex3.toUpperCase();
+          const hex4 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex4)) {
+            const normalizedHex = hex4.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decodeUnreserved && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3524,9 +3524,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex3 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex3)) {
-            const normalizedHex = hex3.toUpperCase();
+          const hex4 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex4)) {
+            const normalizedHex = hex4.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (decoded !== "." && isUnreserved(decoded)) {
               output2 += decoded;
@@ -3566,9 +3566,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex3 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex3)) {
-            output2 += "%" + hex3.toUpperCase();
+          const hex4 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex4)) {
+            output2 += "%" + hex4.toUpperCase();
             i += 2;
             continue;
           }
@@ -3604,9 +3604,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex3 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex3)) {
-            output2 += "%" + hex3.toUpperCase();
+          const hex4 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex4)) {
+            output2 += "%" + hex4.toUpperCase();
             i += 2;
             continue;
           }
@@ -3651,9 +3651,9 @@ var require_utils = __commonJS({
       for (let i = 0; i < input2.length; i++) {
         const ch = input2[i];
         if (ch === "%" && i + 2 < input2.length) {
-          const hex3 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex3)) {
-            const normalizedHex = hex3.toUpperCase();
+          const hex4 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex4)) {
+            const normalizedHex = hex4.toUpperCase();
             const decoded = String.fromCharCode(parseInt(normalizedHex, 16));
             if (isUnreserved(decoded)) {
               output2 += decoded;
@@ -3691,9 +3691,9 @@ var require_utils = __commonJS({
       let output2 = "";
       for (let i = 0; i < input2.length; i++) {
         if (input2[i] === "%" && i + 2 < input2.length) {
-          const hex3 = input2.slice(i + 1, i + 3);
-          if (isHexPair(hex3)) {
-            output2 += "%" + hex3.toUpperCase();
+          const hex4 = input2.slice(i + 1, i + 3);
+          if (isHexPair(hex4)) {
+            output2 += "%" + hex4.toUpperCase();
             i += 2;
             continue;
           }
@@ -8961,8 +8961,8 @@ function base64urlToUint8Array(base64url3) {
 function uint8ArrayToBase64url(bytes) {
   return uint8ArrayToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
-function hexToUint8Array(hex3) {
-  const cleanHex = hex3.replace(/^0x/, "");
+function hexToUint8Array(hex4) {
+  const cleanHex = hex4.replace(/^0x/, "");
   if (cleanHex.length % 2 !== 0) {
     throw new Error("Invalid hex string length");
   }
@@ -9272,11 +9272,11 @@ function node(obj, key2, make) {
 function flattenError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = {};
   const formErrors = [];
-  for (const sub of error62.issues) {
-    if (sub.path.length > 0) {
-      node(fieldErrors, sub.path[0], () => []).push(mapper(sub));
+  for (const sub2 of error62.issues) {
+    if (sub2.path.length > 0) {
+      node(fieldErrors, sub2.path[0], () => []).push(mapper(sub2));
     } else {
-      formErrors.push(mapper(sub));
+      formErrors.push(mapper(sub2));
     }
   }
   return { formErrors, fieldErrors };
@@ -26651,12 +26651,12 @@ function containsRef(value) {
     return value.some(containsRef);
   if (typeof value.$ref === "string")
     return true;
-  return Object.entries(value).some(([key2, sub]) => {
+  return Object.entries(value).some(([key2, sub2]) => {
     if (SCHEMA_KEYWORDS.has(key2))
-      return containsRef(sub);
-    if (!SCHEMA_MAP_KEYWORDS.has(key2) || typeof sub !== "object" || sub === null)
+      return containsRef(sub2);
+    if (!SCHEMA_MAP_KEYWORDS.has(key2) || typeof sub2 !== "object" || sub2 === null)
       return false;
-    return Object.values(sub).some(containsRef);
+    return Object.values(sub2).some(containsRef);
   });
 }
 function plural(n) {
@@ -31303,8 +31303,8 @@ var ZodError2 = class _ZodError extends Error {
   constructor(issues) {
     super();
     this.issues = [];
-    this.addIssue = (sub) => {
-      this.issues = [...this.issues, sub];
+    this.addIssue = (sub2) => {
+      this.issues = [...this.issues, sub2];
     };
     this.addIssues = (subs = []) => {
       this.issues = [...this.issues, ...subs];
@@ -31386,13 +31386,13 @@ var ZodError2 = class _ZodError extends Error {
   flatten(mapper = (issue2) => issue2.message) {
     const fieldErrors = /* @__PURE__ */ Object.create(null);
     const formErrors = [];
-    for (const sub of this.issues) {
-      if (sub.path.length > 0) {
-        const firstEl = sub.path[0];
+    for (const sub2 of this.issues) {
+      if (sub2.path.length > 0) {
+        const firstEl = sub2.path[0];
         fieldErrors[firstEl] = fieldErrors[firstEl] || [];
-        fieldErrors[firstEl].push(mapper(sub));
+        fieldErrors[firstEl].push(mapper(sub2));
       } else {
-        formErrors.push(mapper(sub));
+        formErrors.push(mapper(sub2));
       }
     }
     return { formErrors, fieldErrors };
@@ -51031,11 +51031,11 @@ function expandFlex(values) {
     };
   }
   let grow = null;
-  let shrink = null;
+  let shrink2 = null;
   let basis = null;
   for (const token of filtered) if (token.type === "number") {
     if (grow === null) grow = [token];
-    else if (shrink === null) shrink = [token];
+    else if (shrink2 === null) shrink2 = [token];
     else return null;
   } else if (isValidLengthOrPercentage(token) || token.type === "ident" && FLEX_BASIS_KEYWORDS.has(token.value.toLowerCase())) {
     if (basis === null) basis = [token];
@@ -51050,7 +51050,7 @@ function expandFlex(values) {
   }];
   return {
     "flex-grow": grow ?? one,
-    "flex-shrink": shrink ?? one,
+    "flex-shrink": shrink2 ?? one,
     "flex-basis": basis ?? (grow !== null ? [{
       type: "dimension",
       value: 0,
@@ -53682,14 +53682,14 @@ var AbstractTokenizer = class {
   consumeEscapedCodePoint() {
     const cp = this.consume();
     if (this.isHexDigit(cp)) {
-      let hex3 = String.fromCodePoint(cp);
+      let hex4 = String.fromCodePoint(cp);
       let count = 1;
       while (count < 6 && this.isHexDigit(this.cp)) {
-        hex3 += String.fromCodePoint(this.consume());
+        hex4 += String.fromCodePoint(this.consume());
         count++;
       }
       if (this.isWhitespace(this.cp)) this.consume();
-      const value = parseInt(hex3, 16);
+      const value = parseInt(hex4, 16);
       if (value === 0 || value >= 55296 && value <= 57343 || value > 1114111) return 65533;
       return value;
     }
@@ -53818,17 +53818,17 @@ var AbstractTokenizer = class {
     return false;
   }
   consumeUnicodeRangeToken() {
-    let hex3 = "";
+    let hex4 = "";
     let hasQuestionMarks = false;
-    while (hex3.length < 6 && this.isHexDigit(this.cp)) hex3 += String.fromCodePoint(this.consume());
+    while (hex4.length < 6 && this.isHexDigit(this.cp)) hex4 += String.fromCodePoint(this.consume());
     let questionMarks = "";
-    while (hex3.length + questionMarks.length < 6 && this.cp === 63) {
+    while (hex4.length + questionMarks.length < 6 && this.cp === 63) {
       questionMarks += String.fromCodePoint(this.consume());
       hasQuestionMarks = true;
     }
     if (hasQuestionMarks) {
-      const startStr = hex3 + questionMarks.replace(/\?/g, "0");
-      const endStr = hex3 + questionMarks.replace(/\?/g, "F");
+      const startStr = hex4 + questionMarks.replace(/\?/g, "0");
+      const endStr = hex4 + questionMarks.replace(/\?/g, "F");
       const start2 = parseInt(startStr, 16);
       const end = parseInt(endStr, 16);
       return {
@@ -53838,7 +53838,7 @@ var AbstractTokenizer = class {
         unicodeRangeEnd: end
       };
     }
-    const start = parseInt(hex3, 16);
+    const start = parseInt(hex4, 16);
     if (this.cp === 45 && this.isHexDigit(this.peek(1))) {
       this.consume();
       let endHex = "";
@@ -59159,7 +59159,7 @@ var M = {
 var STAGE_M = {
   en: {
     stageFirst: "First ask the user where the app is now in each store (required): rocketlauncher_decide with key {keys} = not_submitted | in_review | rejected | live. Recommended from the project: {rec}. Hints are only hints; never assume a first launch.",
-    stageAsk: "Store stage was not picked automatically because the project shows signs the app may already be in a store. Ask the user: {keys}.",
+    stageAsk: "Store stage was not picked automatically: it is unknown from the project, or the project shows signs the app may already be in a store. Never assume a first submit. Ask the user: {keys}.",
     nextRejected: "Next: ask the user to paste the store\u2019s rejection message and call rocketlauncher_report_review with event=rejected and rejection_text ({store}). That gives the fix plan and the resubmit guide (not a first-submit guide).",
     nextInReview: "Next: nothing to submit for {store}. Do not create a new app record or upload a new build. Show rocketlauncher_submission_guide (wait / Information Needed / metadata-only fixes) and report the result with rocketlauncher_report_review (approved or rejected) when it arrives.",
     nextLive: "This is an update of a live app on {store}: no closed testing, and the current listing is kept. Next: rocketlauncher_get_decisions.",
@@ -59169,7 +59169,7 @@ var STAGE_M = {
   },
   ko: {
     stageFirst: "\uBA3C\uC800 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uC2A4\uD1A0\uC5B4\uBCC4\uB85C \uC571\uC774 \uC9C0\uAE08 \uC5B4\uB514\uCBE4\uC778\uC9C0 \uBB3C\uC5B4\uBCF4\uC138\uC694(\uD544\uC218): rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live. \uD504\uB85C\uC81D\uD2B8 \uAE30\uC900 \uCD94\uCC9C: {rec}. \uD78C\uD2B8\uB294 \uD78C\uD2B8\uC77C \uBFD0, \uCCAB \uCD9C\uC2DC\uB77C\uACE0 \uAC00\uC815\uD558\uC9C0 \uB9C8\uC138\uC694.",
-    stageAsk: "\uD504\uB85C\uC81D\uD2B8\uC5D0 \uC774\uBBF8 \uC2A4\uD1A0\uC5B4\uC5D0 \uC788\uC744 \uC218 \uC788\uB294 \uD754\uC801\uC774 \uC788\uC5B4\uC11C \uC2A4\uD1A0\uC5B4 \uB2E8\uACC4\uB294 \uC790\uB3D9\uC73C\uB85C \uACE0\uB974\uC9C0 \uC54A\uC558\uC5B4\uC694. \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBCF4\uC138\uC694: {keys}.",
+    stageAsk: "\uD504\uB85C\uC81D\uD2B8\uB9CC\uC73C\uB85C\uB294 \uC2A4\uD1A0\uC5B4 \uB2E8\uACC4\uB97C \uC54C \uC218 \uC5C6\uAC70\uB098, \uC774\uBBF8 \uC2A4\uD1A0\uC5B4\uC5D0 \uC788\uC744 \uC218 \uC788\uB294 \uD754\uC801\uC774 \uC788\uC5B4\uC11C \uC790\uB3D9\uC73C\uB85C \uACE0\uB974\uC9C0 \uC54A\uC558\uC5B4\uC694. \uCCAB \uC81C\uCD9C\uC774\uB77C\uACE0 \uAC00\uC815\uD558\uC9C0 \uB9D0\uACE0 \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBCF4\uC138\uC694: {keys}.",
     nextRejected: "\uB2E4\uC74C: \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uC2A4\uD1A0\uC5B4 \uBC18\uB824 \uBA54\uC2DC\uC9C0\uB97C \uBD99\uC5EC \uB2EC\uB77C\uACE0 \uD558\uACE0 rocketlauncher_report_review (event=rejected, rejection_text, {store})\uB97C \uBD80\uB974\uC138\uC694. \uC218\uC815 \uACC4\uD68D\uACFC \uC7AC\uC81C\uCD9C \uC548\uB0B4(\uCCAB \uC81C\uCD9C \uC548\uB0B4 \uC544\uB2D8)\uAC00 \uB098\uC640\uC694.",
     nextInReview: "\uB2E4\uC74C: {store}\uC5D0\uB294 \uC9C0\uAE08 \uC81C\uCD9C\uD560 \uAC83\uC774 \uC5C6\uC5B4\uC694. \uC0C8 \uC571 \uB808\uCF54\uB4DC\uB97C \uB9CC\uB4E4\uAC70\uB098 \uC0C8 \uBE4C\uB4DC\uB97C \uC62C\uB9AC\uC9C0 \uB9C8\uC138\uC694. rocketlauncher_submission_guide (\uB300\uAE30 / \uC815\uBCF4 \uD544\uC694 / \uBE4C\uB4DC \uC5C6\uB294 \uBA54\uD0C0\uB370\uC774\uD130 \uC218\uC815)\uB97C \uBCF4\uC5EC \uC8FC\uACE0, \uACB0\uACFC\uAC00 \uC624\uBA74 rocketlauncher_report_review (approved \uB610\uB294 rejected)\uB85C \uC54C\uB824 \uC8FC\uC138\uC694.",
     nextLive: "{store}\uC5D0 \uCD9C\uC2DC\uB41C \uC571\uC758 \uC5C5\uB370\uC774\uD2B8\uC608\uC694: \uBE44\uACF5\uAC1C \uD14C\uC2A4\uD2B8 \uC5C6\uC74C, \uD604\uC7AC \uC2A4\uD1A0\uC5B4 \uC815\uBCF4 \uC720\uC9C0. \uB2E4\uC74C: rocketlauncher_get_decisions.",
@@ -59179,7 +59179,7 @@ var STAGE_M = {
   },
   th: {
     stageFirst: "\u0E01\u0E48\u0E2D\u0E19\u0E2D\u0E37\u0E48\u0E19\u0E16\u0E32\u0E21\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E27\u0E48\u0E32\u0E41\u0E2D\u0E1B\u0E2D\u0E22\u0E39\u0E48\u0E02\u0E31\u0E49\u0E19\u0E44\u0E2B\u0E19\u0E43\u0E19\u0E41\u0E15\u0E48\u0E25\u0E30\u0E2A\u0E42\u0E15\u0E23\u0E4C (\u0E08\u0E33\u0E40\u0E1B\u0E47\u0E19): rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live \u0E04\u0E33\u0E41\u0E19\u0E30\u0E19\u0E33\u0E08\u0E32\u0E01\u0E42\u0E1B\u0E23\u0E40\u0E08\u0E01\u0E15\u0E4C: {rec} \u0E04\u0E33\u0E43\u0E1A\u0E49\u0E40\u0E1B\u0E47\u0E19\u0E41\u0E04\u0E48\u0E04\u0E33\u0E43\u0E1A\u0E49 \u0E2D\u0E22\u0E48\u0E32\u0E16\u0E37\u0E2D\u0E27\u0E48\u0E32\u0E40\u0E1B\u0E47\u0E19\u0E01\u0E32\u0E23\u0E40\u0E1B\u0E34\u0E14\u0E15\u0E31\u0E27\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E23\u0E01",
-    stageAsk: "\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E42\u0E15\u0E23\u0E4C\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34 \u0E40\u0E1E\u0E23\u0E32\u0E30\u0E42\u0E1B\u0E23\u0E40\u0E08\u0E01\u0E15\u0E4C\u0E21\u0E35\u0E23\u0E48\u0E2D\u0E07\u0E23\u0E2D\u0E22\u0E27\u0E48\u0E32\u0E41\u0E2D\u0E1B\u0E2D\u0E32\u0E08\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E2A\u0E42\u0E15\u0E23\u0E4C\u0E41\u0E25\u0E49\u0E27 \u0E16\u0E32\u0E21\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49: {keys}",
+    stageAsk: "\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E42\u0E15\u0E23\u0E4C\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34 \u0E40\u0E1E\u0E23\u0E32\u0E30\u0E14\u0E39\u0E08\u0E32\u0E01\u0E42\u0E1B\u0E23\u0E40\u0E08\u0E01\u0E15\u0E4C\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49 \u0E2B\u0E23\u0E37\u0E2D\u0E21\u0E35\u0E23\u0E48\u0E2D\u0E07\u0E23\u0E2D\u0E22\u0E27\u0E48\u0E32\u0E41\u0E2D\u0E1B\u0E2D\u0E32\u0E08\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E2A\u0E42\u0E15\u0E23\u0E4C\u0E41\u0E25\u0E49\u0E27 \u0E2D\u0E22\u0E48\u0E32\u0E16\u0E37\u0E2D\u0E27\u0E48\u0E32\u0E40\u0E1B\u0E47\u0E19\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E23\u0E01 \u0E16\u0E32\u0E21\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49: {keys}",
     nextRejected: "\u0E16\u0E31\u0E14\u0E44\u0E1B: \u0E02\u0E2D\u0E43\u0E2B\u0E49\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E27\u0E32\u0E07\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E1B\u0E0F\u0E34\u0E40\u0E2A\u0E18\u0E08\u0E32\u0E01\u0E2A\u0E42\u0E15\u0E23\u0E4C \u0E41\u0E25\u0E49\u0E27\u0E40\u0E23\u0E35\u0E22\u0E01 rocketlauncher_report_review (event=rejected, rejection_text, {store}) \u0E08\u0E30\u0E44\u0E14\u0E49\u0E41\u0E1C\u0E19\u0E41\u0E01\u0E49\u0E44\u0E02\u0E41\u0E25\u0E30\u0E04\u0E33\u0E41\u0E19\u0E30\u0E19\u0E33\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E43\u0E2B\u0E21\u0E48 (\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E04\u0E23\u0E31\u0E49\u0E07\u0E41\u0E23\u0E01)",
     nextInReview: "\u0E16\u0E31\u0E14\u0E44\u0E1B: \u0E15\u0E2D\u0E19\u0E19\u0E35\u0E49\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2D\u0E30\u0E44\u0E23\u0E15\u0E49\u0E2D\u0E07\u0E2A\u0E48\u0E07\u0E17\u0E35\u0E48 {store} \u0E2D\u0E22\u0E48\u0E32\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E41\u0E2D\u0E1B\u0E43\u0E2B\u0E21\u0E48\u0E2B\u0E23\u0E37\u0E2D\u0E2D\u0E31\u0E1B\u0E42\u0E2B\u0E25\u0E14\u0E1A\u0E34\u0E25\u0E14\u0E4C\u0E43\u0E2B\u0E21\u0E48 \u0E41\u0E2A\u0E14\u0E07 rocketlauncher_submission_guide (\u0E23\u0E2D / Information Needed / \u0E41\u0E01\u0E49\u0E40\u0E21\u0E17\u0E32\u0E14\u0E32\u0E17\u0E32) \u0E41\u0E25\u0E30\u0E41\u0E08\u0E49\u0E07\u0E1C\u0E25\u0E14\u0E49\u0E27\u0E22 rocketlauncher_report_review (approved \u0E2B\u0E23\u0E37\u0E2D rejected) \u0E40\u0E21\u0E37\u0E48\u0E2D\u0E44\u0E14\u0E49\u0E23\u0E31\u0E1A",
     nextLive: "\u0E19\u0E35\u0E48\u0E04\u0E37\u0E2D\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E02\u0E2D\u0E07\u0E41\u0E2D\u0E1B\u0E17\u0E35\u0E48\u0E40\u0E1C\u0E22\u0E41\u0E1E\u0E23\u0E48\u0E41\u0E25\u0E49\u0E27\u0E1A\u0E19 {store}: \u0E44\u0E21\u0E48\u0E21\u0E35\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A\u0E41\u0E1A\u0E1A\u0E1B\u0E34\u0E14 \u0E41\u0E25\u0E30\u0E04\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E42\u0E15\u0E23\u0E4C\u0E40\u0E14\u0E34\u0E21 \u0E16\u0E31\u0E14\u0E44\u0E1B: rocketlauncher_get_decisions",
@@ -59189,7 +59189,7 @@ var STAGE_M = {
   },
   zh: {
     stageFirst: "\u5148\u95EE\u7528\u6237\u5E94\u7528\u5728\u6BCF\u4E2A\u5546\u5E97\u73B0\u5728\u5904\u4E8E\u54EA\u4E00\u6B65\uFF08\u5FC5\u586B\uFF09\uFF1Arocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live\u3002\u6839\u636E\u9879\u76EE\u63A8\u8350\uFF1A{rec}\u3002\u7EBF\u7D22\u53EA\u662F\u7EBF\u7D22\uFF0C\u4E0D\u8981\u5047\u8BBE\u662F\u9996\u6B21\u4E0A\u67B6\u3002",
-    stageAsk: "\u9879\u76EE\u663E\u793A\u5E94\u7528\u53EF\u80FD\u5DF2\u5728\u5546\u5E97\u4E2D\uFF0C\u56E0\u6B64\u6CA1\u6709\u81EA\u52A8\u9009\u62E9\u5546\u5E97\u9636\u6BB5\u3002\u8BF7\u8BE2\u95EE\u7528\u6237\uFF1A{keys}\u3002",
+    stageAsk: "\u65E0\u6CD5\u4ECE\u9879\u76EE\u5224\u65AD\u5546\u5E97\u9636\u6BB5\uFF0C\u6216\u9879\u76EE\u663E\u793A\u5E94\u7528\u53EF\u80FD\u5DF2\u5728\u5546\u5E97\u4E2D\uFF0C\u56E0\u6B64\u6CA1\u6709\u81EA\u52A8\u9009\u62E9\u3002\u4E0D\u8981\u5047\u8BBE\u662F\u9996\u6B21\u63D0\u4EA4\uFF0C\u8BF7\u8BE2\u95EE\u7528\u6237\uFF1A{keys}\u3002",
     nextRejected: "\u4E0B\u4E00\u6B65\uFF1A\u8BF7\u7528\u6237\u7C98\u8D34\u5546\u5E97\u7684\u62D2\u7EDD\u6D88\u606F\uFF0C\u5E76\u8C03\u7528 rocketlauncher_report_review\uFF08event=rejected\uFF0Crejection_text\uFF0C{store}\uFF09\u3002\u4F1A\u5F97\u5230\u4FEE\u6B63\u8BA1\u5212\u548C\u91CD\u65B0\u63D0\u4EA4\u6307\u5357\uFF08\u4E0D\u662F\u9996\u6B21\u63D0\u4EA4\u6307\u5357\uFF09\u3002",
     nextInReview: "\u4E0B\u4E00\u6B65\uFF1A{store} \u73B0\u5728\u65E0\u9700\u63D0\u4EA4\u3002\u4E0D\u8981\u521B\u5EFA\u65B0\u7684\u5E94\u7528\u8BB0\u5F55\u6216\u4E0A\u4F20\u65B0\u6784\u5EFA\u3002\u5C55\u793A rocketlauncher_submission_guide\uFF08\u7B49\u5F85 / Information Needed / \u65E0\u9700\u6784\u5EFA\u7684\u5143\u6570\u636E\u4FEE\u6B63\uFF09\uFF0C\u7ED3\u679C\u5230\u8FBE\u540E\u7528 rocketlauncher_report_review\uFF08approved \u6216 rejected\uFF09\u62A5\u544A\u3002",
     nextLive: "\u8FD9\u662F {store} \u4E0A\u5DF2\u4E0A\u67B6\u5E94\u7528\u7684\u66F4\u65B0\uFF1A\u65E0\u5C01\u95ED\u6D4B\u8BD5\uFF0C\u4FDD\u7559\u5F53\u524D\u5546\u5E97\u4FE1\u606F\u3002\u4E0B\u4E00\u6B65\uFF1Arocketlauncher_get_decisions\u3002",
@@ -59199,7 +59199,7 @@ var STAGE_M = {
   },
   hi: {
     stageFirst: "\u092A\u0939\u0932\u0947 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0938\u0947 \u092A\u0942\u091B\u0947\u0902 \u0915\u093F \u0939\u0930 \u0938\u094D\u091F\u094B\u0930 \u092E\u0947\u0902 \u0910\u092A \u0905\u092D\u0940 \u0915\u0939\u093E\u0901 \u0939\u0948 (\u091C\u093C\u0930\u0942\u0930\u0940): rocketlauncher_decide key {keys} = not_submitted | in_review | rejected | live\u0964 \u092A\u094D\u0930\u094B\u091C\u0947\u0915\u094D\u091F \u0938\u0947 \u0938\u0941\u091D\u093E\u0935: {rec}\u0964 \u0938\u0902\u0915\u0947\u0924 \u0938\u093F\u0930\u094D\u092B\u093C \u0938\u0902\u0915\u0947\u0924 \u0939\u0948\u0902; \u092A\u0939\u0932\u093E \u0932\u0949\u0928\u094D\u091A \u092E\u093E\u0928\u0915\u0930 \u0928 \u091A\u0932\u0947\u0902\u0964",
-    stageAsk: "\u092A\u094D\u0930\u094B\u091C\u0947\u0915\u094D\u091F \u092E\u0947\u0902 \u0938\u0902\u0915\u0947\u0924 \u0939\u0948\u0902 \u0915\u093F \u0910\u092A \u0936\u093E\u092F\u0926 \u092A\u0939\u0932\u0947 \u0938\u0947 \u0938\u094D\u091F\u094B\u0930 \u092E\u0947\u0902 \u0939\u0948, \u0907\u0938\u0932\u093F\u090F \u0938\u094D\u091F\u094B\u0930 \u091A\u0930\u0923 \u0905\u092A\u0928\u0947-\u0906\u092A \u0928\u0939\u0940\u0902 \u091A\u0941\u0928\u093E \u0917\u092F\u093E\u0964 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0938\u0947 \u092A\u0942\u091B\u0947\u0902: {keys}\u0964",
+    stageAsk: "\u092A\u094D\u0930\u094B\u091C\u0947\u0915\u094D\u091F \u0938\u0947 \u0938\u094D\u091F\u094B\u0930 \u091A\u0930\u0923 \u092A\u0924\u093E \u0928\u0939\u0940\u0902 \u091A\u0932\u093E, \u092F\u093E \u0938\u0902\u0915\u0947\u0924 \u0939\u0948\u0902 \u0915\u093F \u0910\u092A \u0936\u093E\u092F\u0926 \u092A\u0939\u0932\u0947 \u0938\u0947 \u0938\u094D\u091F\u094B\u0930 \u092E\u0947\u0902 \u0939\u0948, \u0907\u0938\u0932\u093F\u090F \u092F\u0939 \u0905\u092A\u0928\u0947-\u0906\u092A \u0928\u0939\u0940\u0902 \u091A\u0941\u0928\u093E \u0917\u092F\u093E\u0964 \u092A\u0939\u0932\u093E \u0938\u092C\u092E\u093F\u091F \u092E\u093E\u0928\u0915\u0930 \u0928 \u091A\u0932\u0947\u0902; \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0938\u0947 \u092A\u0942\u091B\u0947\u0902: {keys}\u0964",
     nextRejected: "\u0906\u0917\u0947: \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0938\u0947 \u0938\u094D\u091F\u094B\u0930 \u0915\u093E \u0905\u0938\u094D\u0935\u0940\u0915\u0943\u0924\u093F \u0938\u0902\u0926\u0947\u0936 \u092A\u0947\u0938\u094D\u091F \u0915\u0930\u0935\u093E\u090F\u0901 \u0914\u0930 rocketlauncher_report_review (event=rejected, rejection_text, {store}) \u0915\u0949\u0932 \u0915\u0930\u0947\u0902\u0964 \u0907\u0938\u0938\u0947 \u0938\u0941\u0927\u093E\u0930 \u092F\u094B\u091C\u0928\u093E \u0914\u0930 \u0926\u094B\u092C\u093E\u0930\u093E \u0938\u092C\u092E\u093F\u091F \u0917\u093E\u0907\u0921 \u092E\u093F\u0932\u0947\u0917\u0940 (\u092A\u0939\u0932\u093E \u0938\u092C\u092E\u093F\u091F \u0917\u093E\u0907\u0921 \u0928\u0939\u0940\u0902)\u0964",
     nextInReview: "\u0906\u0917\u0947: {store} \u092A\u0930 \u0905\u092D\u0940 \u0915\u0941\u091B \u0938\u092C\u092E\u093F\u091F \u0928\u0939\u0940\u0902 \u0915\u0930\u0928\u093E\u0964 \u0928\u092F\u093E \u0910\u092A \u0930\u093F\u0915\u0949\u0930\u094D\u0921 \u0928 \u092C\u0928\u093E\u090F\u0901, \u0928\u092F\u093E \u092C\u093F\u0932\u094D\u0921 \u0905\u092A\u0932\u094B\u0921 \u0928 \u0915\u0930\u0947\u0902\u0964 rocketlauncher_submission_guide (\u0907\u0902\u0924\u091C\u093C\u093E\u0930 / Information Needed / \u092C\u093F\u0928\u093E \u092C\u093F\u0932\u094D\u0921 \u092E\u0947\u091F\u093E\u0921\u0947\u091F\u093E \u0938\u0941\u0927\u093E\u0930) \u0926\u093F\u0916\u093E\u090F\u0901 \u0914\u0930 \u0928\u0924\u0940\u091C\u093E \u0906\u0928\u0947 \u092A\u0930 rocketlauncher_report_review (approved \u092F\u093E rejected) \u0938\u0947 \u092C\u0924\u093E\u090F\u0901\u0964",
     nextLive: "\u092F\u0939 {store} \u092A\u0930 \u0932\u093E\u0907\u0935 \u0910\u092A \u0915\u093E \u0905\u092A\u0921\u0947\u091F \u0939\u0948: \u0915\u094B\u0908 \u0915\u094D\u0932\u094B\u091C\u093C\u094D\u0921 \u091F\u0947\u0938\u094D\u091F \u0928\u0939\u0940\u0902, \u092E\u094C\u091C\u0942\u0926\u093E \u0932\u093F\u0938\u094D\u091F\u093F\u0902\u0917 \u0935\u0948\u0938\u0940 \u0939\u0940\u0964 \u0906\u0917\u0947: rocketlauncher_get_decisions\u0964",
@@ -60351,6 +60351,227 @@ function langKindOf(st) {
   return "unknown";
 }
 
+// lib/icons.mjs
+import zlib from "node:zlib";
+function decodePng(buf) {
+  const b = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
+  if (b.length < 33 || b.readUInt32BE(0) !== 2303741511) throw new Error("not a PNG");
+  let o = 8, W = 0, H = 0, depth = 0, ct = 0, inter = 0, pal = null, trns = null;
+  const idat = [];
+  while (o + 8 <= b.length) {
+    const len = b.readUInt32BE(o), type = b.toString("latin1", o + 4, o + 8), d = b.subarray(o + 8, o + 8 + len);
+    o += 12 + len;
+    if (type === "IHDR") {
+      W = d.readUInt32BE(0);
+      H = d.readUInt32BE(4);
+      depth = d[8];
+      ct = d[9];
+      inter = d[12];
+    } else if (type === "PLTE") pal = d;
+    else if (type === "tRNS") trns = d;
+    else if (type === "IDAT") idat.push(d);
+    else if (type === "IEND") break;
+  }
+  if (!W || !H || W * H > 64e6) throw new Error("bad PNG size");
+  const ch = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ct];
+  if (!ch) throw new Error("unsupported PNG color type " + ct);
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const bpp = Math.max(1, ch * depth >> 3), out = new Uint8ClampedArray(W * H * 4);
+  const passes = inter ? [[0, 0, 8, 8], [4, 0, 8, 8], [0, 4, 4, 8], [2, 0, 4, 4], [0, 2, 2, 4], [1, 0, 2, 2], [0, 1, 1, 2]] : [[0, 0, 1, 1]];
+  let p = 0;
+  for (const [x0, y0, dx, dy] of passes) {
+    const pw = Math.ceil((W - x0) / dx), ph = Math.ceil((H - y0) / dy);
+    if (pw <= 0 || ph <= 0) continue;
+    const stride = Math.ceil(pw * ch * depth / 8);
+    let prev = new Uint8Array(stride);
+    for (let y = 0; y < ph; y++) {
+      const f = raw[p++], line = new Uint8Array(raw.subarray(p, p + stride));
+      p += stride;
+      for (let i = 0; i < stride; i++) {
+        const a = i >= bpp ? line[i - bpp] : 0, u = prev[i], c = i >= bpp ? prev[i - bpp] : 0;
+        line[i] = line[i] + (f === 1 ? a : f === 2 ? u : f === 3 ? a + u >> 1 : f === 4 ? paeth(a, u, c) : 0) & 255;
+      }
+      prev = line;
+      for (let x = 0; x < pw; x++) {
+        const px = (y0 + y * dy) * W + (x0 + x * dx), q = px * 4;
+        let r, g2, bl, al = 255;
+        const s = (k) => depth === 16 ? line[(x * ch + k) * 2] : depth === 8 ? line[x * ch + k] : sub(line, x, depth);
+        if (ct === 3) {
+          const ix = s(0);
+          r = pal[ix * 3];
+          g2 = pal[ix * 3 + 1];
+          bl = pal[ix * 3 + 2];
+          if (trns && ix < trns.length) al = trns[ix];
+        } else if (ct === 0 || ct === 4) {
+          let v = s(0);
+          if (depth < 8) v = Math.round(v * 255 / ((1 << depth) - 1));
+          r = g2 = bl = v;
+          if (ct === 4) al = s(1);
+        } else {
+          r = s(0);
+          g2 = s(1);
+          bl = s(2);
+          if (ct === 6) al = s(3);
+        }
+        out[q] = r;
+        out[q + 1] = g2;
+        out[q + 2] = bl;
+        out[q + 3] = al;
+      }
+    }
+  }
+  return { width: W, height: H, data: out };
+}
+var paeth = (a, b, c) => {
+  const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+  return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+};
+var sub = (line, x, depth) => {
+  const bit = x * depth, byte = line[bit >> 3], sh = 8 - depth - (bit & 7);
+  return byte >> sh & (1 << depth) - 1;
+};
+var canvasLib2;
+async function canvas() {
+  if (canvasLib2 === void 0) {
+    try {
+      canvasLib2 = await import("@napi-rs/canvas");
+    } catch {
+      canvasLib2 = null;
+    }
+  }
+  return canvasLib2;
+}
+async function pixels(src, max = 64) {
+  const buf = typeof src === "string" ? Buffer.from((src.match(/^data:[^,]*;base64,(.*)$/) || [])[1] || "", "base64") : Buffer.from(src);
+  let img = null;
+  if (buf.length >= 8 && buf.readUInt32BE(0) === 2303741511) {
+    try {
+      img = decodePng(buf);
+    } catch {
+      img = null;
+    }
+  }
+  if (!img) {
+    const C = await canvas();
+    if (!C) return null;
+    try {
+      const im = await C.loadImage(buf), cv = C.createCanvas(im.width, im.height), cx = cv.getContext("2d");
+      cx.drawImage(im, 0, 0);
+      img = { width: im.width, height: im.height, data: cx.getImageData(0, 0, im.width, im.height).data };
+    } catch {
+      return null;
+    }
+  }
+  return { width: img.width, height: img.height, small: shrink(img, max) };
+}
+function shrink(img, max) {
+  const { width: W, height: H, data } = img, s = Math.max(1, Math.max(W, H) / max), w = Math.max(1, Math.round(W / s)), h = Math.max(1, Math.round(H / s));
+  const out = new Float64Array(w * h * 4), cnt = new Float64Array(w * h);
+  for (let y = 0; y < H; y++) {
+    const ty = Math.min(h - 1, Math.floor(y * h / H));
+    for (let x = 0; x < W; x++) {
+      const tx = Math.min(w - 1, Math.floor(x * w / W)), i = (y * W + x) * 4, a = data[i + 3] / 255, t = ty * w + tx;
+      out[t * 4] += data[i] * a + 255 * (1 - a);
+      out[t * 4 + 1] += data[i + 1] * a + 255 * (1 - a);
+      out[t * 4 + 2] += data[i + 2] * a + 255 * (1 - a);
+      out[t * 4 + 3] += data[i + 3];
+      cnt[t]++;
+    }
+  }
+  const px = new Uint8ClampedArray(w * h * 4);
+  for (let t = 0; t < w * h; t++) for (let k = 0; k < 4; k++) px[t * 4 + k] = out[t * 4 + k] / (cnt[t] || 1);
+  return { w, h, px };
+}
+var lum = (px, i) => 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+var hex3 = (r, g2, b) => "#" + [r, g2, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase();
+function uniformity({ small }) {
+  const { w, h, px } = small, n = w * h, q = /* @__PURE__ */ new Map();
+  let sr = 0, sg = 0, sb = 0, sl = 0, sl2 = 0, sa = 0;
+  for (let t = 0; t < n; t++) {
+    const i = t * 4, l = lum(px, i);
+    sr += px[i];
+    sg += px[i + 1];
+    sb += px[i + 2];
+    sa += px[i + 3];
+    sl += l;
+    sl2 += l * l;
+    const k = px[i] >> 4 << 8 | px[i + 1] >> 4 << 4 | px[i + 2] >> 4;
+    q.set(k, (q.get(k) || 0) + 1);
+  }
+  const mr = sr / n, mg = sg / n, mb = sb / n, sd = Math.sqrt(Math.max(0, sl2 / n - (sl / n) ** 2));
+  let cd = 0;
+  for (let t = 0; t < n; t++) {
+    const i = t * 4;
+    cd += Math.abs(px[i] - mr) + Math.abs(px[i + 1] - mg) + Math.abs(px[i + 2] - mb);
+  }
+  cd /= n * 3;
+  const top = Math.max(...q.values()) / n;
+  const transparent = sa / n < 8;
+  const blank = transparent || q.size <= 2 || top >= 0.985 || sd < 4 && cd < 4;
+  return { blank, transparent, unique_colors: q.size, dominant_share: +top.toFixed(3), brightness_spread: +sd.toFixed(1), color_spread: +cd.toFixed(1), average_color: hex3(mr, mg, mb) };
+}
+function ahash({ small }) {
+  const { w, h, px } = small;
+  const bg = [px[0], px[1], px[2]], far = (i) => Math.abs(px[i] - bg[0]) + Math.abs(px[i + 1] - bg[1]) + Math.abs(px[i + 2] - bg[2]) > 48;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (far((y * w + x) * 4)) {
+    if (x < x0) x0 = x;
+    if (x > x1) x1 = x;
+    if (y < y0) y0 = y;
+    if (y > y1) y1 = y;
+  }
+  if (x1 < 0 || (x1 - x0 + 1) * (y1 - y0 + 1) < w * h * 0.2) {
+    x0 = 0;
+    y0 = 0;
+    x1 = w - 1;
+    y1 = h - 1;
+  }
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1, g2 = new Float64Array(64), c = new Float64Array(64);
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const t = Math.min(7, Math.floor((y - y0) * 8 / bh)) * 8 + Math.min(7, Math.floor((x - x0) * 8 / bw));
+    g2[t] += lum(px, (y * w + x) * 4);
+    c[t]++;
+  }
+  for (let t = 0; t < 64; t++) g2[t] /= c[t] || 1;
+  const m = g2.reduce((a, b) => a + b, 0) / 64;
+  let bits = "";
+  for (let t = 0; t < 64; t++) bits += g2[t] > m ? "1" : "0";
+  return bits;
+}
+var hamming = (a, b) => {
+  let d = 0;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+  return d;
+};
+var colorDist = (a, b) => {
+  const p = (s) => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16));
+  const x = p(a), y = p(b);
+  return Math.round(Math.sqrt(x.reduce((s, v, i) => s + (v - y[i]) ** 2, 0)));
+};
+async function iconCheck(icons) {
+  const out = {};
+  const H = {};
+  for (const k of ["ios", "android"]) {
+    const ic = icons && icons[k];
+    if (!ic || !ic.dataUrl) continue;
+    const p = await pixels(ic.dataUrl, 64);
+    if (!p) {
+      out[k] = { path: ic.path, readable: false };
+      continue;
+    }
+    const u = uniformity(p);
+    H[k] = { hash: ahash(p), color: u.average_color, blank: u.blank };
+    out[k] = { path: ic.path, width: p.width, height: p.height, ...u };
+  }
+  if (!Object.keys(out).length) return null;
+  if (H.ios && H.android) {
+    const d = hamming(H.ios.hash, H.android.hash), cd = colorDist(H.ios.color, H.android.color);
+    const match = H.ios.blank !== H.android.blank ? false : H.ios.blank ? cd < 40 : d <= 20 && cd < 90;
+    out.match = { similar: match, hash_distance: d, of: 64, color_distance: cd };
+  }
+  return out;
+}
+
 // lib/engine.mjs
 var LANGS = ["en", "ko", "th", "zh", "hi"];
 var HOME = process.env.ROCKETLAUNCHER_HOME || path5.join(os3.homedir(), ".rocketlauncher");
@@ -60440,6 +60661,18 @@ async function connect({ source, github_url, path: p, lang: lang2, store_stage }
   }
   const A = Analyzer.analyze(project);
   if (!A.platforms.android && !A.platforms.ios) throw new UserError(t("err.noapp"), "noapp");
+  try {
+    A.iconCheck = await iconCheck(A.icons);
+  } catch (e) {
+    A.iconCheck = null;
+  }
+  const IC = A.iconCheck;
+  if (IC && A.icon) {
+    for (const [a, b] of [["ios", "android"], ["android", "ios"]]) if (IC[a] && IC[a].blank && A.icon.path === IC[a].path && IC[b] && !IC[b].blank && A.icons[b]) A.icon = { ...A.icons[b] };
+  }
+  if (source !== "sample") await verifyPrivacyUrls(A);
+  if (source !== "sample") A.stageRecords = earlierStages(A);
+  Analyzer.refreshIssues(A);
   A.brandColor = A.brandColor || (hasGraphics ? await Gfx.avgColor(A.icon && A.icon.dataUrl) : "#2f6f5e");
   const id = Flow.slugOf(A).toLowerCase().replace(/[^a-z0-9.-]+/g, "-").slice(0, 40).replace(/^[^a-z0-9]+/, "app") + "-" + crypto2.randomBytes(5).toString("hex");
   const st = { id, v: 1, createdAt: (/* @__PURE__ */ new Date()).toISOString(), lang: L, sample: source === "sample", source: project.source, A, dec: {}, approved: {}, review: {}, generated: null };
@@ -60448,6 +60681,14 @@ async function connect({ source, github_url, path: p, lang: lang2, store_stage }
   } catch (e) {
     st.X = null;
     st.scanError = String(e.message || e);
+  }
+  for (const k of Flow.storesOf(A)) {
+    const r = Flow.stageRecorded({ ...A, stageRecords: null }, k);
+    if (r && !(store_stage && (typeof store_stage === "string" || store_stage[k] != null))) {
+      st.dec["stage:" + k] = r.stage;
+      st.stageSource = { ...st.stageSource || {}, [k]: r.source };
+      syncStage(st, k);
+    }
   }
   if (store_stage) {
     for (const k of Flow.storesOf(A)) {
@@ -60460,6 +60701,49 @@ async function connect({ source, github_url, path: p, lang: lang2, store_stage }
   }
   save(st);
   return { st, report: report(st, L) };
+}
+async function verifyPrivacyUrls(A) {
+  const L = A.listing;
+  if (!L || !(L.privacyCandidates || []).length || process.env.ROCKETLAUNCHER_VERIFY_URLS === "0") return;
+  const urls = [...new Set(L.privacyCandidates.map((c) => c.url))].slice(0, 4), res = {};
+  await Promise.all(urls.map(async (u) => {
+    const go = (m) => fetch(u, { method: m, redirect: "follow", signal: AbortSignal.timeout(4e3), headers: { "User-Agent": "Rocket-Launcher-link-check" } });
+    try {
+      let r = await go("HEAD");
+      if (r.status === 405 || r.status === 403 || r.status === 501) r = await go("GET");
+      res[u] = { status: r.status, ok: r.ok };
+    } catch (e) {
+      res[u] = { status: null, ok: false, error: String(e && (e.cause && e.cause.code || e.name) || e).slice(0, 60) };
+    }
+  }));
+  L.privacyCandidates.forEach((c) => {
+    c.check = res[c.url];
+  });
+  const chosen = L.privacyUrl && res[L.privacyUrl];
+  L.privacyDead = !!(chosen && chosen.status && !chosen.ok);
+}
+function earlierStages(A) {
+  const out = {};
+  if (!A.pkg) return out;
+  let best = null;
+  for (const id of listProjects()) {
+    let o;
+    try {
+      o = JSON.parse(fs5.readFileSync(path5.join(dirOf(id), "state.json"), "utf8"));
+    } catch {
+      continue;
+    }
+    if (!o || !o.A || o.A.pkg !== A.pkg || o.sample) continue;
+    if (!best || String(o.updatedAt || "") > String(best.updatedAt || "")) best = o;
+  }
+  if (!best) return out;
+  for (const k of ["play", "apple"]) {
+    const R = (best.review || {})[k], d = (best.dec || {})["stage:" + k];
+    const fromReview = R && { in_review: "in_review", submitted: "in_review", rejected: "rejected", fixing: "rejected", live: "live", approved: "live" }[R.status];
+    const stage = fromReview || (d && Flow.STAGES.includes(d) && d !== "not_submitted" ? d : null);
+    if (stage) out[k] = { stage, source: "earlier Rocket Launcher project " + best.id + (best.updatedAt ? " (" + String(best.updatedAt).slice(0, 10) + ")" : "") };
+  }
+  return out;
 }
 function syncStage(st, k) {
   const s = st.dec["stage:" + k], R = st.review[k];
@@ -60492,12 +60776,14 @@ var EV = { "play-url": "Google Play link", "apple-url": "App Store link", "fastl
 function stageInfo(st, L) {
   const t = T(L), o = {};
   for (const k of Flow.storesOf(st.A)) {
-    const h = Flow.stageHints(st.A, k), rec = Flow.stageRec(st.A, k), cur = Flow.stageOf(st.dec, k);
+    const h = Flow.stageHints(st.A, k), cur = Flow.stageOf(st.dec, k), rec = Flow.stageRec(st.A, k, st.dec);
     o[STORE_NAME[k]] = {
       key: "stage:" + k,
       current: cur,
       current_label: cur ? t("stage." + cur) : null,
       recommended: rec,
+      recommended_label: rec === "unknown" ? "unknown \u2014 please confirm" : t("stage." + rec),
+      recorded: cur && st.stageSource && st.stageSource[k] ? st.stageSource[k] : h.recorded ? `${h.recorded.stage} (${h.recorded.source})` : void 0,
       evidence: h.evidence.map((e) => EV[e] || e),
       earlier_upload_hint: h.weak || void 0,
       store_url: h.url || void 0
@@ -60508,7 +60794,10 @@ function stageInfo(st, L) {
 var undecidedStages = (st) => Flow.storesOf(st.A).filter((k) => !Flow.stageOf(st.dec, k));
 function stageNext(st, L) {
   const u = undecidedStages(st);
-  if (u.length) return msg(L, "stageFirst", { keys: u.map((k) => "stage:" + k).join(", "), rec: u.map((k) => `${STORE_NAME[k]} = ${Flow.stageRec(st.A, k)}`).join(", ") });
+  if (u.length) return msg(L, "stageFirst", { keys: u.map((k) => "stage:" + k).join(", "), rec: u.map((k) => {
+    const r = Flow.stageRec(st.A, k, st.dec);
+    return `${STORE_NAME[k]} = ${r === "unknown" ? "unknown \u2014 please confirm" : r}`;
+  }).join(", ") });
   const ks = Flow.storesOf(st.A);
   const rj = ks.filter((k) => st.review[k] && st.review[k].status === "rejected" && !st.review[k].text);
   if (rj.length) return msg(L, "nextRejected", { store: rj.map((k) => "store=" + k).join(", ") });
@@ -60538,7 +60827,10 @@ function report(st, lang2) {
       icon_found: !!A.icon,
       screenshots_found: A.screenshots.length,
       source: st.source,
-      privacy_url_found: A.developer && A.developer.privacyUrl || null
+      privacy_url_found: A.developer && A.developer.privacyUrl || null,
+      ...privacyInfo(A),
+      icon_check: A.iconCheck || void 0,
+      ads_hint: A.adsHint ? { note: "An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.", files: A.adsHint.files } : void 0
     },
     store_stage: stageInfo(st, L),
     readiness: A.readiness,
@@ -60555,6 +60847,15 @@ function report(st, lang2) {
     release_checks: releaseSafe(st, L),
     ...learned(st, L),
     next: stageNext(st, L) || msg(L, "nextDecide", { n: Flow.decisions(A, st.dec).length })
+  };
+}
+function privacyInfo(A) {
+  const L = A.listing || {}, C = L.privacyCandidates || [];
+  if (!C.length) return {};
+  return {
+    privacy_url_source: L.privacySource || void 0,
+    privacy_url_candidates: C.length > 1 || L.privacyConflict || L.privacyWeak || L.privacyDead ? C.map((c) => ({ url: c.url, file: c.file, source: c.source, ...c.check ? { http_status: c.check.status, reachable: c.check.ok } : {} })) : void 0,
+    privacy_url_warning: L.privacyConflict ? "Privacy policy URLs in the project disagree; the one from the most authoritative source is shown. Confirm which is current (or set privacy_url in rocketlauncher.json)." : L.privacyWeak ? "A privacy URL was found only in a loose website file, not in the app config, store metadata or README, so it was not adopted. Confirm it is current (or set privacy_url in rocketlauncher.json)." : L.privacyDead ? "The privacy policy URL did not respond with a page (HTTP " + ((C.find((c) => c.url === L.privacyUrl) || {}).check || {}).status + "). Check it before submitting." : void 0
   };
 }
 function releaseSafe(st, L) {
@@ -61213,7 +61514,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.2";
+var VERSION = "0.2.3";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.

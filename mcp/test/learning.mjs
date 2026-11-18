@@ -3,6 +3,7 @@
    guide, review notes); known built-in rejection → built-in plan + occurrence only; dedup; approval → times_passed_after;
    anonymized export; sanitizing; forget; demo sample never writes; no network calls.
    Run: node test/learning.mjs */
+process.env.ROCKETLAUNCHER_VERIFY_URLS = process.env.ROCKETLAUNCHER_VERIFY_URLS || '0';   // no link checks to fixture hosts
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 import http from 'node:http'; import https from 'node:https'; import net from 'node:net'; import tls from 'node:tls'; import dns from 'node:dns';
 
@@ -31,7 +32,7 @@ async function connect(files) {
   const dir = path.join(HOME, 'fx-' + (++n));
   const all = { 'README.md': '# Demo Tool\n\nA simple unit converter.\n\nContact: help@demo-tool.example\n', 'docs/privacy.html': '<html>Privacy</html>', 'ios/Runner.xcodeproj/project.pbxproj': PBX, 'ios/Runner/Info.plist': INFO, ...files };
   for (const [p, c] of Object.entries(all)) { const f = path.join(dir, p); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, c); }
-  return (await E.connect({ source: 'path', path: dir }, { allowPath: true })).st;
+  return (await E.connect({ source: 'path', path: dir, store_stage: 'not_submitted' }, { allowPath: true })).st;
 }
 async function toReview(st) { E.decide(st, { accept_all_recommended: true }, 'en'); await E.generate(st, {}, { allowPath: true }); E.approve(st, 'apple', 'yes submit', 'en'); E.review(st, { store: 'apple', event: 'submitted' }, 'en'); return st; }
 const lessonsFile = () => JSON.parse(fs.readFileSync(LFILE, 'utf8'));

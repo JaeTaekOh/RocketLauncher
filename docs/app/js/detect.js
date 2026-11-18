@@ -9,7 +9,7 @@
   const DELETE_I18N = /['"][^'"]*(?:acct\.delete|account_?delete|delete_?account|deleteAccount|close_account|deactivate_account|withdraw_account|회원_?탈퇴|계정_?삭제)[^'"]*['"]\s*:/i;
 
   const LOC_TOKEN = /(?:\b(?:lat|lng|lon|latitude|longitude|coords?|coordinate|geopoint|cllocation|latlng|geolocator|fusedlocationproviderclient|fusedlocation|geolocation)\b|getCurrentPosition|watchPosition|[?&](?:lat|lng|lon|latitude|longitude)=)/i;
-  const NET_TOKEN = /\b(?:fetch|axios|got\b|superagent|XMLHttpRequest|URLSession|HttpClient|Retrofit|OkHttp|CapacitorHttp|firestore|collection\s*\(|\.setData\s*\(|supabase|\.from\s*\()\b|http\.(?:get|post|put|patch|delete)\s*\(|\bdio\b/i;
+  const NET_TOKEN = /\b(?:fetch|axios|got|superagent|XMLHttpRequest|URLSession|HttpClient|Retrofit|OkHttp|CapacitorHttp)\b|FirebaseFirestore|\bfirestore\b|collection\s*\(|\.setData\s*\(|\bsupabase\b|\.from\s*\(|http\.(?:get|post|put|patch|delete)\s*\(|\bdio\b/i;
   const WRAP_FETCH = /\b(?:getJson|postJson|putJson|apiGet|apiPost|requestJson|apiRequest|httpRequest|sendRequest|apiCall|env\.fetch|api\.(?:get|post|put|patch|delete))\s*\(/;
   const QUERY_SEND = /[?&](?:lat|lng|lon|latitude|longitude)=|['"`][^'"`]{0,80}\b(?:lat|lng|lon|latitude|longitude)=|encodeURIComponent\s*\(\s*(?:loc|pos|position|coords?|coordinate|location)\.(?:lat|lng|lon|latitude|longitude)/i;
 

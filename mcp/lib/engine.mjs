@@ -9,6 +9,7 @@ import { msg } from './messages.mjs';
 import { withLessons, relevantLessons, listLessons } from './lessons.mjs';
 import { shareLesson, shareCorrection } from './shared.mjs';
 import * as RL from './release.mjs';
+import { iconCheck } from './icons.mjs';
 
 /* Texts come in five languages; English is the default whenever lang is omitted or unknown. */
 export const LANGS = ['en', 'ko', 'th', 'zh', 'hi'];
@@ -75,11 +76,25 @@ export async function connect({ source, github_url, path: p, lang, store_stage }
   }
   const A = Analyzer.analyze(project);
   if (!A.platforms.android && !A.platforms.ios) throw new UserError(t('err.noapp'), 'noapp');
+  /* 0.2.3: icon pixels (blank / solid icon, iOS ↔ Android match), privacy URL reachability, stage recorded for the same app earlier */
+  try { A.iconCheck = await iconCheck(A.icons); } catch (e) { A.iconCheck = null; }
+  /* never build store graphics from a blank icon when the other platform has real artwork */
+  const IC = A.iconCheck;
+  if (IC && A.icon) for (const [a, b] of [['ios', 'android'], ['android', 'ios']]) if (IC[a] && IC[a].blank && A.icon.path === IC[a].path && IC[b] && !IC[b].blank && A.icons[b]) A.icon = { ...A.icons[b] };
+  if (source !== 'sample') await verifyPrivacyUrls(A);
+  if (source !== 'sample') A.stageRecords = earlierStages(A);
+  Analyzer.refreshIssues(A);
   A.brandColor = A.brandColor || (hasGraphics ? await Gfx.avgColor(A.icon && A.icon.dataUrl) : '#2f6f5e');
   const id = Flow.slugOf(A).toLowerCase().replace(/[^a-z0-9.-]+/g, '-').slice(0, 40).replace(/^[^a-z0-9]+/, 'app') + '-' + crypto.randomBytes(5).toString('hex');
   const st = { id, v: 1, createdAt: new Date().toISOString(), lang: L, sample: source === 'sample', source: project.source, A, dec: {}, approved: {}, review: {}, generated: null };
   /* 0.2.0: code scan for release checks (native libraries, required-reason APIs, deletion path, policy signals). Paths only, never secrets. */
   try { st.X = RL.scanProject(project, A); } catch (e) { st.X = null; st.scanError = String(e.message || e); }
+  /* A stage written in the project config (store_stage / app_store_state / play_state) is the developer's own record: it is used
+     unless store_stage is passed here. A stage from an earlier Rocket Launcher project is only recommended (the user confirms). */
+  for (const k of Flow.storesOf(A)) {
+    const r = Flow.stageRecorded({ ...A, stageRecords: null }, k);
+    if (r && !(store_stage && (typeof store_stage === 'string' || store_stage[k] != null))) { st.dec['stage:' + k] = r.stage; st.stageSource = { ...(st.stageSource || {}), [k]: r.source }; syncStage(st, k); }
+  }
   /* Optional store_stage: a stage for every store ('live') or per store ({ play: 'live', apple: 'in_review' }). Never guessed silently. */
   if (store_stage) {
     for (const k of Flow.storesOf(A)) {
@@ -91,6 +106,39 @@ export async function connect({ source, github_url, path: p, lang, store_stage }
   }
   save(st);
   return { st, report: report(st, L) };
+}
+
+/* 0.2.3: does the privacy URL respond? HEAD (GET if HEAD is refused), 4 s timeout, never fatal. Off with ROCKETLAUNCHER_VERIFY_URLS=0. */
+async function verifyPrivacyUrls(A) {
+  const L = A.listing; if (!L || !(L.privacyCandidates || []).length || process.env.ROCKETLAUNCHER_VERIFY_URLS === '0') return;
+  const urls = [...new Set(L.privacyCandidates.map(c => c.url))].slice(0, 4), res = {};
+  await Promise.all(urls.map(async u => {
+    const go = m => fetch(u, { method: m, redirect: 'follow', signal: AbortSignal.timeout(4000), headers: { 'User-Agent': 'Rocket-Launcher-link-check' } });
+    try { let r = await go('HEAD'); if (r.status === 405 || r.status === 403 || r.status === 501) r = await go('GET'); res[u] = { status: r.status, ok: r.ok }; }
+    catch (e) { res[u] = { status: null, ok: false, error: String(e && (e.cause && e.cause.code || e.name) || e).slice(0, 60) }; }
+  }));
+  L.privacyCandidates.forEach(c => { c.check = res[c.url]; });
+  const chosen = L.privacyUrl && res[L.privacyUrl];
+  /* a definite HTTP error (404, 410, 5xx) is reported; a network failure on this computer is only noted */
+  L.privacyDead = !!(chosen && chosen.status && !chosen.ok);
+}
+/* The same app (same package / bundle id) connected earlier on this computer with a stage the user chose or a review in progress. */
+function earlierStages(A) {
+  const out = {}; if (!A.pkg) return out;
+  let best = null;
+  for (const id of listProjects()) {
+    let o; try { o = JSON.parse(fs.readFileSync(path.join(dirOf(id), 'state.json'), 'utf8')); } catch { continue; }
+    if (!o || !o.A || o.A.pkg !== A.pkg || o.sample) continue;
+    if (!best || String(o.updatedAt || '') > String(best.updatedAt || '')) best = o;
+  }
+  if (!best) return out;
+  for (const k of ['play', 'apple']) {
+    const R = (best.review || {})[k], d = (best.dec || {})['stage:' + k];
+    const fromReview = R && ({ in_review: 'in_review', submitted: 'in_review', rejected: 'rejected', fixing: 'rejected', live: 'live', approved: 'live' })[R.status];
+    const stage = fromReview || (d && Flow.STAGES.includes(d) && d !== 'not_submitted' ? d : null);
+    if (stage) out[k] = { stage, source: 'earlier Rocket Launcher project ' + best.id + (best.updatedAt ? ' (' + String(best.updatedAt).slice(0, 10) + ')' : '') };
+  }
+  return out;
 }
 
 /* ---------- stage helpers (0.1.5) ---------- */
@@ -118,8 +166,10 @@ const EV = { 'play-url': 'Google Play link', 'apple-url': 'App Store link', 'fas
 function stageInfo(st, L) {
   const t = T(L), o = {};
   for (const k of Flow.storesOf(st.A)) {
-    const h = Flow.stageHints(st.A, k), rec = Flow.stageRec(st.A, k), cur = Flow.stageOf(st.dec, k);
+    const h = Flow.stageHints(st.A, k), cur = Flow.stageOf(st.dec, k), rec = Flow.stageRec(st.A, k, st.dec);
     o[STORE_NAME[k]] = { key: 'stage:' + k, current: cur, current_label: cur ? t('stage.' + cur) : null, recommended: rec,
+      recommended_label: rec === 'unknown' ? 'unknown — please confirm' : t('stage.' + rec),
+      recorded: cur && st.stageSource && st.stageSource[k] ? st.stageSource[k] : h.recorded ? `${h.recorded.stage} (${h.recorded.source})` : undefined,
       evidence: h.evidence.map(e => EV[e] || e), earlier_upload_hint: h.weak || undefined, store_url: h.url || undefined };
   }
   return o;
@@ -127,7 +177,7 @@ function stageInfo(st, L) {
 const undecidedStages = st => Flow.storesOf(st.A).filter(k => !Flow.stageOf(st.dec, k));
 function stageNext(st, L) {
   const u = undecidedStages(st);
-  if (u.length) return msg(L, 'stageFirst', { keys: u.map(k => 'stage:' + k).join(', '), rec: u.map(k => `${STORE_NAME[k]} = ${Flow.stageRec(st.A, k)}`).join(', ') });
+  if (u.length) return msg(L, 'stageFirst', { keys: u.map(k => 'stage:' + k).join(', '), rec: u.map(k => { const r = Flow.stageRec(st.A, k, st.dec); return `${STORE_NAME[k]} = ${r === 'unknown' ? 'unknown — please confirm' : r}`; }).join(', ') });
   const ks = Flow.storesOf(st.A);
   const rj = ks.filter(k => st.review[k] && st.review[k].status === 'rejected' && !st.review[k].text);
   if (rj.length) return msg(L, 'nextRejected', { store: rj.map(k => 'store=' + k).join(', ') });
@@ -148,7 +198,8 @@ export function report(st, lang) {
     app: { name: appName(st, L), package: A.pkg || null, version: A.version, platforms: Object.keys(A.platforms).filter(k => A.platforms[k]), framework: A.framework,
       targetSdk: (A.android && A.android.targetSdk) || null, categories: A.categories.map(k => Gen.CAT[k] ? `${Gen.CAT[k][L][1]} (${Gen.CAT[k].play})` : k),
       sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k), languages_in_app: A.locales, icon_found: !!A.icon, screenshots_found: A.screenshots.length,
-      source: st.source, privacy_url_found: (A.developer && A.developer.privacyUrl) || null },
+      source: st.source, privacy_url_found: (A.developer && A.developer.privacyUrl) || null, ...privacyInfo(A), icon_check: A.iconCheck || undefined,
+      ads_hint: A.adsHint ? { note: 'An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.', files: A.adsHint.files } : undefined },
     store_stage: stageInfo(st, L),
     readiness: A.readiness, counts: c,
     issues: issues.map(i => ({ key: i.fix && i.fix !== 'info' ? Flow.issueKey(i) : null, severity: t('sev.' + i.sev), sev: i.sev, store: i.plat === 'android' ? 'Google Play' : i.plat === 'ios' ? 'App Store' : 'both',
@@ -157,6 +208,15 @@ export function report(st, lang) {
     ...learned(st, L),
     next: stageNext(st, L) || msg(L, 'nextDecide', { n: Flow.decisions(A, st.dec).length })
   };
+}
+function privacyInfo(A) {
+  const L = A.listing || {}, C = L.privacyCandidates || [];
+  if (!C.length) return {};
+  return { privacy_url_source: L.privacySource || undefined,
+    privacy_url_candidates: C.length > 1 || L.privacyConflict || L.privacyWeak || L.privacyDead ? C.map(c => ({ url: c.url, file: c.file, source: c.source, ...(c.check ? { http_status: c.check.status, reachable: c.check.ok } : {}) })) : undefined,
+    privacy_url_warning: L.privacyConflict ? 'Privacy policy URLs in the project disagree; the one from the most authoritative source is shown. Confirm which is current (or set privacy_url in rocketlauncher.json).'
+      : L.privacyWeak ? 'A privacy URL was found only in a loose website file, not in the app config, store metadata or README, so it was not adopted. Confirm it is current (or set privacy_url in rocketlauncher.json).'
+      : L.privacyDead ? 'The privacy policy URL did not respond with a page (HTTP ' + ((C.find(c => c.url === L.privacyUrl) || {}).check || {}).status + '). Check it before submitting.' : undefined };
 }
 function releaseSafe(st, L) { try { return RL.releaseChecks(st, L); } catch (e) { return { error: 'Release checks could not run: ' + e.message }; } }
 /* Lessons learned on this machine from earlier store reviews (any project). Warnings or reminders only; built-in checks stay the default. */

@@ -69,10 +69,59 @@
     if (P.some(p => /(^|\/)fastlane\/(Deliverfile|metadata\/review_information)/i.test(p))) L.apple.evidence.push('fastlane-deliver');
     if (P.some(p => /(^|\/)fastlane\/metadata\/android\/[^/]+\/changelogs\//i.test(p))) L.play.evidence.push('play-changelogs');
     const vc = A.android && +A.android.versionCode; if (vc >= 2) L.play.weak = 'versionCode ' + vc;
-    const bn = A.ios && +A.ios.build; if (bn >= 2) L.apple.weak = 'build ' + bn;
-    if (!L.privacyUrl) { const u = (all.match(/https?:\/\/[^\s"'<>)\]]*privacy[^\s"'<>)\]]*/gi) || []).find(x => !/(apple|google|firebase|android|admob|policies\.google)\.com|developer\.|example\.|<your-site>/i.test(x)); if (u) L.privacyUrl = u.replace(/[.,;]+$/, ''); }
+    const bn = A.ios && +(A.ios.build || (A.ios.plist && A.ios.plist.CFBundleVersion)); if (bn >= 2) L.apple.weak = 'build ' + bn;
+    /* an App Store Connect app record mentioned in the docs ("App Store app 1234567890", "Apple ID: 1234567890") = the app exists there */
+    const aid = !L.apple.appId && all.match(/(?:App Store(?: Connect)?(?: app)?(?: record)?|Apple ID|ASC app)\s*(?:id|ID|#|:)?\s*:?\s*(\d{9,10})\b/);
+    if (aid) L.apple.weak = 'App Store Connect app ' + aid[1] + (L.apple.weak ? ', ' + L.apple.weak : '');
+    privacyCandidates(F, A, L);
+    if (A.projectConfig && /^https?:\/\//.test(A.projectConfig.support_url || '')) L.supportUrl = A.projectConfig.support_url;
     L.play.langs = Object.keys(L.play.copy); L.apple.langs = Object.keys(L.apple.copy);
     return L;
+  }
+  /* 0.2.3: iOS = the 1024 App Store icon of AppIcon.appiconset (from Contents.json, else by file name); Android = Play / xxxhdpi launcher icon. */
+  function iconsByPlatform(F, imgs) {
+    const pick = p => p ? { path: p, dataUrl: F[p].dataUrl } : null;
+    const sets = imgs.filter(p => /AppIcon[^/]*\.appiconset\/[^/]+\.png$/i.test(p) && !/(^|\/)(Pods|build|DerivedData)\//.test(p));
+    let ios = null;
+    for (const c of find(F, /AppIcon[^/]*\.appiconset\/Contents\.json$/)) {
+      let j = null; try { j = JSON.parse(F[c].text); } catch (e) { }
+      const dir = c.replace(/Contents\.json$/, '');
+      const im = ((j && j.images) || []).filter(x => x.filename && (x.size === '1024x1024' || x.idiom === 'ios-marketing') && !x.appearances).map(x => dir + x.filename).find(p => F[p] && F[p].dataUrl);
+      if (im) { ios = im; break; }
+    }
+    ios = ios || sets.find(p => /1024|512@2x|marketing/i.test(p)) || sets.slice().sort((a, b) => b.length - a.length)[0] || null;
+    const and = imgs.find(p => /ic_launcher-playstore\.png$|(^|\/)playstore[^/]*\.png$/i.test(p)) || imgs.find(p => /mipmap-xxxhdpi\/ic_launcher\.(png|webp)$/i.test(p)) || imgs.find(p => /mipmap-[^/]+\/ic_launcher\.(png|webp)$/i.test(p)) || null;
+    return { ios: pick(ios), android: pick(and) };
+  }
+  /* 0.2.3: privacy policy URL candidates, best source first:
+     0 project config (rocketlauncher.json) · 1 store metadata (fastlane privacy_url) · 2 app config (app.json, Info.plist, strings, capacitor
+     config, config scripts) · 3 the current README · 4 any other page (weak: only a hint). Archived / old / backup / build folders are skipped.
+     Candidates that disagree are all reported with a warning; a URL seen only in a loose page is never adopted silently. */
+  const OLD_RE = /(^|\/)(archive|archived|archives|old|backup|backups|bak|dist|build|out|legacy|deprecated|previous|prev|site-old|old-site|_old|[^/]*[-_.](old|bak|backup|orig|copy))\/|\.(bak|orig|old)$|(^|\/)[^/]*[-_.](old|backup)\.[a-z]+$/i;
+  const PRIV_URL_RE = /https?:\/\/[^\s"'<>)\]\\]*(privacy|개인정보|policy)[^\s"'<>)\]\\]*/gi;
+  const THIRD_PARTY = /(apple|google|firebase|android|admob|policies\.google|facebook|github|w3|schema|cloudflare|opinet|kakao|naver|microsoft)\.(com|org|io|co\.kr)|developer\.|example\.|<your-site>|localhost|127\.0\.0\.1/i;
+  const normUrl = u => String(u).replace(/[.,;:]+$/, '').replace(/#.*$/, '').replace(/\/+$/, '').replace(/^(https:\/\/[^/]+)/, m => m.toLowerCase());
+  function privacyCandidates(F, A, L) {
+    const C = [], push = (url, file, priority, source) => { if (!url || !/^https?:\/\//i.test(url) || (priority > 0 && THIRD_PARTY.test(url))) return; const u = normUrl(url); if (!C.some(c => c.url === u && c.file === file)) C.push({ url: u, file, priority, source }); };
+    const cfg = A.projectConfig;
+    if (cfg && cfg.privacy_url) push(String(cfg.privacy_url), cfg._file || 'rocketlauncher.json', 0, 'project config');
+    const P = Object.keys(F).filter(p => F[p].text != null && !OLD_RE.test(p));
+    for (const p of P) if (/fastlane\/metadata\/[^/]+\/privacy_url\.txt$/i.test(p)) push(F[p].text.trim(), p, 1, 'store metadata');
+    const urlsIn = t => (String(t).match(PRIV_URL_RE) || []).filter(u => /privacy|개인정보/i.test(u));
+    const appCfg = P.filter(p => /(^|\/)(app\.json|app\.config\.[jt]s|capacitor\.config\.(json|ts|js)|Info\.plist|strings\.xml|[^/]*\.arb)$/i.test(p) || (F[p].code && /(^|\/)[^/]*(config|constants?|settings|env|links?)[^/]*\.[cm]?[jt]sx?$|\.(dart|kt|swift)$/i.test(p) && !BUNDLED_RE.test(p)));
+    for (const p of appCfg) urlsIn(F[p].text).forEach(u => push(u, p, 2, 'app config'));
+    const rd = shortest(P.filter(p => /(^|\/)README(\.md)?$/i.test(p)));
+    if (rd) urlsIn(F[rd].text).forEach(u => push(u, rd, 3, 'README'));
+    for (const p of P) if (!F[p].code && p !== rd && !appCfg.includes(p) && !/privacy_url\.txt$/i.test(p) && p !== (cfg && cfg._file)) urlsIn(F[p].text).forEach(u => push(u, p, 4, 'other file'));
+    C.sort((a, b) => a.priority - b.priority);
+    L.privacyCandidates = C.slice(0, 8);
+    const strong = C.filter(c => c.priority <= 3), urls = [...new Set(C.map(c => c.url))];
+    L.privacyUrl = strong.length ? strong[0].url : null;
+    L.privacySource = strong.length ? strong[0].source + ' (' + strong[0].file + ')' : null;
+    /* disagreement: any other URL, except loose pages contradicting an explicit project config */
+    const others = L.privacyUrl ? C.filter(c => c.url !== L.privacyUrl) : [];
+    L.privacyConflict = others.length > 0 && !(strong[0].priority === 0 && others.every(c => c.priority === 4));
+    L.privacyWeak = !L.privacyUrl && C.length > 0;
   }
   function gradleDeps(g) {
     const out = []; const re = /(?:implementation|api|kapt|ksp)\s*\(?\s*(?:platform\()?\s*["']([^"']+)["']/g; let m;
@@ -95,20 +144,34 @@
     return { title, summary: summary.replace(/[*_`]/g, ''), features: features.slice(0, 8) };
   }
   const has = (hay, re) => re.test(hay);
+  /* Bundled, generated or minified scripts never count as evidence on their own. */
+  const BUNDLED_RE = /(^|\/)(node_modules|vendor|vendors|third_party|dist|build|generated|bundle|bundles|\.next|\.expo|Pods)\/|\.(min|bundle|chunk)\.[cm]?js$|(^|\/)(cordova|cordova_plugins|native-bridge|polyfills?)\.js$/i;
+  const stripHashComments = s => String(s || '').replace(/(^|\s)#[^\n]*/g, '$1');
+  /* pubspec.yaml: only the dependencies / dev_dependencies blocks, without comments */
+  function pubspecDeps(y) {
+    const out = []; let on = false;
+    for (const l of stripHashComments(y).split(/\r?\n/)) { if (/^\S/.test(l)) on = /^(dependencies|dev_dependencies|dependency_overrides)\s*:/.test(l); else if (on) out.push(l); }
+    return out.join('\n');
+  }
 
+  /* Category keywords in en / ko / th / zh / hi (+ a few common others). English stems use word boundaries so "store" in
+     "App Store" or "map" inside another word does not count. 0.2.3: navigation (maps, routes, fuel / gas stations, parking, EV charging). */
   const CATS = {
-    finance: /budget|expense|ledger|money|receipt|spending|finance|wallet|가계부|예산|지출|영수증|งบ|รายจ่าย|ใบเสร็จ/i,
-    health: /health|fitness|workout|step|sleep|water|diet|calorie|건강|운동|수면|สุขภาพ|ออกกำลัง/i,
-    education: /learn|study|quiz|vocab|lesson|course|flashcard|공부|학습|단어|เรียน/i,
-    productivity: /todo|task|note|calendar|planner|reminder|memo|할 ?일|메모|일정|โน้ต|งาน/i,
-    photography: /photo|camera|filter|edit image|사진|ภาพถ่าย/i,
-    travel: /travel|trip|map|route|hotel|flight|여행|เที่ยว/i,
-    food: /recipe|food|restaurant|menu|cafe|coffee|요리|음식|메뉴|อาหาร/i,
-    shopping: /shop|store|cart|deal|coupon|쇼핑|ร้านค้า/i,
-    tools: /calculator|scanner|converter|utility|qr|flashlight|계산기|도구|เครื่องคิดเลข/i,
-    games: /game|puzzle|score|level|게임|เกม/i,
-    lifestyle: /lifestyle|diary|habit|daily|일기|습관|ไลฟ์สไตล์/i
+    navigation: /\b(navigation|navigate|navi|maps?|directions?|routes?|routing|gps|nearby|near me|gas stations?|petrol|fuel|gasoline|diesel|lpg|filling stations?|service stations?|ev charg\w*|charging stations?|parking|traffic|commute)\b|주유소|주유|유가|기름값|휘발유|경유|충전소|주차|지도|길찾기|길 안내|내비|네비|교통|น้ำมัน|ปั๊ม|แผนที่|นำทาง|เส้นทาง|ที่จอดรถ|สถานีชาร์จ|加油站|油价|汽油|柴油|充电站|停车|地图|导航|導航|路线|पेट्रोल|डीज़ल|ईंधन|नक्शा|मैप|नेविगेशन|रास्ता|ガソリン|地図|ナビ/i,
+    finance: /\b(budget\w*|expenses?|ledger|money|receipts?|spending|finance|financial|wallet|invest\w*|stocks?|crypto)\b|가계부|예산|지출|영수증|งบ|รายจ่าย|ใบเสร็จ|记账|预算|बजट|ख़र्च/i,
+    health: /\b(health|fitness|workouts?|steps|sleep|hydration|diet|calories?|meditation)\b|건강|운동|수면|สุขภาพ|ออกกำลัง|健康|健身|स्वास्थ्य|फिटनेस/i,
+    education: /\b(learn\w*|study|quiz\w*|vocab\w*|lessons?|courses?|flashcards?|exam)\b|공부|학습|단어|เรียน|学习|पढ़ाई|सीख/i,
+    productivity: /\b(todo|to-do|tasks?|notes?|calendar|planner|reminders?|memo)\b|할 ?일|메모|일정|โน้ต|待办|笔记|日程|नोट्स|रिमाइंडर/i,
+    photography: /\b(photos?|camera|filters?|edit image|selfie)\b|사진|ภาพถ่าย|照片|相机|फ़ोटो/i,
+    travel: /\b(travel\w*|trips?|hotels?|flights?|tour\w*|sightseeing|itinerar\w*)\b|여행|숙소|เที่ยว|ท่องเที่ยว|โรงแรม|旅行|酒店|यात्रा|होटल/i,
+    food: /\b(recipes?|food|restaurants?|menus?|cafe|coffee|cooking)\b|요리|음식|메뉴|맛집|อาหาร|ร้านอาหาร|美食|菜谱|餐厅|खाना|रेसिपी/i,
+    shopping: /\b(shop|shopping|online store|cart|deals?|coupons?|marketplace)\b|쇼핑|ร้านค้า|ช้อป|购物|शॉपिंग/i,
+    tools: /\b(calculator|scanner|converter|utility|utilities|qr|flashlight|unit conver\w*)\b|계산기|도구|เครื่องคิดเลข|计算器|工具|कैलकुलेटर/i,
+    games: /\b(game|games|puzzle|arcade|high ?score)\b|게임|เกม|游戏|गेम/i,
+    lifestyle: /\b(lifestyle|diary|habits?|daily)\b|일기|습관|ไลฟ์สไตล์|生活|日记|आदत/i
   };
+  /* When only one category is clear, the second suggestion is a close neighbour (not always Productivity). */
+  const CAT_NEXT = { navigation: 'travel', travel: 'navigation', finance: 'productivity', health: 'lifestyle', education: 'productivity', productivity: 'tools', photography: 'tools', food: 'lifestyle', shopping: 'lifestyle', tools: 'productivity', games: 'education', lifestyle: 'productivity' };
 
   function analyze(project) {
     const F = project.files; const P = Object.keys(F);
@@ -124,6 +187,10 @@
     else if (deps.includes('react-native')) A.framework = 'react-native';
     else if (capCfg || deps.some(d => d.startsWith('@capacitor/'))) A.framework = 'capacitor';
     [pubspec, pkgJson, appJson, capCfg].forEach(note);
+    /* 0.2.3: optional project config written by the developer (rocketlauncher.json or .rocketlauncher.json at the project root):
+       { "privacy_url", "support_url", "category", "store_stage": { "play", "apple" }, "app_store_state", "play_state" } */
+    const cfgPath = shortest(find(F, /(^|\/)\.?rocketlauncher\.json$/i).filter(p => !OLD_RE.test(p)));
+    if (cfgPath) { try { const j = JSON.parse(F[cfgPath].text); if (j && typeof j === 'object') { A.projectConfig = { ...j, _file: cfgPath }; note(cfgPath); } } catch (e) { A.projectConfigError = cfgPath; } }
 
     // ---------- Android ----------
     const manifests = find(F, /AndroidManifest\.xml$/).filter(p => !/(debug|test|androidTest)\//.test(p));
@@ -236,8 +303,16 @@
     const pluginHay = txt(F, shortest(find(F, /capacitor\.plugins\.json$/))) + '\n' + txt(F, shortest(find(F, /capacitor\.config\.(json|ts|js)$/))) + '\n' + txt(F, shortest(find(F, /google-services\.json$/)));
     const hay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), txt(F, pubspec), txt(F, shortest(find(F, /Podfile$/))), txt(F, plistPath), (A.android && A.android.permissions.join(' ')) || '', JSON.stringify((A.ios && A.ios.usage) || {}), pluginHay, codeHay].join(' ');
     const Det = window.RLDetect;
+    /* 0.2.3: an ad SDK counts only when it is really declared: Gradle / version-catalog dependencies, package.json dependencies, pubspec,
+       Podfile / Package.swift, installed Capacitor/Cordova plugins, the AndroidManifest ads APPLICATION_ID meta-data or Info.plist
+       GADApplicationIdentifier. A name that only appears in app code (a config placeholder, a comment, a bundled script) is a hint, not ads. */
+    const AD_RE = /play-services-ads|google_mobile_ads|google-mobile-ads|\badmob\b|capacitor[\w-]*admob|admob-plus|Google-Mobile-Ads|GoogleMobileAds|GADApplicationIdentifier|applovin|unity-?ads|audience-network|FBAudienceNetwork|ironsource|chartboost|vungle|inmobi|mintegral|pangle/i;
+    const declHay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), pubspecDeps(txt(F, pubspec)), stripHashComments(txt(F, shortest(find(F, /Podfile$/)))), txt(F, shortest(find(F, /(^|\/)Package\.swift$/))),
+      txt(F, shortest(find(F, /capacitor\.plugins\.json$/))), txt(F, shortest(find(F, /(^|\/)cordova_plugins\.js$/)))].join(' ');
+    const adsDeclared = has(declHay, AD_RE) || !!(A.android && A.android.adsAppId) || !!(A.ios && A.ios.gad);
+    const adsCodeFiles = adsDeclared ? [] : Object.keys(F).filter(p => F[p].code && !BUNDLED_RE.test(p) && AD_RE.test(F[p].text)).slice(0, 5);
     A.sdk = {
-      ads: has(hay, /play-services-ads|google_mobile_ads|google-mobile-ads|admob|Google-Mobile-Ads|GADApplicationIdentifier|applovin|unity-ads|audience-network/i) || !!(A.android && A.android.adsAppId),
+      ads: adsDeclared,
       analytics: has(hay, /firebase-analytics|firebase_analytics|\/analytics|FirebaseAnalytics|amplitude|mixpanel/i),
       crash: has(hay, /crashlytics|sentry|bugsnag/i),
       auth: has(hay, (Det && Det.AUTH_RE) || /firebase-auth|firebase_auth|play-services-auth|google_sign_in|google-signin|auth0|supabase|credentials-play-services|googleid/i),
@@ -253,23 +328,37 @@
       contacts: has(hay, /READ_CONTACTS|NSContacts/i),
       mic: has(hay, /RECORD_AUDIO|NSMicrophone/i)
     };
+    A.adsHint = adsCodeFiles.length ? { files: adsCodeFiles } : null;
     A.sdk.appleSignIn = !!(A.ios && A.ios.appleSignIn) || has(hay, /sign_in_with_apple|apple-authentication|AuthenticationServices|ASAuthorizationAppleIDProvider|appleAuth|AppleAuthProvider/i);
     A.sdk.thirdPartyLogin = A.sdk.googleSignIn || has(hay, /flutter_facebook_auth|facebook-login|FBSDKLoginKit|react-native-fbsdk|kakao[\w.-]*(login|user|auth)|kakao_flutter_sdk|naveridlogin|flutter_naver_login|line-sdk|LineSDK|flutter_line_sdk|twitter_login|react-native-app-auth/i);
     A.review = reviewSignals(A, F, hay);
 
     // ---------- 카테고리 ----------
-    const corpus = [rm.title, rm.summary, rm.features.join(' '), ...Object.values(def), ...Object.values(A.tagline), A.pkg || ''].join(' ');
-    const scores = Object.entries(CATS).map(([k, re]) => [k, (corpus.match(new RegExp(re.source, 'gi')) || []).length]).sort((a, b) => b[1] - a[1]);
-    A.categories = scores.filter(s => s[1] > 0).map(s => s[0]);
+    /* Weighted corpus: the app name / README title count 3×, tagline and features 2×, README body, in-app strings and
+       permission purpose texts 1×. A project config "category" always wins. */
+    const rmBody = txt(F, shortest(find(F, /(^|\/)README(\.md)?$/i))).replace(/https?:\/\/\S+/g, ' ').slice(0, 6000);
+    const weighted = [[[rm.title, A.appName].join(' '), 3], [[rm.summary, rm.features.join(' '), ...Object.values(A.tagline)].join(' '), 2],
+      [[rmBody, ...Object.values(def), ...Object.values((A.ios && A.ios.usage) || {}), A.pkg || ''].join(' '), 1]];
+    const scores = Object.entries(CATS).map(([k, re]) => [k, weighted.reduce((sum, [text, w]) => sum + w * Math.min(12, (String(text).match(new RegExp(re.source, 'gi')) || []).length), 0)]);
+    /* a location permission plus map/fuel words is a strong navigation signal */
+    const nav = scores.find(x => x[0] === 'navigation'); if (nav[1] > 0 && A.sdk.location) nav[1] += 2;
+    scores.sort((a, b) => b[1] - a[1]);
+    /* weak side matches (one stray word) do not become suggestions; the top category always does */
+    const topScore = scores[0][1];
+    A.categories = scores.filter((s, i) => s[1] > 0 && (i === 0 || s[1] >= Math.max(2, topScore * 0.2))).map(s => s[0]);
     if (A.sdk.ocr) A.categories = A.categories.filter(c => c !== 'photography');
+    const cfgCat = A.projectConfig && A.projectConfig.category && String(A.projectConfig.category).toLowerCase().replace(/[^a-z]/g, '');
+    if (cfgCat && CATS[cfgCat]) A.categories = [cfgCat, ...A.categories.filter(c => c !== cfgCat)];
     if (!A.categories.length) A.categories = ['tools'];
-    if (!A.categories.includes('productivity')) A.categories.push('productivity');
+    if (A.categories.length < 2) A.categories.push(CAT_NEXT[A.categories[0]] || 'productivity');
     A.categories = A.categories.slice(0, 3);
 
     // ---------- 그림 ----------
     const imgs = P.filter(p => F[p].dataUrl);
-    const iconPath = imgs.find(p => /playstore/i.test(p)) || imgs.find(p => /AppIcon.*1024/i.test(p)) || imgs.find(p => /mipmap-xxxhdpi\/ic_launcher\./i.test(p)) || imgs.find(p => /ic_launcher\./i.test(p)) || imgs.find(p => /AppIcon/i.test(p)) || imgs.find(p => /(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p));
+    const iconPath = imgs.find(p => /playstore/i.test(p)) || imgs.find(p => /AppIcon.*(1024|512@2x)/i.test(p)) || imgs.find(p => /mipmap-xxxhdpi\/ic_launcher\./i.test(p)) || imgs.find(p => /ic_launcher\./i.test(p)) || imgs.find(p => /AppIcon/i.test(p)) || imgs.find(p => /(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p));
     A.icon = iconPath ? { path: iconPath, dataUrl: F[iconPath].dataUrl } : null;
+    /* 0.2.3: the iOS and the Android icon separately, so a blank icon or two different icons can be flagged (pixels are checked by the MCP server) */
+    A.icons = iconsByPlatform(F, imgs);
     A.screenshots = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p)).sort().slice(0, 8).map(p => ({ path: p, dataUrl: F[p].dataUrl }));
     const colors = txt(F, shortest(find(F, /res\/values\/colors\.xml$/)));
     const cm = colors.match(/name="(?:brand|primary|colorPrimary|purple_500|accent)[^"]*"\s*>\s*#(?:FF)?([0-9a-f]{6})\b/i) || colors.match(/#(?:FF)?([0-9a-f]{6})\b/i);
@@ -352,6 +441,7 @@
       if (an.permissions.some(p => /QUERY_ALL_PACKAGES|MANAGE_EXTERNAL_STORAGE|REQUEST_INSTALL_PACKAGES/.test(p))) add('specialPerm', 'block', 'android', 'declare');
       if (an.permissions.some(p => /FOREGROUND_SERVICE/.test(p))) add('fgs', 'warn', 'android', 'declare');
       if (s.ads || an.adId) add('adsDeclare', 'warn', 'android', 'declare');
+      else if (A.adsHint) add('adsCodeOnly', 'tip', 'both', 'info', { files: A.adsHint.files.join(', ') });
       add('closedTest', 'tip', 'android', 'info', { testers: 12, days: 14 });
     }
     const R = A.review || {};
@@ -394,6 +484,16 @@
       add('iosSdk', 'tip', 'ios', 'info', { sdk: IOS_SDK_NOTE });
     }
     if (!A.icon) add('noIcon', 'warn', 'both', 'gen-icon');
+    if (!an && A.adsHint) add('adsCodeOnly', 'tip', 'both', 'info', { files: A.adsHint.files.join(', ') });
+    /* 0.2.3: pixel results come from the MCP server (A.iconCheck); the web app has none and skips these. */
+    const ic = A.iconCheck;
+    if (ic) {
+      for (const k of ['ios', 'android']) if (ic[k] && ic[k].blank) add('iconBlank', 'warn', k, 'gen-icon', { file: ic[k].path, color: ic[k].average_color });
+      if (ic.match && !ic.match.similar) add('iconMismatch', 'warn', 'both', 'info', { ios: ic.ios.path, android: ic.android.path, dist: ic.match.hash_distance });
+    }
+    if (A.listing && A.listing.privacyConflict) add('privacyUrlConflict', 'warn', 'both', 'info', { urls: A.listing.privacyCandidates.map(c => c.url + ' (' + c.file + ')').join(', ') });
+    if (A.listing && A.listing.privacyDead) add('privacyUrlDead', 'check', 'both', 'info', { url: A.listing.privacyUrl });
+    if (A.listing && A.listing.privacyWeak) add('privacyUrlUnsure', 'check', 'both', 'info', { urls: A.listing.privacyCandidates.map(c => c.url + ' (' + c.file + ')').join(', ') });
     if (!A.screenshots.length) add('noShots', 'warn', 'both', 'info');
     if (A.appName && A.appName.length > 30) add('longName', 'warn', 'both', 'choose-name', { len: A.appName.length });
     const order = { block: 0, warn: 1, check: 2, tip: 3 };
