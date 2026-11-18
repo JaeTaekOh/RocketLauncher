@@ -1,0 +1,8 @@
+{
+  "description": "Budget app with a mortgage / loan calculator; it does not offer loans.",
+  "framework": "android-native",
+  "category": "finance",
+  "issues_absent": [
+    "loanPolicy"
+  ]
+}

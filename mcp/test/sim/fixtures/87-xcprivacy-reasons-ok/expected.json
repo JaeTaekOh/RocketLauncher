@@ -1,0 +1,7 @@
+{
+  "description": "SwiftUI app using UserDefaults with the matching NSPrivacyAccessedAPICategoryUserDefaults entry.",
+  "framework": "ios-native",
+  "requirements": {
+    "apple.privacy_manifest_reasons": "ok"
+  }
+}

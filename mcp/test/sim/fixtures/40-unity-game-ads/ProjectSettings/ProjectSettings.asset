@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  companyName: Sim Studio
+  productName: Block Drop
+  bundleVersion: 1.2.0
+  applicationIdentifier:
+    Android: com.sim.blockdrop
+    iPhone: com.sim.blockdrop
+  buildNumber:
+    iPhone: 12
+  AndroidBundleVersionCode: 12
+  AndroidMinSdkVersion: 23
+  AndroidTargetSdkVersion: 35

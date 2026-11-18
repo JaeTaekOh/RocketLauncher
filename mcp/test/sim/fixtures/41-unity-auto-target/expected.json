@@ -1,0 +1,21 @@
+{
+  "description": "Unity AR measuring tool; AndroidTargetSdkVersion 0 means \"highest installed\" so targetSdk cannot be read.",
+  "name": "AR Ruler",
+  "framework": "unity",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.arruler",
+  "version": "0.9.1",
+  "versionCode": "5",
+  "targetSdk": null,
+  "category": "tools",
+  "ads": false,
+  "issues_present": [
+    "targetSdkUnread"
+  ],
+  "issues_absent": [
+    "adsConsent"
+  ]
+}

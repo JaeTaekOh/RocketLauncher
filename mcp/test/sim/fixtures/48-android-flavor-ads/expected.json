@@ -1,0 +1,10 @@
+{
+  "description": "Native Android wallpapers app with free/paid flavors; AdMob is only a freeImplementation dependency.",
+  "framework": "android-native",
+  "package": "com.sim.wallpix",
+  "ads": true,
+  "category": "photography",
+  "issues_present": [
+    "adsDeclare"
+  ]
+}

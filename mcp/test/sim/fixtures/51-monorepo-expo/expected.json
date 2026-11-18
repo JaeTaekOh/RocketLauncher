@@ -1,0 +1,11 @@
+{
+  "description": "Turborepo monorepo: root package.json has only workspaces; the Expo app lives in apps/mobile next to a Next.js web app.",
+  "framework": "expo",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.fieldnotes",
+  "version": "1.0.4",
+  "category": "productivity"
+}

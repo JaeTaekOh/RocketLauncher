@@ -1,0 +1,8 @@
+{
+  "description": "Flutter shop with dev/prod product flavors declared before defaultConfig; the dev flavor has its own applicationId.",
+  "framework": "flutter",
+  "package": "com.sim.shopnow",
+  "version": "2.3.0",
+  "versionCode": "230",
+  "category": "shopping"
+}

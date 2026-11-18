@@ -1,0 +1,10 @@
+{
+  "description": "Flutter alphabet app for kids with no ads or analytics.",
+  "framework": "flutter",
+  "category": "education",
+  "ads": false,
+  "issues_absent": [
+    "kidsPolicy",
+    "adsConsent"
+  ]
+}

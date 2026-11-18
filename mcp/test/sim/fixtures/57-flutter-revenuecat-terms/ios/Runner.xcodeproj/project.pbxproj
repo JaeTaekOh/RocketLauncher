@@ -1,0 +1,16 @@
+// !$*UTF8*$!
+{
+	objects = {
+		B0000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = $(FLUTTER_BUILD_NUMBER);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = $(FLUTTER_BUILD_NAME);
+				PRODUCT_BUNDLE_IDENTIFIER = com.sim.calmly;
+				TARGETED_DEVICE_FAMILY = "1";
+			};
+			name = Release;
+		};
+	};
+}

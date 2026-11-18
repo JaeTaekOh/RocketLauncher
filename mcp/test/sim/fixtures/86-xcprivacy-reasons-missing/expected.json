@@ -1,0 +1,7 @@
+{
+  "description": "SwiftUI app using UserDefaults and file timestamps; PrivacyInfo.xcprivacy declares no required-reason APIs.",
+  "framework": "ios-native",
+  "requirements": {
+    "apple.privacy_manifest_reasons": "block"
+  }
+}

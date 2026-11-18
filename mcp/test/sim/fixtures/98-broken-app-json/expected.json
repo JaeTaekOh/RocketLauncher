@@ -1,0 +1,6 @@
+{
+  "description": "Expo app whose app.json is broken JSON (trailing comma); prebuilt android/ still has the ids.",
+  "framework": "expo",
+  "package": "com.sim.brokenjson",
+  "version": "1.3.0"
+}

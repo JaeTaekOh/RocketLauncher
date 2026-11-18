@@ -1,0 +1,9 @@
+{
+  "description": "Flutter recipe app already live on both stores (store links in README), shipping an update.",
+  "framework": "flutter",
+  "stage": {
+    "play": "live",
+    "apple": "live"
+  },
+  "category": "food"
+}

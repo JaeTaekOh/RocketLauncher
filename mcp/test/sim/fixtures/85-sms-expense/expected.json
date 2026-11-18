@@ -1,0 +1,8 @@
+{
+  "description": "Expense tracker that reads bank SMS (READ_SMS, RECEIVE_SMS).",
+  "framework": "android-native",
+  "category": "finance",
+  "issues_present": [
+    "smsCall"
+  ]
+}

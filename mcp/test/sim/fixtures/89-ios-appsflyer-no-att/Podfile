@@ -1,0 +1,4 @@
+platform :ios, '15.0'
+target 'Rideo' do
+  pod 'AppsFlyerFramework', '~> 6.15'
+end

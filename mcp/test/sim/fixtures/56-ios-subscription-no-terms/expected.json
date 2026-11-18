@@ -1,0 +1,9 @@
+{
+  "description": "SwiftUI journal with StoreKit 2 auto-renewable subscriptions but no Terms of Use / EULA link anywhere.",
+  "framework": "ios-native",
+  "iap": true,
+  "issues_present": [
+    "subscriptionTerms"
+  ],
+  "category": "productivity"
+}

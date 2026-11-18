@@ -1,0 +1,22 @@
+{
+  "description": "Unity game with AdMob (Unity plugin) and Unity Ads; ids and versions live in ProjectSettings.asset; targetSdk 35.",
+  "name": "Block Drop",
+  "framework": "unity",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.blockdrop",
+  "version": "1.2.0",
+  "versionCode": "12",
+  "targetSdk": 35,
+  "category": "games",
+  "ads": true,
+  "issues_present": [
+    "targetSdk",
+    "adsConsent"
+  ],
+  "requirements": {
+    "play.16kb_page_size": "warn"
+  }
+}

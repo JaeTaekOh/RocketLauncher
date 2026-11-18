@@ -1,0 +1,11 @@
+apply plugin: "com.android.application"
+android {
+    namespace "com.sim.tixly"
+    defaultConfig {
+        applicationId "com.sim.tixly"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 31
+        versionName "3.1.0"
+    }
+}

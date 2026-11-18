@@ -1,0 +1,11 @@
+{
+  "description": "Offline translation engine app bundling a 380 MB model file in the base module (created as a sparse file at run time).",
+  "framework": "android-native",
+  "category": "tools",
+  "issues_present": [
+    "largeAssets"
+  ],
+  "_sparse": {
+    "app/src/main/assets/models/ko-th.onnx": 398458880
+  }
+}

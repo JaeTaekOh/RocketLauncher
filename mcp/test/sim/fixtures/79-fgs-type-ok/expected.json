@@ -1,0 +1,11 @@
+{
+  "description": "Android podcast player with a mediaPlayback foreground service and the matching permission.",
+  "framework": "android-native",
+  "category": "music",
+  "issues_present": [
+    "fgs"
+  ],
+  "issues_absent": [
+    "fgsType"
+  ]
+}

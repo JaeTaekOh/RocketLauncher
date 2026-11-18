@@ -1,0 +1,8 @@
+{
+  "description": "Native Android VPN app declaring a VpnService.",
+  "framework": "android-native",
+  "category": "tools",
+  "issues_present": [
+    "vpnService"
+  ]
+}

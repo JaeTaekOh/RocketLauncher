@@ -1,0 +1,7 @@
+{
+  "description": "iOS app with NSUserTrackingUsageDescription but no ATT request in code.",
+  "framework": "ios-native",
+  "issues_present": [
+    "attNoPrompt"
+  ]
+}

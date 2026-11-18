@@ -1,0 +1,11 @@
+name: vitals
+description: Wellness and sleep tracker.
+version: 1.0.0+2
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  health: ^11.1.0

@@ -1,0 +1,8 @@
+{
+  "description": "Android collage maker using the photo picker (PickVisualMedia) without media permissions.",
+  "framework": "android-native",
+  "category": "photography",
+  "issues_absent": [
+    "photoPerm"
+  ]
+}

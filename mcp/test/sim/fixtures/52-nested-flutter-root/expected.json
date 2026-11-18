@@ -1,0 +1,11 @@
+{
+  "description": "Flutter app nested in client/mobile, with a Node server folder at the top.",
+  "framework": "flutter",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.lingo",
+  "version": "1.4.0",
+  "category": "education"
+}

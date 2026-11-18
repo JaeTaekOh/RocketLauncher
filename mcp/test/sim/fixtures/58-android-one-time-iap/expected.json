@@ -1,0 +1,10 @@
+{
+  "description": "Native Android unit converter with a one-time \"remove ads\" in-app product (INAPP, no subscription).",
+  "framework": "android-native",
+  "iap": true,
+  "ads": true,
+  "issues_absent": [
+    "subscriptionTerms"
+  ],
+  "category": "tools"
+}

@@ -1,0 +1,9 @@
+{
+  "description": "Native Android app with google-services.json and only Firebase Cloud Messaging; no analytics or crash SDK.",
+  "framework": "android-native",
+  "sdk": {
+    "notifications": true,
+    "analytics": false,
+    "crash": false
+  }
+}

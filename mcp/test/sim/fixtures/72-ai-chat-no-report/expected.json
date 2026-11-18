@@ -1,0 +1,7 @@
+{
+  "description": "Expo AI chat companion calling a generative AI API with no way to report or block replies.",
+  "framework": "expo",
+  "issues_present": [
+    "ugcModeration"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "description": "Trivia game whose copy says \"bet you can't\" but has no gambling.",
+  "framework": "flutter",
+  "issues_absent": [
+    "gambling",
+    "loanPolicy"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "description": "iOS weather app with a widget extension whose Info.plist and bundle id come first in the project.",
+  "name": "WeatherNow",
+  "framework": "ios-native",
+  "package": "com.sim.weathernow",
+  "version": "3.2.0",
+  "category": "weather",
+  "sdk": {
+    "location": true
+  }
+}

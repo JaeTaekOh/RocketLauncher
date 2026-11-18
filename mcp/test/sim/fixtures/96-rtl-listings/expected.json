@@ -1,0 +1,19 @@
+{
+  "description": "Android app with fastlane listings in English, Arabic, Hebrew and Persian and Arabic app strings.",
+  "framework": "android-native",
+  "app_langs": [
+    "ar",
+    "en"
+  ],
+  "listing_langs": {
+    "play": [
+      "ar",
+      "en",
+      "fa",
+      "he"
+    ]
+  },
+  "stage": {
+    "play": "live"
+  }
+}

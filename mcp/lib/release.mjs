@@ -147,7 +147,7 @@ export function requirements(st, L, opts = {}) {
     else {
       const N = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
       const bad = N.libs.filter(l => l.bits === 64 && l.align != null && l.align < 16384), unread = N.libs.filter(l => l.align == null);
-      const hybrid = ['react-native', 'expo', 'flutter'].includes(A.framework) || X.build.reactNative || X.build.flutter;
+      const hybrid = ['react-native', 'expo', 'flutter', 'unity', 'godot', 'maui', 'nativescript'].includes(A.framework) || X.build.reactNative || X.build.flutter;
       const agpOld = X.build.agp && vcmp(X.build.agp, '8.5.1') < 0;
       if (bad.length) add('play.16kb_page_size', 'block', `${bad.length} 64-bit native librar${bad.length > 1 ? 'ies are' : 'y is'} aligned to ${Math.min(...bad.map(l => l.align))} bytes: ${bad.slice(0, 4).map(l => l.path).join(', ')}.`, 'Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.', { files: bad.map(l => l.path) });
       else if (N.nativeSrc || unread.length || hybrid || agpOld) add('play.16kb_page_size', 'warn',

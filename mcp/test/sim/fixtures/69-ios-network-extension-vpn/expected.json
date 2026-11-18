@@ -1,0 +1,7 @@
+{
+  "description": "iOS VPN with a packet tunnel Network Extension entitlement.",
+  "framework": "ios-native",
+  "issues_present": [
+    "vpnService"
+  ]
+}

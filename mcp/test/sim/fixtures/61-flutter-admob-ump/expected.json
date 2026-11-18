@@ -1,0 +1,9 @@
+{
+  "description": "Flutter quiz with google_mobile_ads and the UMP consent flow in Dart; iOS has no NPA handling.",
+  "framework": "flutter",
+  "ads": true,
+  "issues_absent": [
+    "adsConsent"
+  ],
+  "category": "education"
+}

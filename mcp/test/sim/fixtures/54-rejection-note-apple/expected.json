@@ -1,0 +1,15 @@
+{
+  "description": "Expo social app with a saved App Review rejection note (Guideline 5.1.1(v)); no stage recorded.",
+  "framework": "expo",
+  "stage": {
+    "apple": "rejected",
+    "play": "unknown"
+  },
+  "category": "social",
+  "sdk": {
+    "auth": true
+  },
+  "issues_present": [
+    "accountDeletion"
+  ]
+}

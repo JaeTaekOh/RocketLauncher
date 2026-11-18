@@ -1,0 +1,16 @@
+{
+  "description": "NativeScript step counter; id in nativescript.config.ts, Android sdk values in App_Resources/Android/app.gradle.",
+  "framework": "nativescript",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "org.sim.stepup",
+  "version": "1.0.2",
+  "versionCode": "3",
+  "targetSdk": 34,
+  "category": "health",
+  "issues_present": [
+    "targetSdk"
+  ]
+}

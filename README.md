@@ -8,7 +8,7 @@ A free **MCP server** and **web tool** that helps people who already built an An
 
 You connect the app once. From then on you only **pick, approve, or reject**. Nothing is submitted to a store automatically. The final step of the guide unlocks only after you approve, and you press the store’s Submit button yourself.
 
-[![Version 0.2.4](https://img.shields.io/badge/version-0.2.4-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
+[![Version 0.2.5](https://img.shields.io/badge/version-0.2.5-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
 [![npm](https://img.shields.io/npm/v/rocket-launcher-mcp?style=flat-square&color=F4A261)](https://www.npmjs.com/package/rocket-launcher-mcp)
 [![MCP](https://img.shields.io/badge/MCP-server-171717?style=flat-square)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/license-MIT-171717?style=flat-square)](LICENSE)
@@ -255,10 +255,10 @@ From the checkout you can also run:
 cd mcp && npm start          # stdio
 npm run http                 # http://127.0.0.1:5181/mcp
 npm test                     # automated tests
-npm run sim                  # simulation corpus: 39 synthetic apps with known answers, scorecard
+npm run sim                  # simulation corpus: 100 synthetic apps with known answers, scorecard
 ```
 
-The simulation corpus (`mcp/test/sim/`) covers Flutter, Expo / React Native, Capacitor, Cordova, native Android and iOS, Kotlin Multiplatform and PWA / TWA projects with known store stages, ads, purchases, data collection, privacy URLs, icons and languages. It runs offline as part of `npm test`.
+The simulation corpus (`mcp/test/sim/`, 100 apps) covers Flutter (including flavors), Expo / React Native, Capacitor / Ionic, Cordova, NativeScript, .NET MAUI, Unity, Godot, native Android (multi-module, flavors) and iOS (widgets, watch apps), Kotlin Multiplatform, PWA / TWA and monorepos. It checks known store stages (including saved rejection notes), ads and consent, purchases and subscriptions, data collection, policy areas (health, loans, VPN, gambling, user content and AI chat, children), Android permission rules, required-reason APIs, 16 KB native libraries, large assets, privacy URLs, icons, languages (including RTL listings) and messy inputs (CRLF, UTF-16, broken JSON, empty repos). It runs offline as part of `npm test`.
 
 </details>
 

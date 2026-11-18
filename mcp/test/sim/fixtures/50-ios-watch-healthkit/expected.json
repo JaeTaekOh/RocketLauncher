@@ -1,0 +1,10 @@
+{
+  "description": "iOS heart-rate app with a watchOS companion; the phone app reads HealthKit but lacks NSHealthShareUsageDescription.",
+  "name": "Pulse",
+  "framework": "ios-native",
+  "package": "com.sim.pulse",
+  "category": "health",
+  "issues_present": [
+    "missingUsage"
+  ]
+}

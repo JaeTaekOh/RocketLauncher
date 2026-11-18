@@ -1,0 +1,11 @@
+{
+  "description": "Flutter wellness app using the health package; iOS has both HealthKit purpose strings, Android declares Health Connect permissions.",
+  "framework": "flutter",
+  "category": "health",
+  "issues_present": [
+    "healthConnect"
+  ],
+  "issues_absent": [
+    "missingUsage"
+  ]
+}

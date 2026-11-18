@@ -1,0 +1,17 @@
+{
+  "description": ".NET MAUI gold price tracker; ids in the .csproj, targetSdk in Platforms/Android manifest <uses-sdk>.",
+  "name": "GoldTrack",
+  "framework": "maui",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.goldtrack",
+  "version": "2.0",
+  "versionCode": "20",
+  "targetSdk": 35,
+  "category": "finance",
+  "issues_present": [
+    "targetSdk"
+  ]
+}

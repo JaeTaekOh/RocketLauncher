@@ -1,0 +1,14 @@
+plugins {
+    id "com.android.application"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+android {
+    namespace "com.sim.cookbook"
+    defaultConfig {
+        applicationId "com.sim.cookbook"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion 35
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+    }
+}

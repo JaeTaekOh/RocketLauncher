@@ -1,0 +1,7 @@
+{
+  "description": "Android app shipping a prebuilt arm64 .so aligned to 4 KB.",
+  "framework": "android-native",
+  "requirements": {
+    "play.16kb_page_size": "block"
+  }
+}

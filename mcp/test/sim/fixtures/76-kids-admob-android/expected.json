@@ -1,0 +1,8 @@
+{
+  "description": "Native Android coloring app for children with AdMob.",
+  "framework": "android-native",
+  "ads": true,
+  "issues_present": [
+    "kidsPolicy"
+  ]
+}

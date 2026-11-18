@@ -1,0 +1,7 @@
+{
+  "description": "iOS app with the AppsFlyer attribution SDK (Podfile) and no tracking declaration or ATT.",
+  "framework": "ios-native",
+  "issues_present": [
+    "trackingSdk"
+  ]
+}

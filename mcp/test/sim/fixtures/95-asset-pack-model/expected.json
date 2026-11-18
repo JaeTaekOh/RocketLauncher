@@ -1,0 +1,10 @@
+{
+  "description": "Same model delivered through a Play Asset Delivery asset pack module, so the base module stays small.",
+  "framework": "android-native",
+  "issues_absent": [
+    "largeAssets"
+  ],
+  "_sparse": {
+    "model_pack/src/main/assets/models/ko-th.onnx": 398458880
+  }
+}

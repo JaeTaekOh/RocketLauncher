@@ -59596,7 +59596,7 @@ function requirements(st, L, opts = {}) {
     else {
       const N = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
       const bad = N.libs.filter((l) => l.bits === 64 && l.align != null && l.align < 16384), unread = N.libs.filter((l) => l.align == null);
-      const hybrid = ["react-native", "expo", "flutter"].includes(A.framework) || X.build.reactNative || X.build.flutter;
+      const hybrid = ["react-native", "expo", "flutter", "unity", "godot", "maui", "nativescript"].includes(A.framework) || X.build.reactNative || X.build.flutter;
       const agpOld = X.build.agp && vcmp(X.build.agp, "8.5.1") < 0;
       if (bad.length) add2("play.16kb_page_size", "block", `${bad.length} 64-bit native librar${bad.length > 1 ? "ies are" : "y is"} aligned to ${Math.min(...bad.map((l) => l.align))} bytes: ${bad.slice(0, 4).map((l) => l.path).join(", ")}.`, "Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.", { files: bad.map((l) => l.path) });
       else if (N.nativeSrc || unread.length || hybrid || agpOld) add2(
@@ -61517,7 +61517,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.4";
+var VERSION = "0.2.5";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.

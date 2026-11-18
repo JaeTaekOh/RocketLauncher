@@ -1,0 +1,9 @@
+{
+  "description": "Flutter meditation app selling subscriptions with RevenueCat; README and paywall link Terms of Use.",
+  "framework": "flutter",
+  "iap": true,
+  "issues_absent": [
+    "subscriptionTerms"
+  ],
+  "category": "health"
+}

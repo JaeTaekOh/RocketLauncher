@@ -1,0 +1,7 @@
+{
+  "description": "React Native sports betting and casino app.",
+  "framework": "react-native",
+  "issues_present": [
+    "gambling"
+  ]
+}

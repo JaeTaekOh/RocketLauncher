@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Field Notes",
+    "slug": "fieldnotes",
+    "version": "1.0.4",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "bundleIdentifier": "com.sim.fieldnotes"
+    },
+    "android": {
+      "package": "com.sim.fieldnotes",
+      "versionCode": 4
+    }
+  }
+}

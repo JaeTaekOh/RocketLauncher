@@ -3,7 +3,7 @@
    Each one is connected through the real tool code path (engine.connect → analyzer, icon check, stage, release checks;
    privacy drafts through engine.release('privacy')), compared field by field, and summarized as a scorecard.
    Offline: no link checks, shared lessons pointed at a dead local port, a temporary data folder.
-   Run: npm run sim   (from mcp/)  ·  options: --json <file> (save the scorecard) · --only <id-substring> · --verbose
+   Run: npm run sim   (from mcp/)  ·  options: --json <file> (save the scorecard) · --only <id-substring> · --verbose · --actual <file> (everything the tool reported, per fixture)
    Known limitations (documented in known-limitations.json) are reported but do not fail the run. */
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -13,23 +13,30 @@ process.env.ROCKETLAUNCHER_VERIFY_URLS = '0';
 process.env.ROCKETLAUNCHER_LESSONS_API = 'http://127.0.0.1:9/api/lessons';
 const E = await import('../../lib/engine.mjs');
 const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
-const ONLY = arg('--only'), JSON_OUT = arg('--json'), VERBOSE = process.argv.includes('--verbose');
+const ONLY = arg('--only'), JSON_OUT = arg('--json'), VERBOSE = process.argv.includes('--verbose'), ACTUAL_OUT = arg('--actual');
 const FIX = path.join(HERE, 'fixtures');
 const KNOWN = fs.existsSync(path.join(HERE, 'known-limitations.json')) ? JSON.parse(fs.readFileSync(path.join(HERE, 'known-limitations.json'), 'utf8')) : {};
 const sorted = a => [...(a || [])].sort();
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 /* What Rocket Launcher answered, in the same shape as expected.json */
-async function actualOf(dir) {
+async function actualOf(dir, exp) {
+  /* Large files (model / asset sizes) are created at run time as sparse files in a temporary copy, so the corpus stays tiny on disk */
+  if (exp._sparse) {
+    const tmp = path.join(HOME, 'sparse-' + path.basename(dir)); fs.cpSync(dir, tmp, { recursive: true });
+    for (const [p, size] of Object.entries(exp._sparse)) { const f = path.join(tmp, p); fs.mkdirSync(path.dirname(f), { recursive: true }); const fd = fs.openSync(f, 'w'); fs.ftruncateSync(fd, size); fs.closeSync(fd); }
+    dir = tmp;
+  }
   let res;
   try { res = await E.connect({ source: 'path', path: dir, lang: 'en' }, { allowPath: true }); }
   catch (e) { return { error: e.code || 'error', message: e.message }; }
   const { st, report } = res, A = st.A, ids = new Set(A.issues.map(i => i.id));
+  let rq = null; try { rq = Object.fromEntries((await E.release('requirements', st.id, {}, 'en')).rows.map(r => [r.id, r.severity])); } catch (e) { rq = { error: e.message }; }
   let ds = null; try { ds = (await E.release('privacy', st.id, {}, 'en')).drafts.data_safety; } catch (e) { ds = { error: e.message }; }
   const IC = A.iconCheck || {};
   return {
     error: null,
-    framework: A.framework, platforms: sorted(Object.keys(A.platforms).filter(k => A.platforms[k])),
+    name: A.appName || null, framework: A.framework, requirements: rq, platforms: sorted(Object.keys(A.platforms).filter(k => A.platforms[k])),
     package: A.pkg || null, version: A.version || null, versionCode: A.android && A.android.versionCode != null ? String(A.android.versionCode) : null,
     targetSdk: (A.android && A.android.targetSdk) || null, category: A.categories[0],
     stage: Object.fromEntries(Object.entries({ play: 'Google Play', apple: 'App Store' }).filter(([, n]) => report.store_stage[n]).map(([k, n]) => [k, report.store_stage[n].recommended])),
@@ -37,7 +44,7 @@ async function actualOf(dir) {
     data_safety: ds && ds.rows ? sorted(ds.rows.map(r => r.id)) : ds,
     privacy_url: report.app.privacy_url_found, privacy_conflict: !!(A.listing && A.listing.privacyConflict), privacy_weak: !!(A.listing && A.listing.privacyWeak),
     icon: { found: !!A.icon, ios_blank: IC.ios ? !!IC.ios.blank : null, android_blank: IC.android ? !!IC.android.blank : null, mismatch: IC.match ? !IC.match.similar : null },
-    app_langs: sorted(A.locales), listing_langs: { play: sorted(A.listing && A.listing.play.langs), apple: sorted(A.listing && A.listing.apple.langs) },
+    app_langs: sorted(A.locales), listing_langs: { play: sorted([...((A.listing && A.listing.play.langs) || []), ...((A.listing && A.listing.play.otherLangs) || [])]), apple: sorted([...((A.listing && A.listing.apple.langs) || []), ...((A.listing && A.listing.apple.otherLangs) || [])]) },
     issues: [...ids].sort()
   };
 }
@@ -45,7 +52,7 @@ async function actualOf(dir) {
 function compare(exp, act) {
   const out = [], push = (field, e, a, ok) => out.push({ field, expected: e, actual: a, ok: ok === undefined ? eq(e, a) : ok });
   if (exp.error || act.error) { push('error', exp.error || null, act.error || null); if (exp.error || act.error) return out; }
-  for (const k of ['framework', 'package', 'version', 'versionCode', 'targetSdk', 'category', 'ads', 'ads_hint', 'iap', 'privacy_url', 'privacy_conflict', 'privacy_weak']) if (k in exp) push(k, exp[k], act[k]);
+  for (const k of ['name', 'framework', 'package', 'version', 'versionCode', 'targetSdk', 'category', 'ads', 'ads_hint', 'iap', 'privacy_url', 'privacy_conflict', 'privacy_weak']) if (k in exp) push(k, exp[k], act[k]);
   if ('platforms' in exp) push('platforms', sorted(exp.platforms), act.platforms);
   if ('data_safety' in exp) push('data_safety', sorted(exp.data_safety), act.data_safety);
   if ('app_langs' in exp) push('app_langs', sorted(exp.app_langs), act.app_langs);
@@ -53,17 +60,18 @@ function compare(exp, act) {
   for (const [k, v] of Object.entries(exp.sdk || {})) push('sdk.' + k, v, !!act.sdk[k]);
   for (const [k, v] of Object.entries(exp.icon || {})) push('icon.' + k, v, act.icon[k]);
   for (const [k, v] of Object.entries(exp.listing_langs || {})) push('listing_langs.' + k, sorted(v), act.listing_langs[k]);
+  for (const [k, v] of Object.entries(exp.requirements || {})) push('requirements.' + k, v, (act.requirements || {})[k] ?? null);
   for (const id of exp.issues_present || []) push('issue+' + id, true, act.issues.includes(id));
   for (const id of exp.issues_absent || []) push('issue-' + id, false, act.issues.includes(id));
   return out;
 }
-const group = f => f.replace(/^issue[+-].*/, 'issues').replace(/^(stage|sdk|icon|listing_langs)\..*/, '$1');
+const group = f => f.replace(/^issue[+-].*/, 'issues').replace(/^(stage|sdk|icon|listing_langs|requirements)\..*/, '$1');
 
 const dirs = fs.readdirSync(FIX).filter(d => fs.existsSync(path.join(FIX, d, 'expected.json')) && (!ONLY || d.includes(ONLY))).sort();
 const perField = {}, mismatches = [], known = [], perFixture = [], ACT = {};
 for (const d of dirs) {
   const exp = JSON.parse(fs.readFileSync(path.join(FIX, d, 'expected.json'), 'utf8'));
-  const act = await actualOf(path.join(FIX, d)); ACT[d] = act;
+  const act = await actualOf(path.join(FIX, d), exp); ACT[d] = act;
   const rows = compare(exp, act);
   let bad = 0;
   for (const r of rows) {
@@ -77,6 +85,7 @@ for (const d of dirs) {
 }
 /* Every issue a fixture produced and every framework label must have texts in all five languages */
 const I18N = globalThis.window.RL_I18N, LANGS = ['en', 'ko', 'th', 'zh', 'hi'], seenIssues = new Set(), seenFw = new Set();
+if (ACTUAL_OUT) fs.writeFileSync(ACTUAL_OUT, JSON.stringify(ACT, null, 1));
 for (const d of dirs) { const a = ACT[d]; if (!a || a.error) continue; a.issues.forEach(i => seenIssues.add(i)); seenFw.add(a.framework); }
 const missingTexts = [];
 for (const id of seenIssues) for (const l of LANGS) for (const k of ['t', 'w']) if (!I18N[l]['iss.' + id + '.' + k]) missingTexts.push(`iss.${id}.${k} (${l})`);

@@ -1,0 +1,11 @@
+name: quizzy
+description: Trivia quiz to learn facts.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mobile_ads: ^5.2.0

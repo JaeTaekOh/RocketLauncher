@@ -1,0 +1,9 @@
+{
+  "description": "Android flashlight with AdMob banners and no consent SDK (no UMP / CMP).",
+  "framework": "android-native",
+  "ads": true,
+  "issues_present": [
+    "adsConsent"
+  ],
+  "category": "tools"
+}

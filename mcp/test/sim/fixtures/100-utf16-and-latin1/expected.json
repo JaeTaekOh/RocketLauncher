@@ -1,0 +1,6 @@
+{
+  "description": "Native Android app whose strings.xml is UTF-16LE with a BOM; README is Latin-1.",
+  "framework": "android-native",
+  "name": "Ünïcode Notes",
+  "package": "com.sim.unicode"
+}

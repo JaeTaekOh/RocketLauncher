@@ -1,0 +1,9 @@
+{
+  "description": "Groovy gradle reads targetSdk from gradle.properties (36); a stale <uses-sdk targetSdkVersion=30> in the manifest is ignored.",
+  "framework": "android-native",
+  "targetSdk": 36,
+  "issues_absent": [
+    "targetSdk",
+    "targetSdkUnread"
+  ]
+}

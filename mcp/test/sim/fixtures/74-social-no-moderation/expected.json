@@ -1,0 +1,8 @@
+{
+  "description": "Native Android social feed (Firestore posts, comments) with no report or block feature.",
+  "framework": "android-native",
+  "category": "social",
+  "issues_present": [
+    "ugcModeration"
+  ]
+}

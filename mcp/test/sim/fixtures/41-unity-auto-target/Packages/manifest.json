@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "com.unity.xr.arfoundation": "6.0.3"
+  }
+}

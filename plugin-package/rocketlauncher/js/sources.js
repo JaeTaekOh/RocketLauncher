@@ -15,7 +15,10 @@
     /* 0.2.4: Cordova config.xml, Bubblewrap twa-manifest.json, app locale files (locales/ko.json, i18n/th.json, ko.lproj) */
     /(^|\/)config\.xml$/i, /(^|\/)twa-manifest\.json$/i, /(^|\/)(locales?|i18n|lang|langs|translations|l10n)\/[a-z]{2}([-_][A-Za-z]{2,4})?\.json$/i, /(^|\/)[a-z]{2}([-_][A-Za-z]{2,4})?\.lproj\/(Localizable|InfoPlist)\.strings$/i,
     /(^|\/)\.?rocketlauncher\.json$/i, /(^|\/)\.xcode-version$/i, /(^|\/)\.github\/workflows\/[^/]+\.ya?ml$/i, /(^|\/)codemagic\.ya?ml$/i, /(^|\/)gradle-wrapper\.properties$/i,
-    /(^|\/)[^/]*(delete|deletion|tester|testing|beta|join|opt-?in)[^/]*\.(html?|md)$/i, /(^|\/)(delete|deletion|delete-account|testers?|beta|join)\/index\.html?$/i
+    /(^|\/)[^/]*(delete|deletion|tester|testing|beta|join|opt-?in)[^/]*\.(html?|md)$/i, /(^|\/)(delete|deletion|delete-account|testers?|beta|join)\/index\.html?$/i,
+    /* 0.2.5: Unity, Godot, .NET MAUI and NativeScript project files; saved store rejection notes */
+    /(^|\/)ProjectSettings\/ProjectSettings\.asset$/i, /(^|\/)Packages\/manifest\.json$/i, /(^|\/)export_presets\.cfg$/i, /(^|\/)project\.godot$/i, /\.csproj$/i, /(^|\/)nativescript\.config\.[jt]s$/i,
+    /(^|\/)[^/]*(reject|rejection|app-?review|review-?notes?|resolution-?center|policy-?violation)[^/]*\.(md|txt)$/i, /(^|\/)(app-?review|review-?notes?|rejections?)\/[^/]+\.(md|txt)$/i
   ];
   /* App source code: read a limited number of files so review checks can see runtime behavior
      (ad request settings, ATT prompt, secret storage, login gate, user-supplied API keys). */
@@ -36,7 +39,15 @@
   /* 0.2.0: native libraries (.so) for the Google Play 16 KB page-size check. Only ELF headers are read; nothing is uploaded. */
   const SO_RE = /\.so$/i, NATIVE_SRC_RE = /(^|\/)(CMakeLists\.txt|Android\.mk|Application\.mk)$|(^|\/)src\/main\/(cpp|jni)\//i;
   const NOTABLE_RE = /(^|\/)(google-services\.json|GoogleService-Info\.plist|key\.properties|assetlinks\.json|apple-app-site-association|app-ads\.txt)$|\.(jks|keystore|p12|p8|mobileprovision)$/i;
-  const MAX_SO = 12, MAX_SO_SIZE = 40 * 1024 * 1024;
+  const MAX_SO = 12, MAX_SO_SIZE = 40 * 1024 * 1024, LARGE_FILE = 20 * 1024 * 1024;
+  /* 0.2.5: text files saved as UTF-16 (with a BOM) or in a legacy 8-bit encoding are decoded instead of becoming mojibake */
+  function decodeText(u8) {
+    if (u8.length >= 2 && u8[0] === 0xff && u8[1] === 0xfe) return new TextDecoder('utf-16le').decode(u8.subarray(2));
+    if (u8.length >= 2 && u8[0] === 0xfe && u8[1] === 0xff) { const sw = new Uint8Array(u8.length - 2); for (let i = 2; i + 1 < u8.length; i += 2) { sw[i - 2] = u8[i + 1]; sw[i - 1] = u8[i]; } return new TextDecoder('utf-16le').decode(sw); }
+    const b = u8.length >= 3 && u8[0] === 0xef && u8[1] === 0xbb && u8[2] === 0xbf ? u8.subarray(3) : u8;
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(b); } catch (e) { }
+    let out = ''; for (let i = 0; i < b.length; i++) out += String.fromCharCode(b[i]); return out;   // Latin-1
+  }
   /* Smallest LOAD segment alignment of an ELF file (bytes), its class (32/64) and machine; null if not ELF. */
   function elfAlign(u8) {
     if (!u8 || u8.length < 64 || u8[0] !== 0x7f || u8[1] !== 0x45 || u8[2] !== 0x4c || u8[3] !== 0x46) return null;
@@ -64,6 +75,8 @@
       catch (err) { out.unread++; out.libs.push({ path: e.rel, abi, align: null }); }
     }
     out.unread += Math.max(0, libs.length - MAX_SO); out.total = libs.length;
+    /* 0.2.5: large files (ML models, videos, asset bundles) for the Play download-size check; sizes only, nothing is read */
+    out.large = entries.filter(e => e.size >= LARGE_FILE && !SKIP_RE.test(e.rel) && !SO_RE.test(e.rel) && !/(^|\/)\.git\//.test(e.rel)).sort((a, b) => b.size - a.size).slice(0, 20).map(e => ({ path: e.rel, size: e.size }));
     return out;
   }
 
@@ -108,7 +121,7 @@
       onStep && onStep(e.rel);
       try {
         const u8 = await e.read();
-        files[e.rel] = e.kind === 'text' ? { text: new TextDecoder().decode(u8) } : e.kind === 'code' ? { text: new TextDecoder().decode(u8), code: true } : { dataUrl: await u8ToDataUrl(u8, e.rel) };
+        files[e.rel] = e.kind === 'text' ? { text: decodeText(u8) } : e.kind === 'code' ? { text: decodeText(u8), code: true } : { dataUrl: await u8ToDataUrl(u8, e.rel) };
       } catch (err) { console.warn('skip', e.rel, err); }
     }
     return { name, source, files, fileCount: entries.length, natives };

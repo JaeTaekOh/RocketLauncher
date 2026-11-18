@@ -1,6 +1,6 @@
 {
   "name": "rocket-launcher-mcp-runtime",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": true,
   "type": "module",
   "description": "Optional: run 'npm install' here to turn on store graphics (icon, feature graphic, screenshots).",

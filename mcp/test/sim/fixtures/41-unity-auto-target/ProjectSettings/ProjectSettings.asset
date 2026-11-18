@@ -1,0 +1,12 @@
+%YAML 1.1
+--- !u!129 &1
+PlayerSettings:
+  productName: AR Ruler
+  bundleVersion: 0.9.1
+  applicationIdentifier:
+    Android: com.sim.arruler
+    iPhone: com.sim.arruler
+  AndroidBundleVersionCode: 5
+  AndroidMinSdkVersion: 26
+  AndroidTargetSdkVersion: 0
+  cameraUsageDescription: Uses the camera to measure objects in AR.

@@ -1,0 +1,9 @@
+{
+  "description": "Android game with AppLovin MAX mediation, Unity Ads and Meta Audience Network adapters plus Google UMP consent.",
+  "framework": "android-native",
+  "ads": true,
+  "category": "games",
+  "issues_absent": [
+    "adsConsent"
+  ]
+}

@@ -49,7 +49,7 @@ async function stdioFlow() {
   check(r.isError, 'lang "xx" rejected by the schema');
   r = await call(c, 'rocketlauncher_connect_app', { source: 'sample' }); const rep = data(r);
   const id = rep.project_id;
-  check(!r.isError && id && rep.readiness === 26 && rep.counts.block === 6, 'connect sample → readiness 26%, 6 must-fix (Sign in with Apple now required)', rep.counts);
+  check(!r.isError && id && rep.readiness === 22 && rep.counts.block === 6, 'connect sample → readiness 22%, 6 must-fix (Sign in with Apple now required; ads without a consent form warn)', rep.counts);
   check(rep.app.name === 'SnapLedger' && rep.app.targetSdk === 34 && rep.app.platforms.join() === 'android,ios', 'app facts: SnapLedger / targetSdk 34 / android+ios', rep.app);
   check(!NON_EN.test(JSON.stringify(rep)), 'connect (no lang) → analysis report fully in English (default en)');
   console.log('  summary:', rep.summary);
@@ -141,7 +141,7 @@ async function stdioFlow() {
 
   // 7. 로컬 폴더 연결 (sample 원본 폴더)
   r = await call(c, 'rocketlauncher_connect_app', { source: 'path', path: process.env.ROCKETLAUNCHER_TEST_SAMPLE_DIR || path.join(HERE, '..', '..', 'sample', 'snapledger'), lang: 'en' });
-  check(!r.isError && data(r).readiness === 26, 'connect local folder (sample/snapledger) → same analysis', r.isError ? r.content[0].text : undefined);
+  check(!r.isError && data(r).readiness === 22, 'connect local folder (sample/snapledger) → same analysis', r.isError ? r.content[0].text : undefined);
   r = await call(c, 'rocketlauncher_connect_app', { source: 'path', path: '/definitely/not/here' });
   check(r.isError, 'missing path → clear error');
   await c.close();

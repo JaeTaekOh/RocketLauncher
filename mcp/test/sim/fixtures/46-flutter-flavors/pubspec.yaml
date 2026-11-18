@@ -1,0 +1,11 @@
+name: shopnow
+description: Online shopping cart and store deals.
+version: 2.3.0+230
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0

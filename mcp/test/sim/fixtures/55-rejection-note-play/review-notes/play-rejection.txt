@@ -1,0 +1,3 @@
+Google Play Console: Your app was rejected.
+Issue: Policy declaration for Data safety section - inaccurate declaration.
+Please update your Data safety form and resubmit.

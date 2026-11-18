@@ -1,0 +1,7 @@
+{
+  "description": "Native Android app with a saved Google Play policy rejection note.",
+  "framework": "android-native",
+  "stage": {
+    "play": "rejected"
+  }
+}

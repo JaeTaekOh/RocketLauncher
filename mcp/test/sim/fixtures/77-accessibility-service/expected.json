@@ -1,0 +1,7 @@
+{
+  "description": "Android auto-clicker using an AccessibilityService.",
+  "framework": "android-native",
+  "issues_present": [
+    "accessibilityService"
+  ]
+}

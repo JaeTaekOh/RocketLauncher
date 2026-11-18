@@ -1,0 +1,8 @@
+{
+  "description": "Android timer app (targetSdk 36) with FOREGROUND_SERVICE and a service without foregroundServiceType.",
+  "framework": "android-native",
+  "issues_present": [
+    "fgs",
+    "fgsType"
+  ]
+}

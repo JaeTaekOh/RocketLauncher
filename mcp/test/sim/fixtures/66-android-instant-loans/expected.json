@@ -1,0 +1,8 @@
+{
+  "description": "Native Android personal loan app (instant cash loans).",
+  "framework": "android-native",
+  "category": "finance",
+  "issues_present": [
+    "loanPolicy"
+  ]
+}

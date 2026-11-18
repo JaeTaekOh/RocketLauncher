@@ -1,0 +1,7 @@
+{
+  "description": "Android gallery cleaner requesting READ_MEDIA_IMAGES.",
+  "framework": "android-native",
+  "issues_present": [
+    "photoPerm"
+  ]
+}

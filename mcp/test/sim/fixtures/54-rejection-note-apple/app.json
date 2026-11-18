@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Meetly",
+    "slug": "meetly",
+    "version": "1.0.1",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "bundleIdentifier": "com.sim.meetly"
+    },
+    "android": {
+      "package": "com.sim.meetly",
+      "versionCode": 2
+    }
+  }
+}

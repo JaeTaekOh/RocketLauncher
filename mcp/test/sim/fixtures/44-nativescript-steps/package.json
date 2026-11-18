@@ -1,0 +1,12 @@
+{
+  "name": "stepup",
+  "version": "1.0.0",
+  "main": "app/app.ts",
+  "dependencies": {
+    "@nativescript/core": "~8.8.0"
+  },
+  "devDependencies": {
+    "@nativescript/android": "~8.8.0",
+    "@nativescript/ios": "~8.8.0"
+  }
+}

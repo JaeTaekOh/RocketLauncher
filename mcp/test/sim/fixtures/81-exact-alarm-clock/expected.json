@@ -1,0 +1,7 @@
+{
+  "description": "Alarm clock app; USE_EXACT_ALARM is its core feature.",
+  "framework": "android-native",
+  "issues_absent": [
+    "exactAlarm"
+  ]
+}

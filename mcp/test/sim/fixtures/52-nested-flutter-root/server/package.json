@@ -1,0 +1,7 @@
+{
+  "name": "lingo-api",
+  "version": "0.3.0",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

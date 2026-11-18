@@ -1,0 +1,16 @@
+{
+  "description": "Ionic Angular + Capacitor event ticket shop with Firebase Auth and no account deletion.",
+  "framework": "capacitor",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.tixly",
+  "category": "shopping",
+  "sdk": {
+    "auth": true
+  },
+  "issues_present": [
+    "accountDeletion"
+  ]
+}

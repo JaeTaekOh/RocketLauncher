@@ -1,0 +1,14 @@
+{
+  "description": "Native Android app using the Firebase BoM with -ktx Analytics and Crashlytics artifacts (versionless).",
+  "framework": "android-native",
+  "sdk": {
+    "analytics": true,
+    "crash": true,
+    "auth": false
+  },
+  "data_safety": [
+    "crash",
+    "diag",
+    "usage"
+  ]
+}

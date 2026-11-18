@@ -1,0 +1,8 @@
+{
+  "description": "Native Android fitness app reading steps and heart rate from Health Connect.",
+  "framework": "android-native",
+  "category": "health",
+  "issues_present": [
+    "healthConnect"
+  ]
+}

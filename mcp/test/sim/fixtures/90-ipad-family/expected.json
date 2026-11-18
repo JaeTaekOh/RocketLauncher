@@ -1,0 +1,7 @@
+{
+  "description": "iOS app built for iPhone and iPad (TARGETED_DEVICE_FAMILY 1,2) with no iPad screenshots.",
+  "framework": "ios-native",
+  "issues_present": [
+    "ipadShots"
+  ]
+}

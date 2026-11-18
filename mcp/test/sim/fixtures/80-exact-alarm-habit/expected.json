@@ -1,0 +1,7 @@
+{
+  "description": "Habit tracker requesting USE_EXACT_ALARM (reserved for alarm / calendar apps).",
+  "framework": "android-native",
+  "issues_present": [
+    "exactAlarm"
+  ]
+}

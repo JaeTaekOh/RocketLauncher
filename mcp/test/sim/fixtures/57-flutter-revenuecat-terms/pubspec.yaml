@@ -1,0 +1,11 @@
+name: calmly
+description: Meditation and sleep sounds.
+version: 1.2.0+12
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  purchases_flutter: ^8.1.0

@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.2.5
+
+The simulation corpus grew from 39 to 100 small synthetic apps (`mcp/test/sim/`, about 200 KB on disk; large model files are created at run time as sparse files). On all 100 apps, 0.2.4 got 526 of 574 checks right, and 3 apps (Unity and Godot) could not be connected at all, so 31 more checks never ran. 0.2.5 gets all 605 checks right.
+
+- **More project types.** Unity (`ProjectSettings.asset`: ids, version, version code, SDK levels; target SDK 0 means "highest installed" and is reported as unread), Godot 4 (`export_presets.cfg` Android and iOS presets), .NET MAUI (`.csproj` ApplicationId / versions, `Platforms/Android` manifest, NuGet packages) and NativeScript (`nativescript.config.ts`, `App_Resources/Android/app.gradle`). In a monorepo, the app's `package.json` and `app.json` are used (the ones with mobile framework dependencies) instead of the workspace root. Unity and Godot count as engines that ship native libraries in the 16 KB page-size check.
+- **Android build files.** The app id, versions and SDK levels come from `defaultConfig`, so a product flavor listed earlier with its own `applicationId` is no longer reported as the app. Flavor and build-type dependencies (`freeImplementation`, `"paidImplementation"(…)`) now count, but debug and test ones do not. Permissions and services in local library modules (`com.android.library`) are merged, as the Android build does. `targetSdkVersion project.targetSdkVersion.toInteger()` is resolved from `gradle.properties`. `<uses-sdk>` in the manifest is used when no Gradle module sets SDK levels (MAUI, old projects).
+- **iOS targets.** When a project has a widget, app extension or watch app, the app's own `Info.plist` and bundle id are used, not the extension's. HealthKit now needs `NSHealthShareUsageDescription` / `NSHealthUpdateUsageDescription`, like camera and location.
+- **Store stage.** A saved rejection message in the project (for example `docs/app-review/rejection.md` with an App Review guideline, or a Play Console policy e-mail) suggests "rejected" for that store, and you are still asked to confirm. Fastlane listings in languages outside the five UI languages, such as Arabic, Hebrew or Persian, now count as listings.
+- **New checks.**
+  - Ads without a consent SDK (Google UMP or an IAB TCF CMP).
+  - Auto-renewing subscriptions without a Terms of Use / EULA link. One-time products are not affected.
+  - Personal loan apps. A loan or mortgage calculator does not count.
+  - Gambling and betting.
+  - VPN apps (Android `VpnService`, iOS Network Extension).
+  - Social or AI chat content without a way to report or block it.
+  - Foreground services without `foregroundServiceType` or the matching `FOREGROUND_SERVICE_<TYPE>` permission (targetSdk 34+).
+  - `USE_EXACT_ALARM` in an app that is not an alarm clock or calendar.
+  - Accessibility services.
+  - Health Connect permissions.
+  - Attribution SDKs on iOS (AppsFlyer, Adjust, Branch, Kochava, Singular) when the app declares no tracking.
+  - Large files of 150 MB or more in the Android base module. Play Asset Delivery packs do not count.
+- **Messy files.** Text files saved as UTF-16 (with a BOM) or in Latin-1 are decoded correctly, and a UTF-8 BOM is removed.
+- **Categories.** New category: Weather. Scanners, PDF tools, VPNs, launchers and measuring tools count as Tools, and ticket marketplaces count as Shopping.
+
+Known limitations:
+- Policy areas such as loans, gambling, children and AI chat are detected from keywords in the app name, README and listing copy.
+- A rejection note is read only if its file name or folder says so (reject, app-review, review-notes, resolution-center), and an old note still suggests "rejected" until you confirm the stage.
+- The foreground service check sees services declared in the app and in local library modules, but not those merged in from remote AAR dependencies.
+- The Android 13 notification permission is not checked, because libraries often merge it in.
+- The large-file check adds up file sizes before compression.
+- Unity Android settings in `Assets/Plugins/Android` overrides, and Godot settings stored only in `.godot/` caches, are not read.
+
 ## 0.2.4
 
 Checked against a new simulation corpus: 39 small synthetic apps with known correct answers (`mcp/test/sim/`, `npm run sim`, part of `npm test`). Version 0.2.3 got 273 of 332 checks right on it, and 3 of the apps could not be connected at all. 0.2.4 gets all 366 right.

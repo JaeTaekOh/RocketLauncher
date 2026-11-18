@@ -1,0 +1,10 @@
+apply plugin: "com.android.application"
+android {
+    defaultConfig {
+        applicationId "com.sim.betzone"
+        minSdkVersion 24
+        targetSdkVersion 36
+        versionCode 1
+        versionName "1.0.0"
+    }
+}

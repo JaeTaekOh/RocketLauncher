@@ -1,0 +1,8 @@
+{
+  "description": "Flutter community app with Firestore posts and report/block features.",
+  "framework": "flutter",
+  "category": "social",
+  "issues_absent": [
+    "ugcModeration"
+  ]
+}

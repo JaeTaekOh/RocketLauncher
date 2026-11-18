@@ -1,0 +1,27 @@
+// !$*UTF8*$!
+{
+	objects = {
+		B0000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 6;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sim.pulse.watchkitapp;
+				TARGETED_DEVICE_FAMILY = "1";
+			};
+			name = Release;
+		};
+		B1000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 6;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sim.pulse;
+				TARGETED_DEVICE_FAMILY = "1";
+			};
+			name = Release;
+		};
+	};
+}

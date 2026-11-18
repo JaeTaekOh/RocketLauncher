@@ -1,0 +1,8 @@
+{
+  "description": "Windows CRLF files and a messy Groovy gradle (odd spacing, quoted targetSdk, pre-release version name).",
+  "framework": "android-native",
+  "package": "com.sim.messy",
+  "version": "2.0.0-beta.1",
+  "versionCode": "200",
+  "targetSdk": 35
+}

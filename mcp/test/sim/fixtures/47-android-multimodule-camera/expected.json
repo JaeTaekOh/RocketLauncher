@@ -1,0 +1,9 @@
+{
+  "description": "Multi-module Android document scanner; the CAMERA permission is declared in the :feature-scan library manifest.",
+  "framework": "android-native",
+  "package": "com.sim.scanly",
+  "sdk": {
+    "camera": true
+  },
+  "category": "tools"
+}

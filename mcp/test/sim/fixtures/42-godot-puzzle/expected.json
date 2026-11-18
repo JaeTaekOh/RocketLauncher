@@ -1,0 +1,21 @@
+{
+  "description": "Godot 4 puzzle game; Android and iOS export presets in export_presets.cfg.",
+  "name": "Gem Drop",
+  "framework": "godot",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.gemdrop",
+  "version": "1.0.7",
+  "versionCode": "7",
+  "targetSdk": 36,
+  "category": "games",
+  "issues_absent": [
+    "targetSdk",
+    "targetSdkUnread"
+  ],
+  "requirements": {
+    "play.16kb_page_size": "warn"
+  }
+}

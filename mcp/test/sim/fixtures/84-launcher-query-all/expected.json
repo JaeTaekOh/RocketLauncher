@@ -1,0 +1,7 @@
+{
+  "description": "Android launcher with QUERY_ALL_PACKAGES.",
+  "framework": "android-native",
+  "issues_present": [
+    "specialPerm"
+  ]
+}

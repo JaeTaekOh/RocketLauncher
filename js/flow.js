@@ -33,7 +33,7 @@
   }
   function stageHints(A, store) {
     const L = (A.listing || {})[store] || { evidence: [] };
-    return { evidence: L.evidence || [], weak: L.weak || null, url: L.url || null, recorded: stageRecorded(A, store) };
+    return { evidence: L.evidence || [], weak: L.weak || null, url: L.url || null, recorded: stageRecorded(A, store), rejectNote: L.rejectNote || null };
   }
   /* Recommended stage. Never guessed: the user's choice, then a recorded state, then store evidence (live); with nothing to go on the
      answer is 'unknown' and the user must confirm (the demo sample alone is a known first submit). */
@@ -41,6 +41,8 @@
     const cur = (dec || {})['stage:' + store]; if (cur) return cur;
     const h = stageHints(A, store);
     if (h.recorded) return h.recorded.stage;
+    /* 0.2.5: a saved rejection message in the project (App Review / Play Console) means the last submission was rejected; the user confirms */
+    if (h.rejectNote) return 'rejected';
     if (h.evidence.length) return 'live';
     if (A.source && A.source.kind === 'sample') return 'not_submitted';
     return 'unknown';
@@ -57,7 +59,7 @@
     const list = [];
     /* Stage first: required, per store, recommended from hints. "ask" = hints exist, so accept-all must not pick it for the user. */
     storesOf(A).forEach(k => { const h = stageHints(A, k), rec = stageRec(A, k);
-      list.push({ key: 'stage:' + k, group: 'stage', store: k, opts: STAGES.slice(), rec: STAGES.indexOf(rec), hints: h, ask: !!(h.evidence.length || h.weak || h.recorded) || rec === 'unknown' }); });
+      list.push({ key: 'stage:' + k, group: 'stage', store: k, opts: STAGES.slice(), rec: STAGES.indexOf(rec), hints: h, ask: !!(h.evidence.length || h.weak || h.recorded || h.rejectNote) || rec === 'unknown' }); });
     storesOf(A).forEach(k => { if (stageOf(dec, k) === 'in_review') list.push({ key: 'binary:' + k, group: 'stage', store: k, opts: ['wait', 'new_build'], rec: 0 }); });
     const keep = hasListing(A, dec);
     issuesFor(A, dec).filter(i => i.fix && i.fix !== 'info').forEach(i => {
