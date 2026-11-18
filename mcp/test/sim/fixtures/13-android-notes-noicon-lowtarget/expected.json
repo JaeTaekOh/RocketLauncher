@@ -1,0 +1,27 @@
+{
+  "description": "Native Android notes app with targetSdk 33 (blocks), no launcher icon at all and no screenshots.",
+  "framework": "android-native",
+  "platforms": [
+    "android"
+  ],
+  "package": "com.sim.quicknotes",
+  "version": "1.0",
+  "versionCode": "1",
+  "targetSdk": 33,
+  "category": "productivity",
+  "stage": {
+    "play": "unknown"
+  },
+  "data_safety": [],
+  "icon": {
+    "found": false
+  },
+  "issues_present": [
+    "targetSdk",
+    "noIcon",
+    "noShots"
+  ],
+  "issues_absent": [
+    "targetSdkUnread"
+  ]
+}

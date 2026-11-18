@@ -1,0 +1,8 @@
+{
+  "description": "Only weak hints of an earlier upload (versionCode 12, an App Store Connect app id in the notes): the stage stays unknown and must be confirmed.",
+  "category": "health",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  }
+}

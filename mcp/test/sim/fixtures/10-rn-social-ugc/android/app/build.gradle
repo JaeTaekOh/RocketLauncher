@@ -1,0 +1,11 @@
+apply plugin: "com.android.application"
+android {
+    namespace "com.sim.chatter"
+    defaultConfig {
+        applicationId "com.sim.chatter"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 4
+        versionName "0.4.0"
+    }
+}

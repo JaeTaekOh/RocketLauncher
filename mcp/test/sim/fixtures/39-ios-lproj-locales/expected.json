@@ -1,0 +1,13 @@
+{
+  "description": "Native iOS app localized with en / ko / th .lproj folders.",
+  "framework": "ios-native",
+  "platforms": [
+    "ios"
+  ],
+  "version": "2.2",
+  "app_langs": [
+    "en",
+    "ko",
+    "th"
+  ]
+}

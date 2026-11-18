@@ -1,0 +1,4 @@
+platform :ios, '16.0'
+target 'Journal' do
+  pod 'RealmSwift', '~> 10.54'
+end

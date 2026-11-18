@@ -1,0 +1,8 @@
+{
+  "description": "Stages recorded in rocketlauncher.json: Play live (store_stage), App Store METADATA_REJECTED.",
+  "category": "food",
+  "stage": {
+    "play": "live",
+    "apple": "rejected"
+  }
+}

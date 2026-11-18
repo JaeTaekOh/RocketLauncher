@@ -1,0 +1,14 @@
+{
+  "description": "Native Android whose targetSdk comes from libs.versions.toml (34, blocks).",
+  "platforms": [
+    "android"
+  ],
+  "package": "com.sim.metro",
+  "versionCode": "8",
+  "version": "0.8.0",
+  "targetSdk": 34,
+  "category": "navigation",
+  "issues_present": [
+    "targetSdk"
+  ]
+}

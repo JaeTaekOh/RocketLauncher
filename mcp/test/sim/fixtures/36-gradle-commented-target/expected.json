@@ -1,0 +1,13 @@
+{
+  "description": "Native Android whose old targetSdk / versionCode lines are commented out above the real ones.",
+  "platforms": [
+    "android"
+  ],
+  "targetSdk": 36,
+  "versionCode": "4",
+  "version": "1.0.3",
+  "category": "games",
+  "issues_absent": [
+    "targetSdk"
+  ]
+}

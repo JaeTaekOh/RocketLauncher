@@ -1,0 +1,11 @@
+{
+  "description": "Flutter parking finder using geolocator whose iOS Info.plist has no location purpose string (crash + rejection).",
+  "framework": "flutter",
+  "category": "navigation",
+  "sdk": {
+    "location": true
+  },
+  "issues_present": [
+    "missingUsage"
+  ]
+}

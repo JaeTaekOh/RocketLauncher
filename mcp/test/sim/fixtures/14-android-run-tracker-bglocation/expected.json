@@ -1,0 +1,22 @@
+{
+  "description": "Native Android running tracker with background location and a foreground service; GPS points are uploaded.",
+  "framework": "android-native",
+  "platforms": [
+    "android"
+  ],
+  "package": "com.sim.runloop",
+  "version": "1.6.0",
+  "versionCode": "14",
+  "targetSdk": 36,
+  "category": "health",
+  "sdk": {
+    "location": true
+  },
+  "data_safety": [
+    "loc"
+  ],
+  "issues_present": [
+    "bgLocation",
+    "fgs"
+  ]
+}

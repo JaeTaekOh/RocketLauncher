@@ -1,0 +1,17 @@
+{
+  "description": "Flutter app with Firebase Auth, Google and Apple sign-in, and an in-app \"Delete account\" that calls user.delete().",
+  "framework": "flutter",
+  "category": "education",
+  "sdk": {
+    "auth": true,
+    "cloudDb": true
+  },
+  "issues_present": [
+    "demoAccount"
+  ],
+  "issues_absent": [
+    "accountDeletion",
+    "accountDeletionUnsure",
+    "loginOption"
+  ]
+}

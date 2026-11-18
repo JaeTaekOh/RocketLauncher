@@ -1,0 +1,26 @@
+{
+  "description": "Kotlin Multiplatform (Compose Multiplatform) vocabulary app: Android app module is composeApp/ with version-catalog SDK levels, iOS app in iosApp/.",
+  "framework": "kmp",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.wordwise",
+  "version": "1.1.0",
+  "versionCode": "5",
+  "targetSdk": 36,
+  "category": "education",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  },
+  "data_safety": [],
+  "icon": {
+    "found": true,
+    "mismatch": false
+  },
+  "issues_absent": [
+    "targetSdk",
+    "targetSdkUnread"
+  ]
+}

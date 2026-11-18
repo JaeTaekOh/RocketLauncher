@@ -1,0 +1,44 @@
+{
+  "description": "Native Android (Kotlin DSL) budget app with Play Billing, Firebase Analytics and Crashlytics, a public Play link (live), translated strings and a privacy URL in strings.xml.",
+  "framework": "android-native",
+  "platforms": [
+    "android"
+  ],
+  "package": "com.sim.pocketledger",
+  "version": "2.4.0",
+  "versionCode": "21",
+  "targetSdk": 36,
+  "category": "finance",
+  "stage": {
+    "play": "live"
+  },
+  "ads": false,
+  "iap": true,
+  "sdk": {
+    "analytics": true,
+    "crash": true,
+    "auth": false,
+    "location": false
+  },
+  "data_safety": [
+    "crash",
+    "diag",
+    "usage"
+  ],
+  "privacy_url": "https://pocketledger.app/privacy",
+  "app_langs": [
+    "en",
+    "ko",
+    "th"
+  ],
+  "icon": {
+    "found": true,
+    "android_blank": false
+  },
+  "issues_absent": [
+    "targetSdk",
+    "privacyPolicy",
+    "accountDeletion",
+    "adsDeclare"
+  ]
+}

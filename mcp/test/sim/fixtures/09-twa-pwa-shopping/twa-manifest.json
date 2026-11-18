@@ -1,0 +1,10 @@
+{
+ "packageId": "app.sim.marketly.twa",
+ "host": "marketly.app",
+ "name": "Marketly",
+ "launcherName": "Marketly",
+ "appVersionCode": 3,
+ "appVersionName": "1.0.2",
+ "startUrl": "/",
+ "webManifestUrl": "https://marketly.app/manifest.webmanifest"
+}

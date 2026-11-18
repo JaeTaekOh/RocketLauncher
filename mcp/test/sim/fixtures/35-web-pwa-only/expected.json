@@ -1,0 +1,4 @@
+{
+  "description": "A plain PWA (web manifest + service worker) with no Android / iOS wrapper: not an app Rocket Launcher can submit yet.",
+  "error": "noapp"
+}

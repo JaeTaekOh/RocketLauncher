@@ -1,0 +1,33 @@
+{
+  "description": "Minimal Expo managed app (app.json without android / ios blocks builds for both stores). Camera translator with JSON locale files in five languages.",
+  "framework": "expo",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "version": "0.9.0",
+  "targetSdk": null,
+  "category": "tools",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  },
+  "ads": false,
+  "iap": false,
+  "sdk": {
+    "camera": true,
+    "location": false
+  },
+  "app_langs": [
+    "en",
+    "hi",
+    "ko",
+    "th",
+    "zh"
+  ],
+  "privacy_url": null,
+  "issues_present": [
+    "targetSdkUnread",
+    "privacyPolicy"
+  ]
+}

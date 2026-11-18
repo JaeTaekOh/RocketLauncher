@@ -1,0 +1,15 @@
+// !$*UTF8*$!
+{
+  objects = {
+    97C147061CF9000F007C117D /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        
+        
+        IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+        PRODUCT_BUNDLE_IDENTIFIER = kr.sim.gaspump;
+        TARGETED_DEVICE_FAMILY = 1;
+      };
+    };
+  };
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Expo app whose app.json privacy URL disagrees with the README one: app config wins, both reported.",
+  "framework": "expo",
+  "version": "1.5.0",
+  "versionCode": "15",
+  "category": "lifestyle",
+  "privacy_url": "https://habitual.app/legal/privacy",
+  "privacy_conflict": true,
+  "issues_present": [
+    "privacyUrlConflict"
+  ]
+}

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.4
+
+Checked against a new simulation corpus: 39 small synthetic apps with known correct answers (`mcp/test/sim/`, `npm run sim`, part of `npm test`). Version 0.2.3 got 273 of 332 checks right on it, and 3 of the apps could not be connected at all. 0.2.4 gets all 366 right.
+
+- **More project types.** Cordova projects are read from `config.xml`, so the `platforms/` folder no longer has to be committed (id, version, `android-versionCode`, SDK preferences, platforms). Kotlin Multiplatform apps are recognized, including an Android module such as `composeApp/` whose plugin comes from the version catalog. Bubblewrap Trusted Web Activities are recognized from `twa-manifest.json`. An Expo app with a plain `app.json` (no `android` / `ios` block) or only a dynamic `app.config.js` now connects for both stores.
+- **Versions and SDK levels.** Flutter version and build number come from `pubspec.yaml` (Gradle `flutter.versionName` / `flutterVersionCode` and Xcode `$(FLUTTER_BUILD_NAME)` were reported as text before). An Expo version comes from `app.json` before `package.json`, and an Expo targetSdk set with `expo-build-properties` is read. Commented-out Gradle lines no longer count, for example `// targetSdk 33` above the real value.
+- **Icons.** A flat two-color icon, such as a white glyph on a solid background, is artwork and no longer "blank". A new warning flags an App Store icon with transparent pixels, which App Store Connect rejects (ITMS-90717).
+- **SDK detection.** Comments in code, `pubspec.yaml` and the Podfile no longer count, so a commented-out ads, analytics or crash SDK is not reported. In-app purchases now come from real declarations, such as Play Billing, StoreKit (`import StoreKit`, `Product.products`) and IAP plugins, instead of any "billing" or "purchases" word. A `billingAddress` field is not IAP, and native StoreKit 2 apps are now found. Plain Realm is an on-device database, so only Realm Sync counts as cloud data. Supabase counts as sign-in only when its auth API is used.
+- **iOS purpose strings.** Location, contacts and microphone are now checked like the camera, based on what the iOS app itself uses (cross-platform plugins, iOS or web code). An Android-only permission no longer requires an iOS string. Expo apps without an `ios/` folder are skipped, because Expo adds default strings for its modules. The Info.plist patch now adds missing keys, not only empty ones.
+- **Children's apps.** A new warning appears when an app aimed at children uses ads or analytics. It covers the Google Play Families policy and the App Store Kids category rules.
+- **Categories.** New categories: Music & Audio / Music and Social / Social Networking. Translators and dictionaries count as Tools (a translator mentioning "menu" was suggested as Food).
+- **Privacy URL.** A policy hosted on GitHub Pages, Google Sites, Notion, Firebase Hosting, Cloudflare Pages, Netlify or Vercel is now accepted (`*.github.io` and `sites.google.com` were dropped as third-party sites). A policy page only in an archived `old-site/` folder no longer counts as having a policy.
+- **Languages.** In-app languages also come from `locales/*.json` / `i18n/*.json` files and `*.lproj` folders. Flutter `app_zh_Hans.arb` counts as `zh`.
+
+Known limitations: `app.config.js` is read for plain literals only, so values computed at build time are not seen. Store metadata or a store link in the repo still suggests "live", but you are always asked to confirm. Category and children's-app detection rely on keywords in the app name and README. Any cloud database is drafted as "user-generated content" in Data safety, even when the app only reads public data. The transparent-icon check sees transparent pixels, not a fully opaque alpha channel. Cordova permissions are not read without a generated `platforms/` folder.
+
 ## 0.2.3
 
 - **Icons.** The iOS 1024 App Store icon and the Android launcher icon are now read pixel by pixel. A blank, single-color or near-uniform icon gets a warning (a found file is no longer enough to pass), and an iOS icon that does not look like the Android icon is flagged. Store graphics are built from the icon with artwork. Pixels are read with a small built-in PNG decoder, or with the optional graphics package for other formats.

@@ -1,0 +1,11 @@
+{
+  "description": "Native Android metronome with android:debuggable and cleartext traffic left on.",
+  "platforms": [
+    "android"
+  ],
+  "category": "music",
+  "issues_present": [
+    "debuggable",
+    "cleartext"
+  ]
+}

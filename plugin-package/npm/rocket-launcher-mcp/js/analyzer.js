@@ -8,6 +8,8 @@
   const find = (files, re) => Object.keys(files).filter(p => re.test(p) && files[p].text != null);
   const shortest = arr => arr.slice().sort((a, b) => a.length - b.length)[0];
   const txt = (files, p) => (p && files[p] && files[p].text) || '';
+  /* 0.2.4: C-style comments (Gradle, Kotlin, Java, Swift, Dart, JS/TS) removed; quoted strings and template literals are kept, so URLs survive. */
+  const stripCode = s => String(s || '').replace(/("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\/[^\n]*|\/\*[\s\S]*?\*\//g, (m, q) => q || '');
 
   function parseXml(s) { try { const d = new DOMParser().parseFromString(s, 'application/xml'); return d.querySelector('parsererror') ? null : d; } catch (e) { return null; } }
   function aAttr(el, name) { return el.getAttribute('android:' + name) ?? el.getAttributeNS('http://schemas.android.com/apk/res/android', name); }
@@ -100,9 +102,11 @@
   const OLD_RE = /(^|\/)(archive|archived|archives|old|backup|backups|bak|dist|build|out|legacy|deprecated|previous|prev|site-old|old-site|_old|[^/]*[-_.](old|bak|backup|orig|copy))\/|\.(bak|orig|old)$|(^|\/)[^/]*[-_.](old|backup)\.[a-z]+$/i;
   const PRIV_URL_RE = /https?:\/\/[^\s"'<>)\]\\]*(privacy|개인정보|policy)[^\s"'<>)\]\\]*/gi;
   const THIRD_PARTY = /(apple|google|firebase|android|admob|policies\.google|facebook|github|w3|schema|cloudflare|opinet|kakao|naver|microsoft)\.(com|org|io|co\.kr)|developer\.|example\.|<your-site>|localhost|127\.0\.0\.1/i;
+  /* 0.2.4: pages a developer hosts on a shared domain are the developer's own (GitHub Pages, Google Sites, Notion, Firebase Hosting) */
+  const OWN_HOST = /^https?:\/\/([\w-]+\.github\.io\/|sites\.google\.com\/(view|site)\/|[\w-]+\.notion\.site\/|[\w-]+\.web\.app\/|[\w-]+\.firebaseapp\.com\/|[\w-]+\.pages\.dev\/|[\w-]+\.netlify\.app\/|[\w-]+\.vercel\.app\/)/i;
   const normUrl = u => String(u).replace(/[.,;:]+$/, '').replace(/#.*$/, '').replace(/\/+$/, '').replace(/^(https:\/\/[^/]+)/, m => m.toLowerCase());
   function privacyCandidates(F, A, L) {
-    const C = [], push = (url, file, priority, source) => { if (!url || !/^https?:\/\//i.test(url) || (priority > 0 && THIRD_PARTY.test(url))) return; const u = normUrl(url); if (!C.some(c => c.url === u && c.file === file)) C.push({ url: u, file, priority, source }); };
+    const C = [], push = (url, file, priority, source) => { if (!url || !/^https?:\/\//i.test(url) || (priority > 0 && THIRD_PARTY.test(url) && !OWN_HOST.test(url))) return; const u = normUrl(url); if (!C.some(c => c.url === u && c.file === file)) C.push({ url: u, file, priority, source }); };
     const cfg = A.projectConfig;
     if (cfg && cfg.privacy_url) push(String(cfg.privacy_url), cfg._file || 'rocketlauncher.json', 0, 'project config');
     const P = Object.keys(F).filter(p => F[p].text != null && !OLD_RE.test(p));
@@ -123,7 +127,26 @@
     L.privacyConflict = others.length > 0 && !(strong[0].priority === 0 && others.every(c => c.priority === 4));
     L.privacyWeak = !L.privacyUrl && C.length > 0;
   }
+  /* 0.2.4: Cordova config.xml — id / version / android-versionCode / ios-CFBundleVersion attributes, SDK preferences, <platform> entries
+     (the platforms/ folder is usually not committed), plus package.json "cordova.platforms". */
+  function cordovaOf(x, pkg) {
+    const d = parseXml(x), w = d && d.querySelector('widget'); if (!w) return null;
+    const pref = n => { const e = [...d.querySelectorAll('preference')].find(e => (e.getAttribute('name') || '').toLowerCase() === n.toLowerCase()); return e ? e.getAttribute('value') : null; };
+    const plats = new Set([...d.querySelectorAll('platform')].map(e => e.getAttribute('name')).concat((pkg && pkg.cordova && pkg.cordova.platforms) || []));
+    const num = v => (v && /^\d+$/.test(v) ? +v : null);
+    return { id: w.getAttribute('id'), androidId: w.getAttribute('android-packageName') || w.getAttribute('id'), iosId: w.getAttribute('ios-CFBundleIdentifier') || w.getAttribute('id'),
+      version: w.getAttribute('version'), versionCode: w.getAttribute('android-versionCode'), iosBuild: w.getAttribute('ios-CFBundleVersion'),
+      targetSdk: num(pref('android-targetSdkVersion')), minSdk: num(pref('android-minSdkVersion')), iosDeployment: pref('deployment-target'),
+      android: plats.has('android'), ios: plats.has('ios'), name: (d.querySelector('widget > name') || {}).textContent || null };
+  }
+  /* 0.2.4: SDK levels set through the expo-build-properties plugin in app.json */
+  function expoBuildProps(expo) {
+    const pl = (expo.plugins || []).find(x => Array.isArray(x) && x[0] === 'expo-build-properties'), a = (pl && pl[1] && pl[1].android) || {};
+    const n = v => (v != null && /^\d+$/.test(String(v)) ? +v : null);
+    return { minSdk: n(a.minSdkVersion), targetSdk: n(a.targetSdkVersion), compileSdk: n(a.compileSdkVersion) };
+  }
   function gradleDeps(g) {
+    g = stripCode(g);
     const out = []; const re = /(?:implementation|api|kapt|ksp)\s*\(?\s*(?:platform\()?\s*["']([^"']+)["']/g; let m;
     while ((m = re.exec(g))) out.push(m[1]);
     const re2 = /(?:implementation|api)\s*\(\s*libs\.([\w.]+)/g; while ((m = re2.exec(g))) out.push('libs.' + m[1]);
@@ -166,12 +189,15 @@
     travel: /\b(travel\w*|trips?|hotels?|flights?|tour\w*|sightseeing|itinerar\w*)\b|여행|숙소|เที่ยว|ท่องเที่ยว|โรงแรม|旅行|酒店|यात्रा|होटल/i,
     food: /\b(recipes?|food|restaurants?|menus?|cafe|coffee|cooking)\b|요리|음식|메뉴|맛집|อาหาร|ร้านอาหาร|美食|菜谱|餐厅|खाना|रेसिपी/i,
     shopping: /\b(shop|shopping|online store|cart|deals?|coupons?|marketplace)\b|쇼핑|ร้านค้า|ช้อป|购物|शॉपिंग/i,
-    tools: /\b(calculator|scanner|converter|utility|utilities|qr|flashlight|unit conver\w*)\b|계산기|도구|เครื่องคิดเลข|计算器|工具|कैलकुलेटर/i,
+    tools: /\b(calculator|scanner|converter|utility|utilities|qr|flashlight|unit conver\w*|translat\w*|interpret\w*|dictionary|timer|stopwatch)\b|계산기|도구|번역|통역|사전|เครื่องคิดเลข|แปลภาษา|แปล|计算器|工具|翻译|翻譯|词典|कैलकुलेटर|अनुवाद/i,
+    /* 0.2.4: music and social apps had no category of their own */
+    music: /\b(music|songs?|playlists?|albums?|podcasts?|metronome|tuner|karaoke|lyrics|radio|musicians?|guitar|piano)\b|음악|노래|플레이리스트|เพลง|ดนตรี|音乐|歌曲|संगीत|गाना|गाने/i,
+    social: /\b(social|friends?|chat|chatting|messag(e|es|ing)|posts?|feeds?|comments?|community|followers?|meet new people)\b|친구|채팅|커뮤니티|게시글|เพื่อน|แชท|ชุมชน|社交|好友|聊天|社区|दोस्त|चैट|सोशल/i,
     games: /\b(game|games|puzzle|arcade|high ?score)\b|게임|เกม|游戏|गेम/i,
     lifestyle: /\b(lifestyle|diary|habits?|daily)\b|일기|습관|ไลฟ์สไตล์|生活|日记|आदत/i
   };
   /* When only one category is clear, the second suggestion is a close neighbour (not always Productivity). */
-  const CAT_NEXT = { navigation: 'travel', travel: 'navigation', finance: 'productivity', health: 'lifestyle', education: 'productivity', productivity: 'tools', photography: 'tools', food: 'lifestyle', shopping: 'lifestyle', tools: 'productivity', games: 'education', lifestyle: 'productivity' };
+  const CAT_NEXT = { navigation: 'travel', travel: 'navigation', finance: 'productivity', health: 'lifestyle', education: 'productivity', productivity: 'tools', photography: 'tools', food: 'lifestyle', shopping: 'lifestyle', tools: 'productivity', games: 'education', lifestyle: 'productivity', music: 'lifestyle', social: 'lifestyle' };
 
   function analyze(project) {
     const F = project.files; const P = Object.keys(F);
@@ -186,7 +212,15 @@
     else if (deps.includes('expo')) A.framework = 'expo';
     else if (deps.includes('react-native')) A.framework = 'react-native';
     else if (capCfg || deps.some(d => d.startsWith('@capacitor/'))) A.framework = 'capacitor';
-    [pubspec, pkgJson, appJson, capCfg].forEach(note);
+    /* 0.2.4: Cordova (config.xml <widget>, package.json "cordova"), Bubblewrap TWA (twa-manifest.json) and Kotlin Multiplatform */
+    const cdvPath = shortest(find(F, /(^|\/)config\.xml$/).filter(p => !/(^|\/)res\/xml\//.test(p) && /<widget\b/.test(F[p].text)));
+    const cdv = cdvPath ? cordovaOf(F[cdvPath].text, pkg) : null;
+    const twaPath = shortest(find(F, /(^|\/)twa-manifest\.json$/));
+    const kmp = find(F, /\.gradle(\.kts)?$/).some(p => /kotlin\(\s*["']multiplatform["']\s*\)|org\.jetbrains\.kotlin\.multiplatform|libs\.plugins\.kotlin[.-]?[mM]ultiplatform/.test(stripCode(F[p].text)));
+    if (A.framework === 'unknown') A.framework = cdv || deps.includes('cordova-android') || deps.includes('cordova-ios') || (pkg && pkg.cordova) ? 'cordova' : twaPath ? 'twa' : kmp ? 'kmp' : 'unknown';
+    [pubspec, pkgJson, appJson, capCfg, cdvPath, twaPath].forEach(note);
+    /* Flutter keeps the version in pubspec.yaml ("version: 1.3.0+13"); Gradle and Xcode only point at it. */
+    const pubVer = pubspec ? (txt(F, pubspec).match(/^version:\s*["']?(\d[\w.\-]*?)(?:\+(\d+))?["']?\s*$/m) || null) : null;
     /* 0.2.3: optional project config written by the developer (rocketlauncher.json or .rocketlauncher.json at the project root):
        { "privacy_url", "support_url", "category", "store_stage": { "play", "apple" }, "app_store_state", "play_state" } */
     const cfgPath = shortest(find(F, /(^|\/)\.?rocketlauncher\.json$/i).filter(p => !OLD_RE.test(p)));
@@ -196,9 +230,22 @@
     const manifests = find(F, /AndroidManifest\.xml$/).filter(p => !/(debug|test|androidTest)\//.test(p));
     const manPath = manifests.find(p => /app\/src\/main\//.test(p)) || shortest(manifests.filter(p => /src\/main\//.test(p))) || shortest(manifests);
     const gradles = find(F, /\.gradle(\.kts)?$/);
-    const appGradle = gradles.find(p => /com\.android\.application|id\s*\(?["']com\.android\.application/.test(F[p].text)) || gradles.find(p => /(^|\/)app\/build\.gradle/.test(p));
+    const appGradle = gradles.find(p => /com\.android\.application|id\s*\(?["']com\.android\.application|alias\(\s*libs\.plugins\.android[.-]?[aA]pplication\s*\)/.test(stripCode(F[p].text))) || gradles.find(p => /(^|\/)app\/build\.gradle/.test(p));
     let expo = null; try { expo = appJson ? (JSON.parse(txt(F, appJson)).expo || null) : null; } catch (e) { }
-    if (manPath || appGradle || (expo && expo.android)) {
+    /* 0.2.4: dynamic Expo config (app.config.js / .ts) without app.json: plain string / number literals only, nothing is executed */
+    const appCfgJs = shortest(find(F, /(^|\/)app\.config\.[jt]s$/));
+    if (appCfgJs && A.framework === 'expo') {
+      const t = stripCode(txt(F, appCfgJs)), lit = (re) => (t.match(re) || [])[1], blk = k => (t.match(new RegExp('\\b' + k + '\\s*:\\s*\\{([^{}]*)\\}')) || [])[1] || '';
+      const sv = (s, k) => (s.match(new RegExp('\\b' + k + '\\s*:\\s*[\'"`]([^\'"`$]+)[\'"`]')) || [])[1], nv = (s, k) => (s.match(new RegExp('\\b' + k + '\\s*:\\s*(\\d+)\\b')) || [])[1];
+      const andB = blk('android'), iosB = blk('ios'), top = t.replace(/\b(android|ios|web|extra|plugins)\s*:\s*\{[^{}]*\}/g, '');
+      const dyn = { name: sv(top, 'name'), version: sv(top, 'version'), android: andB ? { package: sv(andB, 'package'), versionCode: nv(andB, 'versionCode') } : undefined, ios: iosB ? { bundleIdentifier: sv(iosB, 'bundleIdentifier'), buildNumber: sv(iosB, 'buildNumber') } : undefined };
+      expo = expo ? { ...dyn, ...expo, android: { ...(dyn.android || {}), ...(expo.android || {}) }, ios: { ...(dyn.ios || {}), ...(expo.ios || {}) } } : dyn;
+      note(appCfgJs);
+    }
+    /* 0.2.4: an Expo app builds for iOS and Android unless expo.platforms says otherwise (app.json often has no android / ios block). */
+    const expoPlat = expo && (A.framework === 'expo' || expo.android || expo.ios) ? (Array.isArray(expo.platforms) ? expo.platforms : ['ios', 'android']) : [];
+    const expoBP = expo ? expoBuildProps(expo) : {};
+    if (manPath || appGradle || (expo && (expo.android || expoPlat.includes('android'))) || (cdv && cdv.android)) {
       A.platforms.android = true; if (A.framework === 'unknown') A.framework = 'android-native';
       const an = { permissions: [], features: [], activities: [], deps: [], cleartext: false, debuggable: false, allowBackup: null, adId: false, adsAppId: null };
       if (manPath) {
@@ -214,7 +261,7 @@
         }
       }
       if (appGradle) {
-        note(appGradle); const g = F[appGradle].text;
+        note(appGradle); const g = stripCode(F[appGradle].text);
         an.pkg = gradleVal(g, 'applicationId'); an.namespace = gradleVal(g, 'namespace');
         an.targetSdkRaw = gradleVal(g, 'targetSdk');
         an.minSdk = resolveSdk(gradleVal(g, 'minSdk'), F, gradles); an.targetSdk = resolveSdk(an.targetSdkRaw, F, gradles); an.compileSdk = resolveSdk(gradleVal(g, 'compileSdk'), F, gradles);
@@ -227,6 +274,11 @@
         for (const k of ['minSdk', 'targetSdk', 'compileSdk']) if (!an[k] && appGradle) { const m = F[appGradle].text.match(new RegExp(k + '(?:Version)?\\s*=?\\s*libs\\.versions\\.([\\w.]+?)\\.get')); const v = m ? ver(m[1]) : ver(k) || ver(k.replace('Sdk', '-sdk')) || ver(k.replace('Sdk', '_sdk')); if (v) an[k] = v; }
       }
       if (expo && expo.android) { an.pkg = an.pkg || expo.android.package; an.permissions.push(...(expo.android.permissions || [])); an.versionCode = an.versionCode || expo.android.versionCode; }
+      if (expo) for (const k of ['minSdk', 'targetSdk', 'compileSdk']) if (!an[k] && expoBP[k]) an[k] = expoBP[k];
+      if (cdv) { an.pkg = an.pkg || cdv.androidId; an.versionName = an.versionName || cdv.version; an.versionCode = an.versionCode || cdv.versionCode; an.targetSdk = an.targetSdk || cdv.targetSdk; an.minSdk = an.minSdk || cdv.minSdk; if (!an.targetSdk) an.targetSdkRaw = an.targetSdkRaw || 'cordova-android default'; }
+      /* Gradle values that only point somewhere else (flutter.versionName, flutterVersionCode.toInteger(), a variable) are resolved or left unread. */
+      if (an.versionName != null && !/^\d/.test(String(an.versionName))) an.versionName = /flutter/i.test(an.versionName) && pubVer ? pubVer[1] : null;
+      if (an.versionCode != null && !/^\d+$/.test(String(an.versionCode))) an.versionCode = /flutter/i.test(an.versionCode) && pubVer ? (pubVer[2] || null) : null;
       an.pkg = an.pkg || an.manifestPackage || an.namespace || null;
       an.permissions = [...new Set(an.permissions.filter(Boolean).map(p => p.startsWith('android.permission.') || p.includes('.') ? p : 'android.permission.' + p))];
       an.adId = an.permissions.includes('com.google.android.gms.permission.AD_ID');
@@ -238,14 +290,19 @@
     const plists = find(F, /(^|\/)Info\.plist$/).filter(p => !/(Tests?|Pods|\.framework)\//.test(p));
     const plistPath = plists.find(p => /ios\/Runner\//.test(p)) || shortest(plists);
     const pbx = shortest(find(F, /project\.pbxproj$/));
-    if (plistPath || pbx || (expo && expo.ios)) {
+    if (plistPath || pbx || (expo && (expo.ios || expoPlat.includes('ios'))) || (cdv && cdv.ios)) {
       A.platforms.ios = true; if (A.framework === 'unknown' || A.framework === 'android-native') A.framework = A.platforms.android ? A.framework : 'ios-native';
       const io = { usage: {}, plistPath };
       if (plistPath) { note(plistPath); const pl = parsePlist(F[plistPath].text); io.plist = pl; io.displayName = pl.CFBundleDisplayName || pl.CFBundleName; for (const k in pl) if (/^NS\w+UsageDescription$/.test(k)) io.usage[k] = String(pl[k] || ''); io.gad = pl.GADApplicationIdentifier || null; }
       if (pbx) { note(pbx); const t = F[pbx].text; const g = k => (t.match(new RegExp(k + '\\s*=\\s*"?([^";]+)"?;')) || [])[1] || null; io.bundleId = g('PRODUCT_BUNDLE_IDENTIFIER'); io.version = g('MARKETING_VERSION'); io.build = g('CURRENT_PROJECT_VERSION'); io.deployment = g('IPHONEOS_DEPLOYMENT_TARGET'); }
       if (pbx) { const fam = (F[pbx].text.match(/TARGETED_DEVICE_FAMILY\s*=\s*"?([\d,]+)"?;/g) || []).join(' '); io.ipad = /[",=\s]2\b/.test(fam); }
       if (io.plist) { if (io.plist['UISupportedInterfaceOrientations~ipad']) io.ipad = true; if (io.plist.ITSAppUsesNonExemptEncryption !== undefined) io.encryption = io.plist.ITSAppUsesNonExemptEncryption; }
+      if (cdv) { io.bundleId = io.bundleId || cdv.iosId; io.version = io.version || cdv.version; io.build = io.build || cdv.iosBuild; io.deployment = io.deployment || cdv.iosDeployment; }
+      /* Xcode build settings that point at Flutter's pubspec version */
+      if (io.version && /^\$/.test(io.version)) io.version = /FLUTTER_BUILD_NAME/.test(io.version) && pubVer ? pubVer[1] : null;
+      if (io.build && /^\$/.test(io.build)) io.build = /FLUTTER_BUILD_NUMBER/.test(io.build) && pubVer ? (pubVer[2] || null) : null;
       if (expo && expo.ios) {
+        io.buildNumber = expo.ios.buildNumber; io.build = io.build || expo.ios.buildNumber;
         io.bundleId = io.bundleId || expo.ios.bundleIdentifier; const ip = expo.ios.infoPlist || {};
         for (const k in ip) if (/^NS\w+UsageDescription$/.test(k)) io.usage[k] = String(ip[k] || '');
         if (ip.ITSAppUsesNonExemptEncryption !== undefined) io.encryption = ip.ITSAppUsesNonExemptEncryption;
@@ -272,7 +329,7 @@
       const q = (p.match(/values-([\w+-]+)\//) || [])[1]; const lang = q ? q.replace(/^b\+/, '').split(/[-+]r?/)[0] : 'default';
       A.strings[lang] = Object.assign(A.strings[lang] || {}, parseStrings(F[p].text));
     });
-    find(F, /lib\/l10n\/.*\.arb$/).forEach(p => { note(p); try { const lang = (p.match(/_(\w+)\.arb$/) || [])[1] || 'default'; const j = JSON.parse(F[p].text); A.strings[lang] = Object.assign(A.strings[lang] || {}, Object.fromEntries(Object.entries(j).filter(([k]) => !k.startsWith('@')))); } catch (e) { } });
+    find(F, /lib\/l10n\/.*\.arb$/).forEach(p => { note(p); try { const lang = ((p.match(/_([a-z]{2,3})(?:[_-][A-Za-z]+)*\.arb$/i) || [])[1] || 'default').toLowerCase(); const j = JSON.parse(F[p].text); A.strings[lang] = Object.assign(A.strings[lang] || {}, Object.fromEntries(Object.entries(j).filter(([k]) => !k.startsWith('@')))); } catch (e) { } });
     const def = A.strings.default || A.strings.en || {};
     const labelRef = A.android && A.android.label;
     const labelKey = labelRef && labelRef.startsWith('@string/') ? labelRef.slice(8) : 'app_name';
@@ -280,15 +337,17 @@
     if (labelRef && !labelRef.startsWith('@')) A.names.en = labelRef;
     const rm = readme(txt(F, shortest(find(F, /(^|\/)README(\.md)?$/i)))); if (rm.title) note(shortest(find(F, /(^|\/)README(\.md)?$/i)));
     A.readme = rm;
-    A.appName = A.names.en || (A.ios && A.ios.displayName) || (expo && expo.name) || (pkg && (pkg.displayName || pkg.name)) || rm.title || project.name;
+    A.appName = A.names.en || (A.ios && A.ios.displayName) || (expo && expo.name) || (cdv && cdv.name) || (pkg && (pkg.displayName || pkg.name)) || rm.title || project.name;
     if (!A.names.en) A.names.en = A.appName;
     A.tagline = { };
     for (const [lang, s] of Object.entries(A.strings)) { const t = s.tagline || s.app_tagline || s.slogan || s.app_description; if (t) A.tagline[lang === 'default' ? 'en' : lang] = t; }
     if (!A.tagline.en && project.meta && project.meta.description) A.tagline.en = project.meta.description;
     if (!A.tagline.en && rm.summary) A.tagline.en = rm.summary.split(/(?<=\.)\s/)[0].replace(/\.$/, '');
-    A.locales = [...new Set(Object.keys(A.strings).map(l => l === 'default' ? 'en' : l))];
+    /* 0.2.4: also locale files of JS / native apps (locales/ko.json, i18n/th.json, ko.lproj/Localizable.strings) */
+    const fileLocales = P.map(p => (p.match(/(?:^|\/)(?:locales?|i18n|lang|langs|translations|l10n)\/([a-z]{2})(?:[-_][A-Za-z]{2,4})?\.json$/i) || p.match(/(?:^|\/)([a-z]{2})(?:[-_][A-Za-z]{2,4})?\.lproj\//i) || [])[1]).filter(Boolean).map(l => l.toLowerCase());
+    A.locales = [...new Set(Object.keys(A.strings).map(l => l === 'default' ? 'en' : l).concat(fileLocales))];
     A.pkg = (A.android && A.android.pkg) || (A.ios && A.ios.bundleId) || null;
-    A.version = (A.android && A.android.versionName) || (A.ios && A.ios.version) || (pkg && pkg.version) || '1.0.0';
+    A.version = (A.android && A.android.versionName) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
 
     // ---------- 연락처 ----------
     const lic = txt(F, shortest(find(F, /(^|\/)LICENSE/i)));
@@ -296,29 +355,32 @@
     const allText = Object.values(F).filter(v => v.text && !v.code).map(v => v.text).join('\n').slice(0, 600000);
     const email = (allText.match(/[\w.+-]+@[\w-]+\.[\w.]+/g) || []).find(e => !/noreply|example\.com|users\.noreply|android\.com|apple\.com|googlegroups/.test(e));
     A.listing = listingOf(F, A);
-    A.developer = { name: (holder || (project.meta && project.meta.owner) || '').trim() || null, email: email || null, policyFound: !!find(F, /privacy[^/]*\.(md|html)$/i).length || !!A.listing.privacyUrl, privacyUrl: A.listing.privacyUrl || null };
+    A.developer = { name: (holder || (project.meta && project.meta.owner) || '').trim() || null, email: email || null, policyFound: !!find(F, /privacy[^/]*\.(md|html)$/i).filter(p => !OLD_RE.test(p)).length || !!A.listing.privacyUrl, privacyUrl: A.listing.privacyUrl || null };
 
     // ---------- SDK ----------
-    const codeHay = Object.keys(F).filter(p => F[p].code).map(p => F[p].text).join('\n').slice(0, 1500000);
+    /* 0.2.4: comments do not count (a "// TODO: add Firebase Analytics" line is not analytics) */
+    const codeHay = Object.keys(F).filter(p => F[p].code).map(p => stripCode(F[p].text)).join('\n').slice(0, 1500000);
     const pluginHay = txt(F, shortest(find(F, /capacitor\.plugins\.json$/))) + '\n' + txt(F, shortest(find(F, /capacitor\.config\.(json|ts|js)$/))) + '\n' + txt(F, shortest(find(F, /google-services\.json$/)));
-    const hay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), txt(F, pubspec), txt(F, shortest(find(F, /Podfile$/))), txt(F, plistPath), (A.android && A.android.permissions.join(' ')) || '', JSON.stringify((A.ios && A.ios.usage) || {}), pluginHay, codeHay].join(' ');
+    const hay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), pubspecDeps(txt(F, pubspec)), stripHashComments(txt(F, shortest(find(F, /Podfile$/)))), txt(F, plistPath), (A.android && A.android.permissions.join(' ')) || '', JSON.stringify((A.ios && A.ios.usage) || {}), pluginHay, codeHay].join(' ');
     const Det = window.RLDetect;
     /* 0.2.3: an ad SDK counts only when it is really declared: Gradle / version-catalog dependencies, package.json dependencies, pubspec,
        Podfile / Package.swift, installed Capacitor/Cordova plugins, the AndroidManifest ads APPLICATION_ID meta-data or Info.plist
        GADApplicationIdentifier. A name that only appears in app code (a config placeholder, a comment, a bundled script) is a hint, not ads. */
     const AD_RE = /play-services-ads|google_mobile_ads|google-mobile-ads|\badmob\b|capacitor[\w-]*admob|admob-plus|Google-Mobile-Ads|GoogleMobileAds|GADApplicationIdentifier|applovin|unity-?ads|audience-network|FBAudienceNetwork|ironsource|chartboost|vungle|inmobi|mintegral|pangle/i;
     const declHay = [(A.android && A.android.deps.join(' ')) || '', deps.join(' '), pubspecDeps(txt(F, pubspec)), stripHashComments(txt(F, shortest(find(F, /Podfile$/)))), txt(F, shortest(find(F, /(^|\/)Package\.swift$/))),
-      txt(F, shortest(find(F, /capacitor\.plugins\.json$/))), txt(F, shortest(find(F, /(^|\/)cordova_plugins\.js$/)))].join(' ');
+      txt(F, shortest(find(F, /capacitor\.plugins\.json$/))), txt(F, shortest(find(F, /(^|\/)cordova_plugins\.js$/))), cdvPath ? [...txt(F, cdvPath).matchAll(/<plugin\s+name="([^"]+)"/g)].map(m => m[1]).join(' ') : ''].join(' ');
+    const IAP_DECL = /com\.android\.billingclient|com\.android\.vending\.BILLING|\bin_app_purchase\b|flutter_inapp_purchase|purchases_flutter|react-native-iap|expo-iap|expo-in-app-purchases|react-native-purchases|@revenuecat|\bRevenueCat\b|cordova-plugin-purchase|capacitor[\w-]*(in-app-purchase|purchases?)\b|@capacitor-community\/in-app-purchases?|SwiftyStoreKit|\bpod\s+['"]Purchases['"]/i;
     const adsDeclared = has(declHay, AD_RE) || !!(A.android && A.android.adsAppId) || !!(A.ios && A.ios.gad);
     const adsCodeFiles = adsDeclared ? [] : Object.keys(F).filter(p => F[p].code && !BUNDLED_RE.test(p) && AD_RE.test(F[p].text)).slice(0, 5);
     A.sdk = {
       ads: adsDeclared,
       analytics: has(hay, /firebase-analytics|firebase_analytics|\/analytics|FirebaseAnalytics|amplitude|mixpanel/i),
       crash: has(hay, /crashlytics|sentry|bugsnag/i),
-      auth: has(hay, (Det && Det.AUTH_RE) || /firebase-auth|firebase_auth|play-services-auth|google_sign_in|google-signin|auth0|supabase|credentials-play-services|googleid/i),
+      auth: has(hay, (Det && Det.AUTH_RE) || /firebase-auth|firebase_auth|play-services-auth|google_sign_in|google-signin|auth0|supabase\.auth\.|credentials-play-services|googleid/i),
       googleSignIn: has(hay, /play-services-auth|google_sign_in|google-signin|googleid|GoogleAuthProvider|signInWithPopup/i),
-      cloudDb: has(hay, (Det && Det.CLOUD_RE) || /firestore|firebase-database|firebase_database|supabase|realm/i),
-      billing: has(hay, /billing|in_app_purchase|react-native-iap|revenuecat|purchases/i),
+      cloudDb: has(hay, (Det && Det.CLOUD_RE) || /firestore|firebase-database|firebase_database|supabase|SyncConfiguration|flexibleSync|realm\.mongodb/i),
+      /* 0.2.4: in-app purchases from real declarations (Play Billing, StoreKit, IAP plugins), not any "billing" / "purchases" word */
+      billing: has(declHay + ' ' + ((A.android && A.android.permissions.join(' ')) || ''), IAP_DECL) || has(codeHay, /\bBillingClient\b|import\s+StoreKit\b|\bSKPaymentQueue\b|\bSKProductsRequest\b|\bProduct\.products\s*\(|\bAppStore\.sync\s*\(/),
       location: has(hay, (Det && Det.LOC_SDK_RE) || /LOCATION|play-services-location|geolocator|NSLocation|Geolocation|@capacitor\/geolocation/i),
       camera: has(hay, /permission\.CAMERA|camera-camera2|camerax|NSCameraUsageDescription|image_picker|expo-camera/i),
       ocr: has(hay, /text-recognition|mlkit|vision/i),
@@ -329,6 +391,18 @@
       mic: has(hay, /RECORD_AUDIO|NSMicrophone/i)
     };
     A.adsHint = adsCodeFiles.length ? { files: adsCodeFiles } : null;
+    /* 0.2.4: what the iOS build itself uses (cross-platform plugins, iOS / web code; Android-only Kotlin/Java and manifest permissions excluded),
+       so an iOS purpose string is only required when the iOS app really asks for that permission. */
+    if (A.ios) {
+      const iosCode = Object.keys(F).filter(p => F[p].code && !/\.(kt|java)$/i.test(p)).map(p => stripCode(F[p].text)).join('\n').slice(0, 1500000);
+      const iosHay = [deps.join(' '), pubspecDeps(txt(F, pubspec)), stripHashComments(txt(F, shortest(find(F, /Podfile$/)))), txt(F, shortest(find(F, /(^|\/)Package\.swift$/))), pluginHay, declHay, iosCode].join('\n');
+      A.iosNeeds = {
+        location: /\bgeolocator\b|(^|\s)location:\s|@capacitor\/geolocation|expo-location|react-native-geolocation|@react-native-community\/geolocation|cordova-plugin-geolocation|CLLocationManager|requestWhenInUseAuthorization|requestAlwaysAuthorization|navigator\s*\.\s*geolocation|getCurrentPosition|watchPosition/.test(iosHay),
+        camera: /\bimage_picker\b|(^|\s)camera:\s|expo-camera|expo-image-picker|react-native-vision-camera|react-native-image-picker|react-native-camera|@capacitor\/camera|cordova-plugin-camera|mobile_scanner|AVCaptureDevice|AVCaptureSession|UIImagePickerController/.test(iosHay),
+        contacts: /flutter_contacts|contacts_service|expo-contacts|react-native-contacts|@capacitor-community\/contacts|cordova-plugin-contacts|CNContactStore|import\s+Contacts\b/.test(iosHay),
+        mic: /flutter_sound|speech_to_text|(^|\s)record:\s|react-native-voice|@react-native-voice|AVAudioRecorder|SFSpeechRecognizer|@capacitor-community\/speech-recognition|cordova-plugin-media-capture/.test(iosHay)
+      };
+    }
     A.sdk.appleSignIn = !!(A.ios && A.ios.appleSignIn) || has(hay, /sign_in_with_apple|apple-authentication|AuthenticationServices|ASAuthorizationAppleIDProvider|appleAuth|AppleAuthProvider/i);
     A.sdk.thirdPartyLogin = A.sdk.googleSignIn || has(hay, /flutter_facebook_auth|facebook-login|FBSDKLoginKit|react-native-fbsdk|kakao[\w.-]*(login|user|auth)|kakao_flutter_sdk|naveridlogin|flutter_naver_login|line-sdk|LineSDK|flutter_line_sdk|twitter_login|react-native-app-auth/i);
     A.review = reviewSignals(A, F, hay);
@@ -352,6 +426,10 @@
     if (!A.categories.length) A.categories = ['tools'];
     if (A.categories.length < 2) A.categories.push(CAT_NEXT[A.categories[0]] || 'productivity');
     A.categories = A.categories.slice(0, 3);
+
+    /* 0.2.4: apps aimed at children (Google Play Families policy, App Store Kids category rules) */
+    const kidsText = [rm.title, A.appName, rm.summary, rm.features.join(' '), ...Object.values(A.tagline)].join(' ');
+    A.kids = /\b(kids?|children|toddlers?|preschool\w*|kindergarten|babies|little ones|ages? [2-9]\s*(-|to|–)\s*\d+)\b|어린이|유아|아이들|키즈|เด็กเล็ก|สำหรับเด็ก|儿童|孩子|幼儿|बच्चों|बच्चे/i.test(kidsText) && !/\bnot (for|directed (at|to)|meant for) (kids|children)\b/i.test(kidsText);
 
     // ---------- 그림 ----------
     const imgs = P.filter(p => F[p].dataUrl);
@@ -456,7 +534,15 @@
     if (R.adsInCopy && R.adsInCopy.length) add('adsInCopy', 'warn', 'both', 'info', { files: R.adsInCopy.join(', ') });
     if (io) {
       for (const [k, v] of Object.entries(io.usage)) if (!String(v).trim()) add('emptyUsage', 'block', 'ios', 'patch-plist', { key: k });
-      if (s.camera && !io.usage.NSCameraUsageDescription) add('missingUsage', 'block', 'ios', 'patch-plist', { key: 'NSCameraUsageDescription' });
+      /* 0.2.4: camera, location, contacts and microphone purpose strings, from what the iOS app itself uses. Expo without an ios/ folder is
+         skipped: Expo's config plugins add a default purpose string for its own modules at build time. */
+      const need = A.iosNeeds || { camera: s.camera }, U = io.usage;
+      if (!(A.framework === 'expo' && !io.plistPath)) {
+        if (need.camera && !('NSCameraUsageDescription' in U)) add('missingUsage', 'block', 'ios', 'patch-plist', { key: 'NSCameraUsageDescription' });
+        if (need.location && !('NSLocationWhenInUseUsageDescription' in U) && !('NSLocationAlwaysAndWhenInUseUsageDescription' in U)) add('missingUsage', 'block', 'ios', 'patch-plist', { key: 'NSLocationWhenInUseUsageDescription' });
+        if (need.contacts && !('NSContactsUsageDescription' in U)) add('missingUsage', 'block', 'ios', 'patch-plist', { key: 'NSContactsUsageDescription' });
+        if (need.mic && !('NSMicrophoneUsageDescription' in U)) add('missingUsage', 'block', 'ios', 'patch-plist', { key: 'NSMicrophoneUsageDescription' });
+      }
       if (!io.privacyManifest) add('privacyManifest', 'block', 'ios', 'gen-xcprivacy');
       /* Tracking: ATT usage string, ATT prompt in code, PrivacyInfo (NSPrivacyTracking + domains), the App Privacy form and
          runtime ad requests must tell one story from the first submit. Default and recommended: no tracking + npa=1.
@@ -484,11 +570,15 @@
       add('iosSdk', 'tip', 'ios', 'info', { sdk: IOS_SDK_NOTE });
     }
     if (!A.icon) add('noIcon', 'warn', 'both', 'gen-icon');
+    /* 0.2.4: an app for children with ads or analytics: Families-certified ad SDKs only, no advertising ID; Apple Kids apps allow no third-party ads or analytics */
+    if (A.kids && (s.ads || s.analytics || (an && an.adId))) add('kidsPolicy', 'warn', 'both', 'info', { sdks: [s.ads && 'ads', s.analytics && 'analytics'].filter(Boolean).join(', ') });
     if (!an && A.adsHint) add('adsCodeOnly', 'tip', 'both', 'info', { files: A.adsHint.files.join(', ') });
     /* 0.2.3: pixel results come from the MCP server (A.iconCheck); the web app has none and skips these. */
     const ic = A.iconCheck;
     if (ic) {
       for (const k of ['ios', 'android']) if (ic[k] && ic[k].blank) add('iconBlank', 'warn', k, 'gen-icon', { file: ic[k].path, color: ic[k].average_color });
+      /* 0.2.4: the App Store icon must be opaque (ITMS-90717: no transparency) */
+      if (ic.ios && !ic.ios.blank && ic.ios.transparent_share > 0.001) add('iconAlpha', 'warn', 'ios', 'info', { file: ic.ios.path, share: Math.round(ic.ios.transparent_share * 100) });
       if (ic.match && !ic.match.similar) add('iconMismatch', 'warn', 'both', 'info', { ios: ic.ios.path, android: ic.android.path, dist: ic.match.hash_distance });
     }
     if (A.listing && A.listing.privacyConflict) add('privacyUrlConflict', 'warn', 'both', 'info', { urls: A.listing.privacyCandidates.map(c => c.url + ' (' + c.file + ')').join(', ') });

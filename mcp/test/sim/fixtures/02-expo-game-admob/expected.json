@@ -1,0 +1,34 @@
+{
+  "description": "Expo arcade game with react-native-google-mobile-ads declared, targetSdk set through expo-build-properties (34, too low), app version in app.json (package.json still says 1.0.0).",
+  "framework": "expo",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.tapdash",
+  "version": "2.1.0",
+  "versionCode": "7",
+  "targetSdk": 34,
+  "category": "games",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  },
+  "ads": true,
+  "iap": false,
+  "data_safety": [
+    "adid"
+  ],
+  "privacy_url": "https://tapdash.games/privacy",
+  "icon": {
+    "found": true
+  },
+  "issues_present": [
+    "targetSdk",
+    "adsDeclare"
+  ],
+  "issues_absent": [
+    "targetSdkUnread",
+    "privacyPolicy"
+  ]
+}

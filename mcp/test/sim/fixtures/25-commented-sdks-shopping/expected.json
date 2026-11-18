@@ -1,0 +1,13 @@
+{
+  "description": "Shopping list app whose code only mentions analytics / crash SDKs in comments and has a billingAddress field: no analytics, crash or in-app purchases.",
+  "platforms": [
+    "android"
+  ],
+  "category": "shopping",
+  "iap": false,
+  "sdk": {
+    "analytics": false,
+    "crash": false
+  },
+  "data_safety": []
+}

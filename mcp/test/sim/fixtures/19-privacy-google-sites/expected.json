@@ -1,0 +1,11 @@
+{
+  "description": "Privacy policy hosted on Google Sites (sites.google.com) in the README.",
+  "platforms": [
+    "android"
+  ],
+  "category": "tools",
+  "privacy_url": "https://sites.google.com/view/simtimer/privacy",
+  "issues_absent": [
+    "privacyPolicy"
+  ]
+}

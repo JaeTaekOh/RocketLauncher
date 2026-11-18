@@ -62,7 +62,9 @@ export async function pixels(src, max = 64) {
     try { const im = await C.loadImage(buf), cv = C.createCanvas(im.width, im.height), cx = cv.getContext('2d'); cx.drawImage(im, 0, 0); img = { width: im.width, height: im.height, data: cx.getImageData(0, 0, im.width, im.height).data }; }
     catch { return null; }
   }
-  return { width: img.width, height: img.height, small: shrink(img, max) };
+  /* 0.2.4: share of pixels that are not fully opaque (the App Store icon must have none) */
+  let tp = 0; const n = img.width * img.height; for (let i = 3; i < img.data.length; i += 4) if (img.data[i] < 255) tp++;
+  return { width: img.width, height: img.height, transparent_share: n ? +(tp / n).toFixed(4) : 0, small: shrink(img, max) };
 }
 /* Box-filter downscale; transparent pixels are composited over white (the way a store shows a transparent icon area). */
 function shrink(img, max) {
@@ -87,7 +89,8 @@ export function uniformity({ small }) {
   let cd = 0; for (let t = 0; t < n; t++) { const i = t * 4; cd += Math.abs(px[i] - mr) + Math.abs(px[i + 1] - mg) + Math.abs(px[i + 2] - mb); } cd /= n * 3;
   const top = Math.max(...q.values()) / n;
   const transparent = sa / n < 8;
-  const blank = transparent || q.size <= 2 || top >= 0.985 || (sd < 4 && cd < 4);
+  /* 0.2.4: two colors are not "blank" by themselves: a flat white glyph on a solid background is real artwork (only the share counts) */
+  const blank = transparent || q.size <= 1 || top >= 0.985 || (sd < 4 && cd < 4);
   return { blank, transparent, unique_colors: q.size, dominant_share: +top.toFixed(3), brightness_spread: +sd.toFixed(1), color_spread: +cd.toFixed(1), average_color: hex(mr, mg, mb) };
 }
 /* 8×8 average hash of the icon with transparent/flat borders trimmed, plus its mean color. */
@@ -115,7 +118,7 @@ export async function iconCheck(icons) {
     const ic = icons && icons[k]; if (!ic || !ic.dataUrl) continue;
     const p = await pixels(ic.dataUrl, 64); if (!p) { out[k] = { path: ic.path, readable: false }; continue; }
     const u = uniformity(p); H[k] = { hash: ahash(p), color: u.average_color, blank: u.blank };
-    out[k] = { path: ic.path, width: p.width, height: p.height, ...u };
+    out[k] = { path: ic.path, width: p.width, height: p.height, ...u, transparent_share: p.transparent_share };
   }
   if (!Object.keys(out).length) return null;
   if (H.ios && H.android) {

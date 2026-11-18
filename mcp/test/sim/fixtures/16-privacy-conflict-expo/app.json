@@ -1,0 +1,17 @@
+{
+ "expo": {
+  "name": "Habitual",
+  "slug": "habitual",
+  "version": "1.5.0",
+  "android": {
+   "package": "com.sim.habitual",
+   "versionCode": 15
+  },
+  "ios": {
+   "bundleIdentifier": "com.sim.habitual"
+  },
+  "extra": {
+   "privacyUrl": "https://habitual.app/legal/privacy"
+  }
+ }
+}

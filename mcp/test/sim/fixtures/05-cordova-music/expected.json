@@ -1,0 +1,26 @@
+{
+  "description": "Cordova music player (config.xml only, platforms/ not committed): package, version, versionCode and targetSdk come from config.xml.",
+  "framework": "cordova",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.tunebox",
+  "version": "1.4.2",
+  "versionCode": "10402",
+  "targetSdk": 36,
+  "category": "music",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  },
+  "ads": false,
+  "iap": false,
+  "data_safety": [],
+  "privacy_url": "https://tunebox.simstudio.dev/privacy",
+  "issues_absent": [
+    "targetSdk",
+    "targetSdkUnread",
+    "privacyPolicy"
+  ]
+}

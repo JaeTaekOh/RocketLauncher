@@ -1,0 +1,20 @@
+{
+  "description": "PWA wrapped as a Trusted Web Activity with Bubblewrap (twa-manifest.json), targetSdk 35, Play review rejected (recorded as a Play Console state).",
+  "framework": "twa",
+  "platforms": [
+    "android"
+  ],
+  "package": "app.sim.marketly.twa",
+  "version": "1.0.2",
+  "versionCode": "3",
+  "targetSdk": 35,
+  "category": "shopping",
+  "stage": {
+    "play": "rejected"
+  },
+  "ads": false,
+  "iap": false,
+  "issues_present": [
+    "targetSdk"
+  ]
+}

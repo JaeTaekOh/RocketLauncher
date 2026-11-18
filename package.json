@@ -1,6 +1,6 @@
 {
   "name": "rocket-launcher",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "description": "Rocket Launcher \u2014 a free web tool that takes your app to launch; you just decide",
   "type": "module",
@@ -12,6 +12,7 @@
     "mcp": "node mcp/server.mjs",
     "mcp:http": "node mcp/server.mjs --http",
     "mcp:test": "cd mcp && npm test",
+    "sim": "cd mcp && npm run -s sim",
     "plugin:build": "bash tools/build_plugin.sh",
     "pages": "bash tools/build_pages.sh"
   },

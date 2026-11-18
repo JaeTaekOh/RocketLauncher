@@ -1,0 +1,15 @@
+// !$*UTF8*$!
+{
+  objects = {
+    97C147061CF9000F007C117D /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        MARKETING_VERSION = 3.0;
+        CURRENT_PROJECT_VERSION = 30;
+        IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+        PRODUCT_BUNDLE_IDENTIFIER = com.sim.healthpulse;
+        TARGETED_DEVICE_FAMILY = 1;
+      };
+    };
+  };
+}

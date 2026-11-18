@@ -1,0 +1,15 @@
+// !$*UTF8*$!
+{
+  objects = {
+    97C147061CF9000F007C117D /* Release */ = {
+      isa = XCBuildConfiguration;
+      buildSettings = {
+        MARKETING_VERSION = 1.2.0;
+        CURRENT_PROJECT_VERSION = 12;
+        IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+        PRODUCT_BUNDLE_IDENTIFIER = com.sim.sleepwell;
+        TARGETED_DEVICE_FAMILY = 1;
+      };
+    };
+  };
+}

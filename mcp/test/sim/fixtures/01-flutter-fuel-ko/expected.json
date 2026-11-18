@@ -1,0 +1,56 @@
+{
+  "description": "Flutter gas-station finder (Korean). Version from pubspec (Gradle uses flutter.*), targetSdk not readable, App Store already waiting for review (recorded), location sent to a server, commented-out AdMob in pubspec.",
+  "framework": "flutter",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "kr.sim.gaspump",
+  "version": "1.3.0",
+  "versionCode": "13",
+  "targetSdk": null,
+  "category": "navigation",
+  "stage": {
+    "play": "unknown",
+    "apple": "in_review"
+  },
+  "ads": false,
+  "ads_hint": false,
+  "iap": false,
+  "sdk": {
+    "location": true,
+    "camera": false,
+    "auth": false,
+    "analytics": false,
+    "crash": false
+  },
+  "data_safety": [
+    "loc"
+  ],
+  "privacy_url": "https://gaspump.app/privacy",
+  "privacy_conflict": false,
+  "icon": {
+    "found": true,
+    "ios_blank": false,
+    "android_blank": false,
+    "mismatch": false
+  },
+  "app_langs": [
+    "en",
+    "ko",
+    "th"
+  ],
+  "issues_present": [
+    "targetSdkUnread"
+  ],
+  "issues_absent": [
+    "targetSdk",
+    "adsDeclare",
+    "accountDeletion",
+    "privacyPolicy",
+    "missingUsage",
+    "iconBlank",
+    "iconMismatch",
+    "iconAlpha"
+  ]
+}

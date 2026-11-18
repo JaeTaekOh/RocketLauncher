@@ -1,0 +1,13 @@
+{
+  "description": "Native iOS journal that stores entries locally with Realm (no sync, no account): nothing is collected.",
+  "framework": "ios-native",
+  "platforms": [
+    "ios"
+  ],
+  "category": "lifestyle",
+  "sdk": {
+    "cloudDb": false,
+    "auth": false
+  },
+  "data_safety": []
+}

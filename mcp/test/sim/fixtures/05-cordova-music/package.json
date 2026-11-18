@@ -1,0 +1,19 @@
+{
+ "name": "com.sim.tunebox",
+ "displayName": "TuneBox",
+ "version": "1.4.2",
+ "dependencies": {
+  "cordova-android": "^14.0.0",
+  "cordova-ios": "^7.1.0",
+  "cordova-plugin-media": "^7.0.0"
+ },
+ "cordova": {
+  "platforms": [
+   "android",
+   "ios"
+  ],
+  "plugins": {
+   "cordova-plugin-media": {}
+  }
+ }
+}

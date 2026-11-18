@@ -1,0 +1,9 @@
+{
+  "description": "Capacitor calculator, fully offline: window.location in code is not location access.",
+  "framework": "capacitor",
+  "category": "tools",
+  "sdk": {
+    "location": false
+  },
+  "data_safety": []
+}

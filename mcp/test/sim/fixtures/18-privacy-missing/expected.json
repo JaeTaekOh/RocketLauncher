@@ -1,0 +1,12 @@
+{
+  "description": "No privacy URL or policy page at all, no contact e-mail.",
+  "platforms": [
+    "android"
+  ],
+  "category": "tools",
+  "privacy_url": null,
+  "issues_present": [
+    "privacyPolicy",
+    "supportContact"
+  ]
+}

@@ -12,6 +12,8 @@
     /fastlane\/metadata\/.*\.txt$/i, /(^|\/)fastlane\/(Appfile|Deliverfile)$/i, /(^|\/)variables\.gradle$/i, /AppIcon\.appiconset\/Contents\.json$/i, /(^|\/)lib\/l10n\/.*\.arb$/i,
     /(^|\/)(support|contact)[^/]*\.(md|html?)$/i, /(^|\/)(support|contact)\/index\.(md|html?)$/i,
     /* 0.2.0: release checks (Xcode version hints, CI images, AGP/Gradle versions, deletion / tester pages) */
+    /* 0.2.4: Cordova config.xml, Bubblewrap twa-manifest.json, app locale files (locales/ko.json, i18n/th.json, ko.lproj) */
+    /(^|\/)config\.xml$/i, /(^|\/)twa-manifest\.json$/i, /(^|\/)(locales?|i18n|lang|langs|translations|l10n)\/[a-z]{2}([-_][A-Za-z]{2,4})?\.json$/i, /(^|\/)[a-z]{2}([-_][A-Za-z]{2,4})?\.lproj\/(Localizable|InfoPlist)\.strings$/i,
     /(^|\/)\.?rocketlauncher\.json$/i, /(^|\/)\.xcode-version$/i, /(^|\/)\.github\/workflows\/[^/]+\.ya?ml$/i, /(^|\/)codemagic\.ya?ml$/i, /(^|\/)gradle-wrapper\.properties$/i,
     /(^|\/)[^/]*(delete|deletion|tester|testing|beta|join|opt-?in)[^/]*\.(html?|md)$/i, /(^|\/)(delete|deletion|delete-account|testers?|beta|join)\/index\.html?$/i
   ];

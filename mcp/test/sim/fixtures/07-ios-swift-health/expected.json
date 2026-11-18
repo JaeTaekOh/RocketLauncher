@@ -1,0 +1,28 @@
+{
+  "description": "Native iOS (SwiftUI) health tracker with StoreKit 2 subscriptions, HealthKit, a live App Store link, and an App Store icon with transparent corners.",
+  "framework": "ios-native",
+  "platforms": [
+    "ios"
+  ],
+  "package": "com.sim.healthpulse",
+  "version": "3.0",
+  "category": "health",
+  "stage": {
+    "apple": "live"
+  },
+  "ads": false,
+  "iap": true,
+  "data_safety": [],
+  "privacy_url": "https://healthpulse.app/privacy",
+  "icon": {
+    "found": true,
+    "ios_blank": false
+  },
+  "issues_present": [
+    "iconAlpha"
+  ],
+  "issues_absent": [
+    "privacyManifest",
+    "iconBlank"
+  ]
+}

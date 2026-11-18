@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.sim.tunebox" version="1.4.2" android-versionCode="10402" ios-CFBundleVersion="1.4.2.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>TuneBox</name>
+    <description>Offline music player for your songs and playlists</description>
+    <author email="tunebox@simstudio.dev">Sim Studio</author>
+    <content src="index.html" />
+    <preference name="android-minSdkVersion" value="24" />
+    <preference name="android-targetSdkVersion" value="36" />
+    <platform name="android"><icon src="res/icon/android/icon-192.png" /></platform>
+    <platform name="ios"><preference name="deployment-target" value="15.0" /></platform>
+</widget>

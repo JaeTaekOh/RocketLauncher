@@ -1,0 +1,38 @@
+{
+  "description": "Bare React Native social feed with Firebase Auth + Firestore posts, camera/photo picker, no account deletion and no privacy policy anywhere.",
+  "framework": "react-native",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.chatter",
+  "version": "0.4.0",
+  "targetSdk": 36,
+  "category": "social",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  },
+  "ads": false,
+  "sdk": {
+    "auth": true,
+    "cloudDb": true,
+    "camera": true
+  },
+  "data_safety": [
+    "email",
+    "name",
+    "uid",
+    "ugc"
+  ],
+  "privacy_url": null,
+  "issues_present": [
+    "accountDeletion",
+    "privacyPolicy",
+    "supportContact"
+  ],
+  "issues_absent": [
+    "targetSdk",
+    "missingUsage"
+  ]
+}

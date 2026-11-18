@@ -1,0 +1,24 @@
+{
+  "description": "Flutter photo filter app whose iOS 1024 icon is a solid color while the Android icon has artwork.",
+  "framework": "flutter",
+  "version": "2.0.1",
+  "versionCode": "20",
+  "targetSdk": 36,
+  "category": "photography",
+  "sdk": {
+    "camera": true
+  },
+  "icon": {
+    "found": true,
+    "ios_blank": true,
+    "android_blank": false,
+    "mismatch": true
+  },
+  "issues_present": [
+    "iconBlank",
+    "iconMismatch"
+  ],
+  "issues_absent": [
+    "missingUsage"
+  ]
+}

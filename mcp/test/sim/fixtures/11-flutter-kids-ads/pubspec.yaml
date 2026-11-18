@@ -1,0 +1,7 @@
+name: color_bugs
+version: 1.0.0+1
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mobile_ads: ^5.1.0
+  firebase_analytics: ^11.0.0

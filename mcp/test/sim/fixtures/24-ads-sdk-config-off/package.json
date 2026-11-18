@@ -1,0 +1,1 @@
+{"name":"daily-quote","version":"1.0.0","dependencies":{"@capacitor/core":"^7.0.0","@capacitor/android":"^7.0.0","@capacitor-community/admob":"^7.0.0"}}

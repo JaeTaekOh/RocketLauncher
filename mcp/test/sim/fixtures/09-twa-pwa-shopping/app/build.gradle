@@ -1,0 +1,13 @@
+apply plugin: 'com.android.application'
+def twaManifest = [ applicationId: 'app.sim.marketly.twa', hostName: 'marketly.app', launcherName: 'Marketly' ]
+android {
+    compileSdkVersion 35
+    defaultConfig {
+        applicationId "app.sim.marketly.twa"
+        minSdkVersion 21
+        targetSdkVersion 35
+        versionCode 3
+        versionName "1.0.2"
+    }
+}
+dependencies { implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0' }

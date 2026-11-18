@@ -1,0 +1,25 @@
+{
+  "description": "Flutter coloring game for toddlers with AdMob and Firebase Analytics declared: needs the Families / Kids policy warning.",
+  "framework": "flutter",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "version": "1.0.0",
+  "versionCode": "1",
+  "targetSdk": 36,
+  "category": "games",
+  "ads": true,
+  "sdk": {
+    "analytics": true
+  },
+  "data_safety": [
+    "adid",
+    "usage"
+  ],
+  "issues_present": [
+    "kidsPolicy",
+    "adsDeclare",
+    "adsNpa"
+  ]
+}

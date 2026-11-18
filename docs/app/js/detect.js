@@ -64,8 +64,8 @@
     return { sent: false, confidence: null, kinds: [] };
   }
 
-  const AUTH_RE = /firebase-auth|firebase_auth|FirebaseAuth|getAuth\s*\(|signInWith(?:Email|Popup|Credential|CustomToken)|@capacitor-firebase\/authentication|FirebaseAuthentication|firebase\.auth|initializeAuth|createUserWithEmail|play-services-auth|google_sign_in|google-signin|auth0|supabase|credentials-play-services|googleid/i;
-  const CLOUD_RE = /firestore|firebase-database|firebase_database|getFirestore\s*\(|firebase\.firestore|firestore\.googleapis|@capacitor-firebase\/firestore|supabase|realm/i;
+  const AUTH_RE = /firebase-auth|firebase_auth|FirebaseAuth|getAuth\s*\(|signInWith(?:Email|Popup|Credential|CustomToken)|@capacitor-firebase\/authentication|FirebaseAuthentication|firebase\.auth|initializeAuth|createUserWithEmail|play-services-auth|google_sign_in|google-signin|auth0|supabase\.auth\.|Supabase\.instance\.client\.auth\b|@supabase\/auth-ui|supabase_auth_ui|gotrue|credentials-play-services|googleid/i;   /* 0.2.4: Supabase counts as sign-in only when its auth API is used */
+  const CLOUD_RE = /firestore|firebase-database|firebase_database|getFirestore\s*\(|firebase\.firestore|firestore\.googleapis|@capacitor-firebase\/firestore|supabase|SyncConfiguration|flexibleSync|realm\.mongodb\.com|atlas[ -]device[ -]sync/i;   /* 0.2.4: plain Realm is an on-device database; only Realm Sync leaves the device */
   const LOC_SDK_RE = /ACCESS_(?:FINE_|COARSE_)?LOCATION|play-services-location|geolocator|NSLocation|Geolocation|getCurrentPosition|@capacitor\/geolocation|FusedLocation|CLLocation|Geolocator|navigator\s*\.\s*geolocation/i;
 
   window.RLDetect = { deletion, locationFlow, AUTH_RE, CLOUD_RE, LOC_SDK_RE, DELETE_FN, DELETE_HTTP, DELETE_TEXT, DELETE_I18N };

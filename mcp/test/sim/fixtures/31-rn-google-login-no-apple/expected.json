@@ -1,0 +1,11 @@
+{
+  "description": "React Native app with Google sign-in only (no Sign in with Apple, no deletion).",
+  "framework": "react-native",
+  "sdk": {
+    "auth": true
+  },
+  "issues_present": [
+    "loginOption",
+    "accountDeletion"
+  ]
+}

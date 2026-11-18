@@ -1,0 +1,788 @@
+{
+  "date": "2026-11-18T01:51:06.041Z",
+  "version": "0.2.3",
+  "fixtures": 39,
+  "checks": 332,
+  "correct": 273,
+  "per_field": {
+    "framework": {
+      "ok": 19,
+      "total": 21,
+      "known": 0
+    },
+    "package": {
+      "ok": 11,
+      "total": 11,
+      "known": 0
+    },
+    "version": {
+      "ok": 13,
+      "total": 18,
+      "known": 0
+    },
+    "versionCode": {
+      "ok": 9,
+      "total": 14,
+      "known": 0
+    },
+    "targetSdk": {
+      "ok": 10,
+      "total": 13,
+      "known": 0
+    },
+    "category": {
+      "ok": 29,
+      "total": 32,
+      "known": 0
+    },
+    "ads": {
+      "ok": 9,
+      "total": 10,
+      "known": 0
+    },
+    "ads_hint": {
+      "ok": 3,
+      "total": 3,
+      "known": 0
+    },
+    "iap": {
+      "ok": 4,
+      "total": 6,
+      "known": 0
+    },
+    "privacy_url": {
+      "ok": 9,
+      "total": 11,
+      "known": 0
+    },
+    "privacy_conflict": {
+      "ok": 2,
+      "total": 2,
+      "known": 0
+    },
+    "platforms": {
+      "ok": 25,
+      "total": 25,
+      "known": 0
+    },
+    "data_safety": {
+      "ok": 9,
+      "total": 13,
+      "known": 0
+    },
+    "app_langs": {
+      "ok": 3,
+      "total": 4,
+      "known": 0
+    },
+    "stage": {
+      "ok": 20,
+      "total": 20,
+      "known": 0
+    },
+    "sdk": {
+      "ok": 23,
+      "total": 28,
+      "known": 0
+    },
+    "icon": {
+      "ok": 15,
+      "total": 22,
+      "known": 0
+    },
+    "issues": {
+      "ok": 55,
+      "total": 71,
+      "known": 0
+    },
+    "error": {
+      "ok": 1,
+      "total": 4,
+      "known": 0
+    },
+    "privacy_weak": {
+      "ok": 1,
+      "total": 1,
+      "known": 0
+    },
+    "listing_langs": {
+      "ok": 2,
+      "total": 2,
+      "known": 0
+    },
+    "i18n": {
+      "ok": 1,
+      "total": 1,
+      "known": 0
+    }
+  },
+  "per_fixture": [
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "checks": 34,
+      "failed": 7,
+      "ok": 27
+    },
+    {
+      "fixture": "02-expo-game-admob",
+      "checks": 18,
+      "failed": 4,
+      "ok": 14
+    },
+    {
+      "fixture": "03-expo-translator-minimal",
+      "checks": 1,
+      "failed": 1,
+      "ok": 0
+    },
+    {
+      "fixture": "04-capacitor-translator-th",
+      "checks": 21,
+      "failed": 3,
+      "ok": 18
+    },
+    {
+      "fixture": "05-cordova-music",
+      "checks": 1,
+      "failed": 1,
+      "ok": 0
+    },
+    {
+      "fixture": "06-android-kotlin-finance",
+      "checks": 23,
+      "failed": 1,
+      "ok": 22
+    },
+    {
+      "fixture": "07-ios-swift-health",
+      "checks": 15,
+      "failed": 4,
+      "ok": 11
+    },
+    {
+      "fixture": "08-kmp-education",
+      "checks": 14,
+      "failed": 4,
+      "ok": 10
+    },
+    {
+      "fixture": "09-twa-pwa-shopping",
+      "checks": 11,
+      "failed": 1,
+      "ok": 10
+    },
+    {
+      "fixture": "10-rn-social-ugc",
+      "checks": 19,
+      "failed": 1,
+      "ok": 18
+    },
+    {
+      "fixture": "11-flutter-kids-ads",
+      "checks": 12,
+      "failed": 3,
+      "ok": 9
+    },
+    {
+      "fixture": "12-flutter-photo-solid-icon",
+      "checks": 13,
+      "failed": 3,
+      "ok": 10
+    },
+    {
+      "fixture": "13-android-notes-noicon-lowtarget",
+      "checks": 14,
+      "failed": 0,
+      "ok": 14
+    },
+    {
+      "fixture": "14-android-run-tracker-bglocation",
+      "checks": 11,
+      "failed": 0,
+      "ok": 11
+    },
+    {
+      "fixture": "15-native-both-mismatched-icons",
+      "checks": 10,
+      "failed": 3,
+      "ok": 7
+    },
+    {
+      "fixture": "16-privacy-conflict-expo",
+      "checks": 7,
+      "failed": 1,
+      "ok": 6
+    },
+    {
+      "fixture": "17-privacy-stale-only",
+      "checks": 6,
+      "failed": 1,
+      "ok": 5
+    },
+    {
+      "fixture": "18-privacy-missing",
+      "checks": 5,
+      "failed": 0,
+      "ok": 5
+    },
+    {
+      "fixture": "19-privacy-google-sites",
+      "checks": 4,
+      "failed": 2,
+      "ok": 2
+    },
+    {
+      "fixture": "20-fastlane-multilang-live",
+      "checks": 8,
+      "failed": 0,
+      "ok": 8
+    },
+    {
+      "fixture": "21-stage-config-states",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "22-stage-weak-hints",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "23-ads-commented-gradle",
+      "checks": 7,
+      "failed": 3,
+      "ok": 4
+    },
+    {
+      "fixture": "24-ads-sdk-config-off",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "25-commented-sdks-shopping",
+      "checks": 6,
+      "failed": 4,
+      "ok": 2
+    },
+    {
+      "fixture": "26-ios-realm-offline",
+      "checks": 6,
+      "failed": 2,
+      "ok": 4
+    },
+    {
+      "fixture": "27-offline-calculator",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "28-contacts-birthdays",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "29-flutter-ios-missing-location-string",
+      "checks": 4,
+      "failed": 1,
+      "ok": 3
+    },
+    {
+      "fixture": "30-flutter-login-with-deletion",
+      "checks": 8,
+      "failed": 0,
+      "ok": 8
+    },
+    {
+      "fixture": "31-rn-google-login-no-apple",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "32-android-hi-zh-recipes",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "33-android-catalog-target34",
+      "checks": 7,
+      "failed": 0,
+      "ok": 7
+    },
+    {
+      "fixture": "34-android-debuggable-metronome",
+      "checks": 4,
+      "failed": 1,
+      "ok": 3
+    },
+    {
+      "fixture": "35-web-pwa-only",
+      "checks": 1,
+      "failed": 0,
+      "ok": 1
+    },
+    {
+      "fixture": "36-gradle-commented-target",
+      "checks": 6,
+      "failed": 3,
+      "ok": 3
+    },
+    {
+      "fixture": "37-expo-app-config-js",
+      "checks": 1,
+      "failed": 1,
+      "ok": 0
+    },
+    {
+      "fixture": "38-supabase-data-no-login",
+      "checks": 6,
+      "failed": 3,
+      "ok": 3
+    },
+    {
+      "fixture": "39-ios-lproj-locales",
+      "checks": 4,
+      "failed": 1,
+      "ok": 3
+    }
+  ],
+  "mismatches": [
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "version",
+      "expected": "1.3.0",
+      "actual": "flutterVersionName",
+      "ok": false
+    },
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "versionCode",
+      "expected": "13",
+      "actual": "flutterVersionCode.toInteger",
+      "ok": false
+    },
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "data_safety",
+      "expected": [
+        "loc"
+      ],
+      "actual": [
+        "loc",
+        "usage"
+      ],
+      "ok": false
+    },
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "sdk.analytics",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "icon.ios_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "icon.android_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "field": "issue-iconBlank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "02-expo-game-admob",
+      "field": "version",
+      "expected": "2.1.0",
+      "actual": "1.0.0",
+      "ok": false
+    },
+    {
+      "fixture": "02-expo-game-admob",
+      "field": "targetSdk",
+      "expected": 34,
+      "actual": null,
+      "ok": false
+    },
+    {
+      "fixture": "02-expo-game-admob",
+      "field": "issue+targetSdk",
+      "expected": true,
+      "actual": false,
+      "ok": false
+    },
+    {
+      "fixture": "02-expo-game-admob",
+      "field": "issue-targetSdkUnread",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "03-expo-translator-minimal",
+      "field": "error",
+      "expected": null,
+      "actual": "noapp",
+      "ok": false
+    },
+    {
+      "fixture": "04-capacitor-translator-th",
+      "field": "category",
+      "expected": "tools",
+      "actual": "food",
+      "ok": false
+    },
+    {
+      "fixture": "04-capacitor-translator-th",
+      "field": "privacy_url",
+      "expected": "https://simstudio.github.io/thaitalk/privacy.html",
+      "actual": null,
+      "ok": false
+    },
+    {
+      "fixture": "04-capacitor-translator-th",
+      "field": "issue-privacyPolicy",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "05-cordova-music",
+      "field": "error",
+      "expected": null,
+      "actual": "noapp",
+      "ok": false
+    },
+    {
+      "fixture": "06-android-kotlin-finance",
+      "field": "icon.android_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "07-ios-swift-health",
+      "field": "iap",
+      "expected": true,
+      "actual": false,
+      "ok": false
+    },
+    {
+      "fixture": "07-ios-swift-health",
+      "field": "icon.ios_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "07-ios-swift-health",
+      "field": "issue+iconAlpha",
+      "expected": true,
+      "actual": false,
+      "ok": false
+    },
+    {
+      "fixture": "07-ios-swift-health",
+      "field": "issue-iconBlank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "08-kmp-education",
+      "field": "framework",
+      "expected": "kmp",
+      "actual": "android-native",
+      "ok": false
+    },
+    {
+      "fixture": "08-kmp-education",
+      "field": "versionCode",
+      "expected": "5",
+      "actual": null,
+      "ok": false
+    },
+    {
+      "fixture": "08-kmp-education",
+      "field": "targetSdk",
+      "expected": 36,
+      "actual": null,
+      "ok": false
+    },
+    {
+      "fixture": "08-kmp-education",
+      "field": "issue-targetSdkUnread",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "09-twa-pwa-shopping",
+      "field": "framework",
+      "expected": "twa",
+      "actual": "android-native",
+      "ok": false
+    },
+    {
+      "fixture": "10-rn-social-ugc",
+      "field": "category",
+      "expected": "social",
+      "actual": "photography",
+      "ok": false
+    },
+    {
+      "fixture": "11-flutter-kids-ads",
+      "field": "version",
+      "expected": "1.0.0",
+      "actual": "flutter.versionName",
+      "ok": false
+    },
+    {
+      "fixture": "11-flutter-kids-ads",
+      "field": "versionCode",
+      "expected": "1",
+      "actual": "flutter.versionCode",
+      "ok": false
+    },
+    {
+      "fixture": "11-flutter-kids-ads",
+      "field": "issue+kidsPolicy",
+      "expected": true,
+      "actual": false,
+      "ok": false
+    },
+    {
+      "fixture": "12-flutter-photo-solid-icon",
+      "field": "version",
+      "expected": "2.0.1",
+      "actual": "flutter.versionName",
+      "ok": false
+    },
+    {
+      "fixture": "12-flutter-photo-solid-icon",
+      "field": "versionCode",
+      "expected": "20",
+      "actual": "flutter.versionCode",
+      "ok": false
+    },
+    {
+      "fixture": "12-flutter-photo-solid-icon",
+      "field": "icon.android_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "15-native-both-mismatched-icons",
+      "field": "icon.ios_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "15-native-both-mismatched-icons",
+      "field": "icon.android_blank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "15-native-both-mismatched-icons",
+      "field": "issue-iconBlank",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "16-privacy-conflict-expo",
+      "field": "version",
+      "expected": "1.5.0",
+      "actual": "1.0.0",
+      "ok": false
+    },
+    {
+      "fixture": "17-privacy-stale-only",
+      "field": "issue+privacyPolicy",
+      "expected": true,
+      "actual": false,
+      "ok": false
+    },
+    {
+      "fixture": "19-privacy-google-sites",
+      "field": "privacy_url",
+      "expected": "https://sites.google.com/view/simtimer/privacy",
+      "actual": null,
+      "ok": false
+    },
+    {
+      "fixture": "19-privacy-google-sites",
+      "field": "issue-privacyPolicy",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "23-ads-commented-gradle",
+      "field": "ads",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "23-ads-commented-gradle",
+      "field": "data_safety",
+      "expected": [],
+      "actual": [
+        "adid"
+      ],
+      "ok": false
+    },
+    {
+      "fixture": "23-ads-commented-gradle",
+      "field": "issue-adsDeclare",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "25-commented-sdks-shopping",
+      "field": "iap",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "25-commented-sdks-shopping",
+      "field": "data_safety",
+      "expected": [],
+      "actual": [
+        "crash",
+        "diag",
+        "usage"
+      ],
+      "ok": false
+    },
+    {
+      "fixture": "25-commented-sdks-shopping",
+      "field": "sdk.analytics",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "25-commented-sdks-shopping",
+      "field": "sdk.crash",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "26-ios-realm-offline",
+      "field": "data_safety",
+      "expected": [],
+      "actual": [
+        "ugc"
+      ],
+      "ok": false
+    },
+    {
+      "fixture": "26-ios-realm-offline",
+      "field": "sdk.cloudDb",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "29-flutter-ios-missing-location-string",
+      "field": "issue+missingUsage",
+      "expected": true,
+      "actual": false,
+      "ok": false
+    },
+    {
+      "fixture": "34-android-debuggable-metronome",
+      "field": "category",
+      "expected": "music",
+      "actual": "tools",
+      "ok": false
+    },
+    {
+      "fixture": "36-gradle-commented-target",
+      "field": "versionCode",
+      "expected": "4",
+      "actual": "3",
+      "ok": false
+    },
+    {
+      "fixture": "36-gradle-commented-target",
+      "field": "targetSdk",
+      "expected": 36,
+      "actual": 33,
+      "ok": false
+    },
+    {
+      "fixture": "36-gradle-commented-target",
+      "field": "issue-targetSdk",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "37-expo-app-config-js",
+      "field": "error",
+      "expected": null,
+      "actual": "noapp",
+      "ok": false
+    },
+    {
+      "fixture": "38-supabase-data-no-login",
+      "field": "sdk.auth",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "38-supabase-data-no-login",
+      "field": "issue-accountDeletion",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "38-supabase-data-no-login",
+      "field": "issue-demoAccount",
+      "expected": false,
+      "actual": true,
+      "ok": false
+    },
+    {
+      "fixture": "39-ios-lproj-locales",
+      "field": "app_langs",
+      "expected": [
+        "en",
+        "ko",
+        "th"
+      ],
+      "actual": [],
+      "ok": false
+    }
+  ],
+  "known": []
+}

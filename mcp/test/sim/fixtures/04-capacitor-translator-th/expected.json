@@ -1,0 +1,37 @@
+{
+  "description": "Capacitor Thai-Korean translator. targetSdk 35 from variables.gradle (too low), AdMob only in a disabled web config (hint only), privacy policy hosted on GitHub Pages (README).",
+  "framework": "capacitor",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "th.sim.thaitalk",
+  "version": "1.0.3",
+  "versionCode": "4",
+  "targetSdk": 35,
+  "category": "tools",
+  "stage": {
+    "play": "unknown",
+    "apple": "unknown"
+  },
+  "ads": false,
+  "ads_hint": true,
+  "sdk": {
+    "camera": true
+  },
+  "privacy_url": "https://simstudio.github.io/thaitalk/privacy.html",
+  "icon": {
+    "found": true,
+    "mismatch": false
+  },
+  "issues_present": [
+    "targetSdk",
+    "adsCodeOnly"
+  ],
+  "issues_absent": [
+    "adsDeclare",
+    "privacyPolicy",
+    "privacyUrlUnsure",
+    "missingUsage"
+  ]
+}

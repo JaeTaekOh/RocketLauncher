@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleDisplayName</key><string>주유왕</string>
+  <key>CFBundleShortVersionString</key><string>$(FLUTTER_BUILD_NAME)</string>
+  <key>CFBundleVersion</key><string>$(FLUTTER_BUILD_NUMBER)</string>
+  <key>NSLocationWhenInUseUsageDescription</key><string>주변 주유소를 찾기 위해 위치를 사용합니다.</string>
+  <key>ITSAppUsesNonExemptEncryption</key><false/>
+
+</dict>
+</plist>

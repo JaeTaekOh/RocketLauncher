@@ -1,0 +1,15 @@
+{
+  "description": "The only privacy page lives in an archived old-site/ folder: no current URL, no policy counted.",
+  "platforms": [
+    "android"
+  ],
+  "category": "tools",
+  "privacy_url": null,
+  "privacy_weak": false,
+  "issues_present": [
+    "privacyPolicy"
+  ],
+  "issues_absent": [
+    "privacyUrlConflict"
+  ]
+}

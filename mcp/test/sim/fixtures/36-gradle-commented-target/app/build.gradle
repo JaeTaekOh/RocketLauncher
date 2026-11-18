@@ -1,0 +1,12 @@
+plugins { id 'com.android.application' }
+android {
+  defaultConfig {
+    applicationId 'com.sim.levelup'
+    minSdk 24
+    // targetSdk 33   (old)
+    /* versionCode 3 */
+    targetSdk 36
+    versionCode 4
+    versionName '1.0.3'
+  }
+}

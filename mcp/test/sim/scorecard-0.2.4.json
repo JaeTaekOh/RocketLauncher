@@ -1,0 +1,357 @@
+{
+  "date": "2026-11-18T01:52:27.145Z",
+  "version": "0.2.4",
+  "fixtures": 39,
+  "checks": 366,
+  "correct": 366,
+  "per_field": {
+    "framework": {
+      "ok": 24,
+      "total": 24,
+      "known": 0
+    },
+    "package": {
+      "ok": 13,
+      "total": 13,
+      "known": 0
+    },
+    "version": {
+      "ok": 21,
+      "total": 21,
+      "known": 0
+    },
+    "versionCode": {
+      "ok": 16,
+      "total": 16,
+      "known": 0
+    },
+    "targetSdk": {
+      "ok": 15,
+      "total": 15,
+      "known": 0
+    },
+    "category": {
+      "ok": 35,
+      "total": 35,
+      "known": 0
+    },
+    "ads": {
+      "ok": 12,
+      "total": 12,
+      "known": 0
+    },
+    "ads_hint": {
+      "ok": 3,
+      "total": 3,
+      "known": 0
+    },
+    "iap": {
+      "ok": 8,
+      "total": 8,
+      "known": 0
+    },
+    "privacy_url": {
+      "ok": 13,
+      "total": 13,
+      "known": 0
+    },
+    "privacy_conflict": {
+      "ok": 2,
+      "total": 2,
+      "known": 0
+    },
+    "platforms": {
+      "ok": 28,
+      "total": 28,
+      "known": 0
+    },
+    "data_safety": {
+      "ok": 14,
+      "total": 14,
+      "known": 0
+    },
+    "app_langs": {
+      "ok": 5,
+      "total": 5,
+      "known": 0
+    },
+    "stage": {
+      "ok": 24,
+      "total": 24,
+      "known": 0
+    },
+    "sdk": {
+      "ok": 30,
+      "total": 30,
+      "known": 0
+    },
+    "icon": {
+      "ok": 22,
+      "total": 22,
+      "known": 0
+    },
+    "issues": {
+      "ok": 76,
+      "total": 76,
+      "known": 0
+    },
+    "privacy_weak": {
+      "ok": 1,
+      "total": 1,
+      "known": 0
+    },
+    "listing_langs": {
+      "ok": 2,
+      "total": 2,
+      "known": 0
+    },
+    "error": {
+      "ok": 1,
+      "total": 1,
+      "known": 0
+    },
+    "i18n": {
+      "ok": 1,
+      "total": 1,
+      "known": 0
+    }
+  },
+  "per_fixture": [
+    {
+      "fixture": "01-flutter-fuel-ko",
+      "checks": 34,
+      "failed": 0,
+      "ok": 34
+    },
+    {
+      "fixture": "02-expo-game-admob",
+      "checks": 18,
+      "failed": 0,
+      "ok": 18
+    },
+    {
+      "fixture": "03-expo-translator-minimal",
+      "checks": 15,
+      "failed": 0,
+      "ok": 15
+    },
+    {
+      "fixture": "04-capacitor-translator-th",
+      "checks": 21,
+      "failed": 0,
+      "ok": 21
+    },
+    {
+      "fixture": "05-cordova-music",
+      "checks": 16,
+      "failed": 0,
+      "ok": 16
+    },
+    {
+      "fixture": "06-android-kotlin-finance",
+      "checks": 23,
+      "failed": 0,
+      "ok": 23
+    },
+    {
+      "fixture": "07-ios-swift-health",
+      "checks": 15,
+      "failed": 0,
+      "ok": 15
+    },
+    {
+      "fixture": "08-kmp-education",
+      "checks": 14,
+      "failed": 0,
+      "ok": 14
+    },
+    {
+      "fixture": "09-twa-pwa-shopping",
+      "checks": 11,
+      "failed": 0,
+      "ok": 11
+    },
+    {
+      "fixture": "10-rn-social-ugc",
+      "checks": 19,
+      "failed": 0,
+      "ok": 19
+    },
+    {
+      "fixture": "11-flutter-kids-ads",
+      "checks": 12,
+      "failed": 0,
+      "ok": 12
+    },
+    {
+      "fixture": "12-flutter-photo-solid-icon",
+      "checks": 13,
+      "failed": 0,
+      "ok": 13
+    },
+    {
+      "fixture": "13-android-notes-noicon-lowtarget",
+      "checks": 14,
+      "failed": 0,
+      "ok": 14
+    },
+    {
+      "fixture": "14-android-run-tracker-bglocation",
+      "checks": 11,
+      "failed": 0,
+      "ok": 11
+    },
+    {
+      "fixture": "15-native-both-mismatched-icons",
+      "checks": 10,
+      "failed": 0,
+      "ok": 10
+    },
+    {
+      "fixture": "16-privacy-conflict-expo",
+      "checks": 7,
+      "failed": 0,
+      "ok": 7
+    },
+    {
+      "fixture": "17-privacy-stale-only",
+      "checks": 6,
+      "failed": 0,
+      "ok": 6
+    },
+    {
+      "fixture": "18-privacy-missing",
+      "checks": 5,
+      "failed": 0,
+      "ok": 5
+    },
+    {
+      "fixture": "19-privacy-google-sites",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "20-fastlane-multilang-live",
+      "checks": 8,
+      "failed": 0,
+      "ok": 8
+    },
+    {
+      "fixture": "21-stage-config-states",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "22-stage-weak-hints",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "23-ads-commented-gradle",
+      "checks": 7,
+      "failed": 0,
+      "ok": 7
+    },
+    {
+      "fixture": "24-ads-sdk-config-off",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "25-commented-sdks-shopping",
+      "checks": 6,
+      "failed": 0,
+      "ok": 6
+    },
+    {
+      "fixture": "26-ios-realm-offline",
+      "checks": 6,
+      "failed": 0,
+      "ok": 6
+    },
+    {
+      "fixture": "27-offline-calculator",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "28-contacts-birthdays",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "29-flutter-ios-missing-location-string",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "30-flutter-login-with-deletion",
+      "checks": 8,
+      "failed": 0,
+      "ok": 8
+    },
+    {
+      "fixture": "31-rn-google-login-no-apple",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "32-android-hi-zh-recipes",
+      "checks": 3,
+      "failed": 0,
+      "ok": 3
+    },
+    {
+      "fixture": "33-android-catalog-target34",
+      "checks": 7,
+      "failed": 0,
+      "ok": 7
+    },
+    {
+      "fixture": "34-android-debuggable-metronome",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    },
+    {
+      "fixture": "35-web-pwa-only",
+      "checks": 1,
+      "failed": 0,
+      "ok": 1
+    },
+    {
+      "fixture": "36-gradle-commented-target",
+      "checks": 6,
+      "failed": 0,
+      "ok": 6
+    },
+    {
+      "fixture": "37-expo-app-config-js",
+      "checks": 6,
+      "failed": 0,
+      "ok": 6
+    },
+    {
+      "fixture": "38-supabase-data-no-login",
+      "checks": 6,
+      "failed": 0,
+      "ok": 6
+    },
+    {
+      "fixture": "39-ios-lproj-locales",
+      "checks": 4,
+      "failed": 0,
+      "ok": 4
+    }
+  ],
+  "mismatches": [],
+  "known": []
+}

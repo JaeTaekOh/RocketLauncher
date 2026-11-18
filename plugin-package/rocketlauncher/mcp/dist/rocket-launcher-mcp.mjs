@@ -60462,7 +60462,10 @@ async function pixels(src, max = 64) {
       return null;
     }
   }
-  return { width: img.width, height: img.height, small: shrink(img, max) };
+  let tp = 0;
+  const n = img.width * img.height;
+  for (let i = 3; i < img.data.length; i += 4) if (img.data[i] < 255) tp++;
+  return { width: img.width, height: img.height, transparent_share: n ? +(tp / n).toFixed(4) : 0, small: shrink(img, max) };
 }
 function shrink(img, max) {
   const { width: W, height: H, data } = img, s = Math.max(1, Math.max(W, H) / max), w = Math.max(1, Math.round(W / s)), h = Math.max(1, Math.round(H / s));
@@ -60507,7 +60510,7 @@ function uniformity({ small }) {
   cd /= n * 3;
   const top = Math.max(...q.values()) / n;
   const transparent = sa / n < 8;
-  const blank = transparent || q.size <= 2 || top >= 0.985 || sd < 4 && cd < 4;
+  const blank = transparent || q.size <= 1 || top >= 0.985 || sd < 4 && cd < 4;
   return { blank, transparent, unique_colors: q.size, dominant_share: +top.toFixed(3), brightness_spread: +sd.toFixed(1), color_spread: +cd.toFixed(1), average_color: hex3(mr, mg, mb) };
 }
 function ahash({ small }) {
@@ -60561,7 +60564,7 @@ async function iconCheck(icons) {
     }
     const u = uniformity(p);
     H[k] = { hash: ahash(p), color: u.average_color, blank: u.blank };
-    out[k] = { path: ic.path, width: p.width, height: p.height, ...u };
+    out[k] = { path: ic.path, width: p.width, height: p.height, ...u, transparent_share: p.transparent_share };
   }
   if (!Object.keys(out).length) return null;
   if (H.ios && H.android) {
@@ -61514,7 +61517,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.3";
+var VERSION = "0.2.4";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.

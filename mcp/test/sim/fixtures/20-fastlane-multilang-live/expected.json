@@ -1,0 +1,28 @@
+{
+  "description": "Native Android + iOS with fastlane metadata for both stores in en / ko / th / zh / hi (Play) and en / ko / zh (App Store): existing listings.",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "version": "3.1.0",
+  "category": "education",
+  "stage": {
+    "play": "live",
+    "apple": "live"
+  },
+  "listing_langs": {
+    "play": [
+      "en",
+      "hi",
+      "ko",
+      "th",
+      "zh"
+    ],
+    "apple": [
+      "en",
+      "ko",
+      "zh"
+    ]
+  },
+  "privacy_url": "https://hanguldaily.app/privacy"
+}

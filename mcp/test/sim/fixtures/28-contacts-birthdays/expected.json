@@ -1,0 +1,10 @@
+{
+  "description": "Native Android + iOS birthday reminder that reads contacts.",
+  "category": "productivity",
+  "sdk": {
+    "contacts": true
+  },
+  "issues_absent": [
+    "missingUsage"
+  ]
+}

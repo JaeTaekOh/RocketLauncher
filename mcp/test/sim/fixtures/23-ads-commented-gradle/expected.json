@@ -1,0 +1,16 @@
+{
+  "description": "Native Android with the Google Mobile Ads dependency commented out in Gradle: no ads.",
+  "platforms": [
+    "android"
+  ],
+  "category": "tools",
+  "ads": false,
+  "ads_hint": false,
+  "sdk": {
+    "camera": true
+  },
+  "data_safety": [],
+  "issues_absent": [
+    "adsDeclare"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "description": "Separate native Android and native iOS projects in one repo (trip planner) whose launcher icons are different designs.",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "version": "1.2.0",
+  "versionCode": "3",
+  "category": "travel",
+  "icon": {
+    "found": true,
+    "ios_blank": false,
+    "android_blank": false,
+    "mismatch": true
+  },
+  "issues_present": [
+    "iconMismatch"
+  ],
+  "issues_absent": [
+    "iconBlank"
+  ]
+}

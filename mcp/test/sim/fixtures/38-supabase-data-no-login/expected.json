@@ -1,0 +1,13 @@
+{
+  "description": "React Native app that reads public data from Supabase but has no sign-in: not an account app (no deletion requirement).",
+  "framework": "react-native",
+  "category": "navigation",
+  "sdk": {
+    "auth": false
+  },
+  "issues_absent": [
+    "accountDeletion",
+    "accountDeletionUnsure",
+    "demoAccount"
+  ]
+}

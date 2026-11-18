@@ -1,0 +1,12 @@
+{
+  "description": "Expo app configured with a dynamic app.config.js (no app.json): name, version, package and bundle id are plain literals in the file.",
+  "framework": "expo",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "package": "com.sim.pocketbudget",
+  "version": "1.4.0",
+  "versionCode": "14",
+  "category": "finance"
+}

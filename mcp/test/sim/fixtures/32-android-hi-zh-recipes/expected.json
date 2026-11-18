@@ -1,0 +1,12 @@
+{
+  "description": "Native Android recipe app with Hindi, Simplified and Traditional Chinese string resources.",
+  "platforms": [
+    "android"
+  ],
+  "category": "food",
+  "app_langs": [
+    "en",
+    "hi",
+    "zh"
+  ]
+}

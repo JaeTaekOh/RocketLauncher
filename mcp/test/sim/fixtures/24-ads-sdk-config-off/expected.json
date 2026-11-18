@@ -1,0 +1,11 @@
+{
+  "description": "Capacitor app that declares @capacitor-community/admob but turns ads off in its config: the SDK is still in the binary, so it counts as ads.",
+  "framework": "capacitor",
+  "platforms": [
+    "android"
+  ],
+  "ads": true,
+  "issues_present": [
+    "adsDeclare"
+  ]
+}
