@@ -18,7 +18,10 @@
     /(^|\/)[^/]*(delete|deletion|tester|testing|beta|join|opt-?in)[^/]*\.(html?|md)$/i, /(^|\/)(delete|deletion|delete-account|testers?|beta|join)\/index\.html?$/i,
     /* 0.2.5: Unity, Godot, .NET MAUI and NativeScript project files; saved store rejection notes */
     /(^|\/)ProjectSettings\/ProjectSettings\.asset$/i, /(^|\/)Packages\/manifest\.json$/i, /(^|\/)export_presets\.cfg$/i, /(^|\/)project\.godot$/i, /\.csproj$/i, /(^|\/)nativescript\.config\.[jt]s$/i,
-    /(^|\/)[^/]*(reject|rejection|app-?review|review-?notes?|resolution-?center|policy-?violation)[^/]*\.(md|txt)$/i, /(^|\/)(app-?review|review-?notes?|rejections?)\/[^/]+\.(md|txt)$/i
+    /(^|\/)[^/]*(reject|rejection|app-?review|review-?notes?|resolution-?center|policy-?violation)[^/]*\.(md|txt)$/i, /(^|\/)(app-?review|review-?notes?|rejections?)\/[^/]+\.(md|txt)$/i,
+    /* 0.2.6: store-listing copy the developer prepared (play/short-description-ko.txt, store/listing-ko.md, STORE.md …) */
+    /(^|\/)(play|store|listing|listings|store[-_]?listing|google[-_]?play|playstore|play[-_]?store|metadata|marketing|aso)\/[^/]*\.(txt|md)$/i,
+    /(^|\/)([^/]*listing[^/]*|store|store[-_]?(listing|info|facts)|play[-_]?(store|listing|console)|google[-_]?play)\.md$/i, /(^|\/)[^/]*(short|full|long)[-_ ]?desc(ription)?[^/]*\.txt$/i
   ];
   /* App source code: read a limited number of files so review checks can see runtime behavior
      (ad request settings, ATT prompt, secret storage, login gate, user-supplied API keys). */
@@ -32,7 +35,9 @@
   const IMG_RE = [
     /ic_launcher(_round|_foreground)?\.(png|webp)$/i, /ic_launcher-playstore\.png$/i, /playstore[^/]*\.png$/i,
     /AppIcon\.appiconset\/.*\.png$/i, /(^|\/)(icon|app-icon|appicon|logo)\.png$/i,
-    /(^|\/)(screenshots?|fastlane\/metadata\/android\/[^/]+\/images\/phoneScreenshots|store)\/[^/]*\.(png|jpe?g|webp)$/i, /(^|\/)fastlane\/screenshots\/[^/]+\/[^/]*\.(png|jpe?g)$/i
+    /(^|\/)(screenshots?|fastlane\/metadata\/android\/[^/]+\/images\/phoneScreenshots|store)\/[^/]*\.(png|jpe?g|webp)$/i, /(^|\/)fastlane\/screenshots\/[^/]+\/[^/]*\.(png|jpe?g)$/i,
+    /* 0.2.6: an existing feature graphic and 512 store icon (play/feature-graphic-1024x500.png, play/icon-512.png, fastlane images/featureGraphic.png) */
+    /(^|\/)[^/]*(feature[-_ ]?graphic|featureGraphic|1024[x×]500)[^/]*\.(png|jpe?g)$/i, /(^|\/)(play|store|listing|google[-_]?play|playstore|marketing)\/[^/]*\.(png|jpe?g)$/i
   ];
   const SKIP_RE = /(^|\/)(node_modules|\.git|build|\.gradle|Pods|DerivedData|\.dart_tool|\.idea|intermediates|generated)\//;
   const MAX_TEXT = 400 * 1024, MAX_IMG = 4 * 1024 * 1024, MAX_FILES = 140;
@@ -63,6 +68,43 @@
     }
     return { bits: is64 ? 64 : 32, machine: r16(0x12), align: min };
   }
+  const BIN_RE = /\.(aab|apk)$/i, MAX_BIN = 3, MAX_BIN_SIZE = 300 * 1024 * 1024, MAX_BIN_SO = 40;
+  const MANIFEST_RES = { 0x01010270: 'targetSdkVersion', 0x0101020c: 'minSdkVersion', 0x0101021b: 'versionCode', 0x0101021c: 'versionName' };
+  /* Binary XML (APK AndroidManifest.xml): package, versionCode / versionName and <uses-sdk> levels */
+  function axmlManifest(u8) {
+    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), out = {}; let strs = [], res = [], p = 8;
+    const str = i => (i >= 0 && i < strs.length ? strs[i] : '');
+    while (p + 8 <= u8.length) {
+      const type = dv.getUint16(p, true), hsz = dv.getUint16(p + 2, true), size = dv.getUint32(p + 4, true); if (!size) break;
+      if (type === 0x0001) {
+        const n = dv.getUint32(p + 8, true), utf8 = !!(dv.getUint32(p + 16, true) & 0x100), start = p + dv.getUint32(p + 20, true); strs = [];
+        for (let i = 0; i < n; i++) {
+          let o = start + dv.getUint32(p + hsz + i * 4, true);
+          if (utf8) { let l = u8[o++]; if (l & 0x80) o++; l = u8[o++]; if (l & 0x80) l = ((l & 0x7f) << 8) | u8[o++]; strs.push(new TextDecoder().decode(u8.subarray(o, o + l))); }
+          else { let l = dv.getUint16(o, true); o += 2; if (l & 0x8000) { l = ((l & 0x7fff) << 16) | dv.getUint16(o, true); o += 2; } let t = ''; for (let k = 0; k < l; k++) t += String.fromCharCode(dv.getUint16(o + k * 2, true)); strs.push(t); }
+        }
+      } else if (type === 0x0180) { res = []; for (let o = p + 8; o < p + size; o += 4) res.push(dv.getUint32(o, true)); }
+      else if (type === 0x0102) {
+        const name = str(dv.getInt32(p + 20, true)), aStart = dv.getUint16(p + 24, true), aSize = dv.getUint16(p + 26, true), aCount = dv.getUint16(p + 28, true);
+        for (let k = 0; k < aCount; k++) {
+          const o = p + 16 + aStart + k * aSize, ni = dv.getInt32(o + 4, true), raw = dv.getInt32(o + 8, true), dt = u8[o + 15], data = dv.getUint32(o + 16, true);
+          const an = MANIFEST_RES[res[ni]] || str(ni), val = raw >= 0 ? str(raw) : dt === 0x10 || dt === 0x11 ? data : null;
+          if (name === 'manifest' && an === 'package') out.package = String(val);
+          if (name === 'manifest' && (an === 'versionCode' || an === 'versionName')) out[an] = String(val);
+          if (name === 'uses-sdk' && (an === 'targetSdkVersion' || an === 'minSdkVersion')) out[an === 'targetSdkVersion' ? 'targetSdk' : 'minSdk'] = +val || null;
+        }
+      }
+      p += size;
+    }
+    return out;
+  }
+  /* AAB manifest (aapt2 protobuf): attribute name and its string value sit next to each other (…\x12 len "targetSdkVersion" \x1a len "36") */
+  function protoManifest(u8) {
+    let s = ''; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+    const val = k => { const i = s.indexOf(String.fromCharCode(k.length) + k + '\x1a'); if (i < 0) return null; const o = i + 1 + k.length + 1, l = s.charCodeAt(o); return l > 0 && l < 128 ? s.substr(o + 1, l) : null; };
+    const t = val('targetSdkVersion'), m = val('minSdkVersion');
+    return { package: val('package'), versionCode: val('versionCode'), versionName: val('versionName'), targetSdk: t && /^\d+$/.test(t) ? +t : null, minSdk: m && /^\d+$/.test(m) ? +m : null };
+  }
   async function scanNatives(entries) {
     const libs = entries.filter(e => SO_RE.test(e.rel) && !SKIP_RE.test(e.rel));
     const out = { libs: [], unread: 0, nativeSrc: entries.some(e => NATIVE_SRC_RE.test(e.rel) && !SKIP_RE.test(e.rel)),
@@ -75,6 +117,27 @@
       catch (err) { out.unread++; out.libs.push({ path: e.rel, abi, align: null }); }
     }
     out.unread += Math.max(0, libs.length - MAX_SO); out.total = libs.length;
+    /* 0.2.6: a built AAB / APK in the project (dist/, release/, build/outputs/) is what users get: its native libraries (ABIs, ELF
+       alignment) and its manifest (package, versionCode, targetSdk) are read from inside the archive. Nothing leaves this computer. */
+    out.binaries = [];
+    const bins = entries.filter(e => BIN_RE.test(e.rel) && !/(^|\/)(intermediates|node_modules|\.git)\//.test(e.rel) && e.size <= MAX_BIN_SIZE)
+      .sort((a, b) => /release/i.test(b.rel) - /release/i.test(a.rel) || /\.aab$/i.test(b.rel) - /\.aab$/i.test(a.rel) || a.rel.localeCompare(b.rel)).slice(0, MAX_BIN);
+    for (const e of bins) {
+      const b = { path: e.rel, kind: /\.aab$/i.test(e.rel) ? 'aab' : 'apk', size: e.size, libs: 0, abis: [], manifest: null, error: null };
+      try {
+        const u8 = await e.read(), zip = window.RLZip.readZip(u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength));
+        const sos = zip.filter(z => /(^|\/)lib\/(arm64-v8a|armeabi-v7a|armeabi|x86_64|x86|riscv64)\/[^/]+\.so$/i.test(z.path));
+        b.libs = sos.length; b.abis = [...new Set(sos.map(z => z.path.match(/lib\/([^/]+)\//)[1]))].sort();
+        for (const z of sos.slice(0, MAX_BIN_SO)) {
+          const abi = z.path.match(/lib\/([^/]+)\//)[1];
+          try { const h = elfAlign(await z.read()); out.libs.push({ path: e.rel + '!' + z.path, abi, bits: h && h.bits, align: h && h.align, binary: e.rel }); }
+          catch (err) { out.libs.push({ path: e.rel + '!' + z.path, abi, align: null, binary: e.rel }); }
+        }
+        const man = zip.find(z => b.kind === 'aab' ? /^base\/manifest\/AndroidManifest\.xml$/.test(z.path) : z.path === 'AndroidManifest.xml');
+        if (man) b.manifest = b.kind === 'aab' ? protoManifest(await man.read()) : axmlManifest(await man.read());
+      } catch (err) { b.error = String(err && err.message || err).slice(0, 80); }
+      out.binaries.push(b);
+    }
     /* 0.2.5: large files (ML models, videos, asset bundles) for the Play download-size check; sizes only, nothing is read */
     out.large = entries.filter(e => e.size >= LARGE_FILE && !SKIP_RE.test(e.rel) && !SO_RE.test(e.rel) && !/(^|\/)\.git\//.test(e.rel)).sort((a, b) => b.size - a.size).slice(0, 20).map(e => ({ path: e.rel, size: e.size }));
     return out;

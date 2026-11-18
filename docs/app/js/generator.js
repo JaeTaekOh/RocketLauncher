@@ -33,6 +33,8 @@
                     benefit: { ko: '똑똑한 쇼핑을 위한 도우미', en: 'Your smart shopping companion', th: 'ผู้ช่วยช้อปปิ้งอย่างชาญฉลาด', zh: '你的聪明购物助手', hi: 'आपका स्मार्ट शॉपिंग साथी' }, kw: { ko: '쇼핑,할인,쿠폰', en: 'shopping,deals,coupons', th: 'ช้อป,ส่วนลด,คูปอง', zh: '购物,优惠,优惠券', hi: 'शॉपिंग,डील,कूपन' }, who: { ko: ['알뜰 쇼핑을 원하는 분'], en: ['Smart shoppers'], th: ['นักช้อปสายประหยัด'], zh: ['精明的购物者'], hi: ['समझदार खरीदार'] } },
     tools:        { ko: ['도구', '도구'], en: ['Utility', 'Tools'], th: ['เครื่องมือ', 'เครื่องมือ'], zh: ['实用工具', '工具'], hi: ['यूटिलिटी', 'टूल्स'], play: 'Tools', apple: 'Utilities',
                     benefit: { ko: '꼭 필요한 기능만 빠르고 가볍게', en: 'Just the tools you need, fast and light', th: 'เครื่องมือที่จำเป็น ใช้ง่าย เร็ว และเบา', zh: '只要你需要的功能，快速又轻巧', hi: 'बस ज़रूरी टूल, तेज़ और हल्के' }, kw: { ko: '도구,유틸리티,간편', en: 'tool,utility,simple', th: 'เครื่องมือ,ยูทิลิตี้,ใช้ง่าย', zh: '工具,实用,简单', hi: 'टूल,यूटिलिटी,आसान' }, who: { ko: ['간단한 도구를 찾는 분'], en: ['Anyone who wants a simple tool'], th: ['คนที่อยากได้เครื่องมือใช้ง่าย'], zh: ['想要简单工具的人'], hi: ['जिन्हें आसान टूल चाहिए'] } },
+    business:     { ko: ['업무용 앱', '비즈니스'], en: ['Business app', 'Business'], th: ['แอปธุรกิจ', 'ธุรกิจ'], zh: ['商务应用', '商务'], hi: ['बिज़नेस ऐप', 'व्यवसाय'], play: 'Business', apple: 'Business',
+                    benefit: { ko: '현장 업무를 휴대폰 하나로 정리하세요', en: 'Run your work tasks from one app', th: 'จัดการงานของคุณได้ในแอปเดียว', zh: '用一个应用处理工作事务', hi: 'अपने काम एक ही ऐप से संभालें' }, kw: { ko: '업무,비즈니스,현장,보고서,견적', en: 'business,work,field,report,team', th: 'ธุรกิจ,งาน,รายงาน,ทีม', zh: '商务,工作,报告,团队', hi: 'व्यवसाय,काम,रिपोर्ट,टीम' }, who: { ko: ['현장에서 일하는 직원', '업무 기록을 한곳에 모으고 싶은 팀'], en: ['Staff who work in the field', 'Teams that want their work records in one place'], th: ['พนักงานที่ทำงานภาคสนาม', 'ทีมที่อยากรวมบันทึกงานไว้ที่เดียว'], zh: ['在现场工作的员工', '想把工作记录集中管理的团队'], hi: ['फ़ील्ड में काम करने वाले कर्मचारी', 'जो टीमें काम का रिकॉर्ड एक जगह रखना चाहती हैं'] } },
     music:        { ko: ['음악 앱', '음악 및 오디오'], en: ['Music app', 'Music & Audio'], th: ['แอปเพลง', 'เพลงและเสียง'], zh: ['音乐', '音乐与音频'], hi: ['म्यूज़िक ऐप', 'संगीत और ऑडियो'], play: 'Music & Audio', apple: 'Music',
                     benefit: { ko: '좋아하는 음악을 더 쉽게 즐기세요', en: 'Enjoy your music, simply', th: 'ฟังเพลงที่ชอบได้ง่ายขึ้น', zh: '更轻松地享受你的音乐', hi: 'अपना संगीत आसानी से सुनें' }, kw: { ko: '음악,노래,플레이리스트,오디오', en: 'music,songs,playlist,audio,player', th: 'เพลง,ดนตรี,เพลย์ลิสต์,เสียง', zh: '音乐,歌曲,歌单,音频', hi: 'संगीत,गाने,प्लेलिस्ट,ऑडियो' }, who: { ko: ['음악을 자주 듣는 분'], en: ['Anyone who listens to music every day'], th: ['คนที่ฟังเพลงทุกวัน'], zh: ['每天听音乐的人'], hi: ['जो रोज़ संगीत सुनते हैं'] } },
     social:       { ko: ['소셜 앱', '소셜'], en: ['Social app', 'Social'], th: ['แอปโซเชียล', 'โซเชียล'], zh: ['社交', '社交'], hi: ['सोशल ऐप', 'सोशल'], play: 'Social', apple: 'Social Networking',
@@ -47,6 +49,9 @@
 
   /* 기능 문구: 감지한 SDK·권한·카테고리로 고른다 */
   function features(A, lang) {
+    /* 0.2.6: features listed in the developer's prepared store description come first (never a generic guess like "Google login backup") */
+    const pf = A.prepared && A.prepared.features && A.prepared.features[lang];
+    if (pf && pf.length >= 2) return pf.slice(0, 6);
     const s = A.sdk, fin = A.categories[0] === 'finance', out = [];
     const S = A.strings[lang] || (lang === 'en' ? A.strings.default : null) || {};
     const F = {
@@ -101,7 +106,17 @@
     const full = [H.intro, '', H.feat, ...feats.map(f => `${B} ${f}`), '', H.who, ...c.who[lang].map(w => `${B} ${w}`), '', H.priv, H.privTxt, ...(email ? ['', `${H.contact}: ${email}`] : [])].join('\n');
     const kwBase = c.kw[lang].split(',');
     let kw = []; for (const k of kwBase.filter(k => !name.toLowerCase().includes(k.toLowerCase()))) { if ((kw.concat(k).join(',')).length <= 100 && !kw.includes(k)) kw.push(k); }
-    return { titles, shorts, full: clip(full, 4000), ios: { subtitle: clip(asoClean(tag), 30), keywords: kw.map(asoClean).filter(Boolean).join(','), promo: clip(shorts[0], 170) } };
+    /* 0.2.6: copy the developer already prepared (play/*.txt, fastlane, listing drafts) is option 0; generated text stays as alternatives */
+    const pc = A.prepared && A.prepared.copy && A.prepared.copy[lang];
+    if (pc) {
+      const first = (arr, v) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); arr.unshift(v); };
+      if (pc.title) first(titles, clip(pc.title, 30));
+      if (pc.short) first(shorts, clip(pc.short, 80));
+      /* prepared features are headings ("4 fuel types"), not sentences: too short to stand as a short description */
+      for (let i = shorts.length - 1; i > 0; i--) if (shorts[i].length < 15) shorts.splice(i, 1);
+    }
+    const fullOut = pc && pc.full ? clip(pc.full, 4000) : clip(full, 4000);
+    return { titles, shorts, full: fullOut, prepared: pc ? { title: !!pc.title, short: !!pc.short, full: !!pc.full, files: pc.files } : undefined, ios: { subtitle: clip(asoClean(tag), 30), keywords: kw.map(asoClean).filter(Boolean).join(','), promo: clip(shorts[0], 170) } };
   }
   /* App Store subtitle and keywords must not carry "free" (in any language) or other brands' names (Guideline 2.3.7). */
   const ASO_FREE = /\b(free|for free)\b|무료|ฟรี|免费|免費|मुफ़्त|मुफ्त|फ्री/gi;

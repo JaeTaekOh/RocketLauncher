@@ -1,0 +1,8 @@
+{
+  "category": "Business",
+  "default_language": "ko-KR",
+  "ads": false,
+  "account_deletion_url": "https://simstudio.github.io/shiftnote/account/delete",
+  "account_deletion_path": "Settings > Account > Delete account",
+  "privacy_url": "https://simstudio.github.io/shiftnote/privacy"
+}

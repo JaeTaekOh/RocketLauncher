@@ -34,7 +34,34 @@ async function actualOf(dir, exp) {
   let rq = null; try { rq = Object.fromEntries((await E.release('requirements', st.id, {}, 'en')).rows.map(r => [r.id, r.severity])); } catch (e) { rq = { error: e.message }; }
   let ds = null; try { ds = (await E.release('privacy', st.id, {}, 'en')).drafts.data_safety; } catch (e) { ds = { error: e.message }; }
   const IC = A.iconCheck || {};
+  /* 0.2.6: optional checks (expected.json "extra"): prepared listing, store languages, graphics, deletion info, built binaries, form factors, guide */
+  let extra;
+  if (exp.extra) {
+    const D = E.decisions(st, 'en'), dk = k => D.decisions.find(x => x.key === k), rec = k => (dk(k) || {}).recommended;
+    let gp = null; try { gp = E.guide(E.load(st.id), 'play', 'en'); } catch (e) { gp = { error: e.code || e.message }; }
+    let ct = null; try { ct = await E.release('closed_test', st.id, { action: 'application_draft' }, 'en'); } catch (e) { ct = { error: e.message }; }
+    let del = null; try { del = await E.release('deletion', st.id, {}, 'en'); } catch (e) { del = { error: e.message }; }
+    const field = (step, re) => { const s = gp && gp.steps && gp.steps.find(x => x.id === step); const f = s && s.fields.find(x => re.test(x.label)); return f ? f.value : null; };
+    const an = A.android || {};
+    extra = {
+      screenshots: A.screenshots.length, feature_graphic: !!A.featureGraphic, feature_rec: rec('feature') ?? null,
+      prepared_title: (A.prepared && A.prepared.defaultLang && (A.prepared.copy[A.prepared.defaultLang] || {}).title) || null,
+      prepared_default_lang: (A.prepared && A.prepared.defaultLang) || null, rec_langs: rec('langs') ?? null,
+      title_rec_label: ((dk('title') || { options: [] }).options[0] || {}).label || null,
+      category_source: A.categorySource ? A.categorySource.split(' (')[0] : null,
+      deletion_url: (A.deletionInfo && A.deletionInfo.url) || null, deletion_path: (A.deletionInfo && A.deletionInfo.inAppPath) || null,
+      deletion_note_placeholder: del && del.review_note_text ? /<your-site>|\[/.test(del.review_note_text) : null,
+      built_target: (an.built && an.built.targetSdk) || null, binaries: ((st.X && st.X.natives && st.X.natives.binaries) || []).length,
+      form_factors: an.formFactors && an.formFactors.length ? ['phone', ...an.formFactors] : [], form_factors_rec: rec('form_factors') ?? null,
+      privacy_stale: (A.privacyPages || []).filter(x => x.stale && x.stale.length && !x.old).map(x => x.path).sort(),
+      removed_permissions: sorted((an.removedPermissions || []).map(x => String(x).replace(/^android\.permission\./, ''))),
+      guide_partial: !!(gp && gp.steps && gp.undecided && gp.undecided.length), guide_default_lang: field('p-create', /default lang/i),
+      guide_form_factors: field('p-create', /form factors/i), guide_deletion_url: field('p-content', /deletion/i),
+      closed_test_value: ct && ct.sections ? ct.sections.about_your_app.value : null
+    };
+  }
   return {
+    extra,
     error: null,
     name: A.appName || null, framework: A.framework, requirements: rq, platforms: sorted(Object.keys(A.platforms).filter(k => A.platforms[k])),
     package: A.pkg || null, version: A.version || null, versionCode: A.android && A.android.versionCode != null ? String(A.android.versionCode) : null,
@@ -61,11 +88,17 @@ function compare(exp, act) {
   for (const [k, v] of Object.entries(exp.icon || {})) push('icon.' + k, v, act.icon[k]);
   for (const [k, v] of Object.entries(exp.listing_langs || {})) push('listing_langs.' + k, sorted(v), act.listing_langs[k]);
   for (const [k, v] of Object.entries(exp.requirements || {})) push('requirements.' + k, v, (act.requirements || {})[k] ?? null);
+  /* extra: exact value, or {"match": "regex"} / {"no_match": "regex"} for strings */
+  for (const [k, v] of Object.entries(exp.extra || {})) {
+    const a = (act.extra || {})[k];
+    if (v && typeof v === 'object' && !Array.isArray(v) && ('match' in v || 'no_match' in v)) push('extra.' + k, v, a, a != null && ('match' in v ? new RegExp(v.match, 'i').test(String(a)) : true) && ('no_match' in v ? !new RegExp(v.no_match, 'i').test(String(a)) : true));
+    else push('extra.' + k, v, a ?? null);
+  }
   for (const id of exp.issues_present || []) push('issue+' + id, true, act.issues.includes(id));
   for (const id of exp.issues_absent || []) push('issue-' + id, false, act.issues.includes(id));
   return out;
 }
-const group = f => f.replace(/^issue[+-].*/, 'issues').replace(/^(stage|sdk|icon|listing_langs|requirements)\..*/, '$1');
+const group = f => f.replace(/^issue[+-].*/, 'issues').replace(/^(stage|sdk|icon|listing_langs|requirements|extra)\..*/, '$1');
 
 const dirs = fs.readdirSync(FIX).filter(d => fs.existsSync(path.join(FIX, d, 'expected.json')) && (!ONLY || d.includes(ONLY))).sort();
 const perField = {}, mismatches = [], known = [], perFixture = [], ACT = {};

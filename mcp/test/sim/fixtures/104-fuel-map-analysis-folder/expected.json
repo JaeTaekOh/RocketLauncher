@@ -1,0 +1,65 @@
+{
+  "description": "0.2.6 (Gaddy report B1-B10): a Korean fuel-price app shipped as an analysis folder (meta README, no android/ wrapper, AAB in dist/). A gradle comment says \"applicationId is ...\" (B1), an AdMob block is left in app-config.js with adsEnabled: false (B2), play/*-ko.txt and a listing draft hold the decided Korean title and copy (B3, B5), the draft names Maps & Navigation (B4), play/ has a feature graphic and 6 screenshots that are repeated in screenshots/ (B6), the README gives the in-app deletion path and the web page (B7), a stale privacy page bundled in the app names an old package and operator (B8), Android Auto meta-data (B9), and the closed-test draft must describe the prepared features, not Google sign-in (B10).",
+  "framework": "capacitor",
+  "package": "com.sim.fuelmate",
+  "version": "1.3.0",
+  "versionCode": "13",
+  "targetSdk": 36,
+  "category": "navigation",
+  "ads": false,
+  "ads_hint": false,
+  "sdk": {
+    "location": true,
+    "auth": true
+  },
+  "privacy_url": "https://simstudio.github.io/fuelmate/privacy",
+  "requirements": {
+    "play.16kb_page_size": "ok"
+  },
+  "issues_present": [
+    "privacyStale"
+  ],
+  "issues_absent": [
+    "adsCodeOnly",
+    "adsDeclare"
+  ],
+  "extra": {
+    "screenshots": 6,
+    "feature_graphic": true,
+    "feature_rec": "existing",
+    "prepared_title": "주유메이트 - 가장 쉬운 주유소 찾기",
+    "title_rec_label": "주유메이트 - 가장 쉬운 주유소 찾기",
+    "prepared_default_lang": "ko",
+    "rec_langs": [
+      "ko"
+    ],
+    "guide_partial": true,
+    "guide_default_lang": {
+      "match": "ko-KR"
+    },
+    "form_factors": [
+      "phone",
+      "android_auto"
+    ],
+    "form_factors_rec": [
+      "phone",
+      "android_auto"
+    ],
+    "guide_form_factors": {
+      "match": "Android Auto"
+    },
+    "deletion_url": "https://simstudio.github.io/fuelmate/delete-account",
+    "deletion_path": "Menu > 내 계정 > 내 계정 삭제",
+    "deletion_note_placeholder": false,
+    "guide_deletion_url": "https://simstudio.github.io/fuelmate/delete-account",
+    "privacy_stale": [
+      "app/src/main/assets/public/site/privacy.html"
+    ],
+    "built_target": 36,
+    "binaries": 1,
+    "closed_test_value": {
+      "match": "주유메이트 - 가장 쉬운 주유소 찾기",
+      "no_match": "Sign in with Google|back up and sync"
+    }
+  }
+}

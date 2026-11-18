@@ -75,6 +75,9 @@ console.log('\n[2] ads: only real declarations count; code-only mentions are inf
 const CFG_JS = "window.APP = { adsEnabled: false, ads: { provider: 'admob', appId: 'ca-app-pub-0000000000000000~0000000000' } };\n";
 ({ st, report } = await connect(base({ 'app/src/main/assets/public/app-config.js': CFG_JS, 'app/src/main/assets/public/vendor/x/ads.min.js': 'var a="google-mobile-ads admob";' })));
 check(st.A.sdk.ads === false && !ids(st).includes('adsDeclare') && !ids(st).includes('adsNpa'), 'admob only in bundled app config JS → no ads, no adsDeclare / adsNpa warnings', ids(st));
+/* 0.2.6: adsEnabled: false → the leftover block is reported as switched off (ads_disabled), not as a hint */
+check(!st.A.issues.some(i => i.id === 'adsCodeOnly') && report.app.ads_disabled && /app-config\.js/.test(report.app.ads_disabled.files.join(',')), 'ads block switched off (adsEnabled: false) → no hint, reported as ads_disabled', report.app.ads_disabled);
+({ st, report } = await connect(base({ 'app/src/main/assets/public/app-config.js': CFG_JS.replace('adsEnabled: false, ', ''), 'app/src/main/assets/public/vendor/x/ads.min.js': 'var a="google-mobile-ads admob";' })));
 const hint = st.A.issues.find(i => i.id === 'adsCodeOnly');
 check(hint && hint.sev === 'tip' && /app-config\.js/.test(hint.vars.files) && !/vendor/.test(hint.vars.files) && report.app.ads_hint, 'string-only match → info-level hint naming the file (vendor bundle ignored)', hint);
 ({ st } = await connect(base({ 'app/src/main/AndroidManifest.xml': MANIFEST('<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-0~0"/>') })));

@@ -390,13 +390,15 @@
       case 'langs': { title = t('dec.langs'); why = t('dec.langs.d');
         const cur = S.dec.langs || [];
         body = `<div class="opts three">${F.LANGS.map(c => [c, t('lang.' + c)]).map(([c, n]) => `<button class="opt ${cur.includes(c) ? 'on' : ''}" data-lang-toggle="${c}" aria-pressed="${cur.includes(c)}" data-press><span class="opt-t">${esc(n)}</span><span class="opt-s">${A.locales.includes(c) || (c === 'en') ? esc(t('dec.langs.inApp')) : esc(t('dec.langs.store'))}</span>${cur.includes(c) ? `<span class="tick">${ic('check')}</span>` : ''}</button>`).join('')}</div>
-          <div class="row"><button class="btn ghost sm" data-dec="langs" data-val='${JSON.stringify(F.DEFAULT_LANGS)}' data-press>${ic('sparkle')}<span>${esc(t('dec.langs.rec'))}</span></button></div>`; break; }
+          <div class="row"><button class="btn ghost sm" data-dec="langs" data-val='${esc(JSON.stringify(F.recLangs ? F.recLangs(A) : F.DEFAULT_LANGS))}' data-press>${ic('sparkle')}<span>${esc(t('dec.langs.rec'))}</span></button></div>`; break; }
+      case 'form_factors': { title = t('dec.form_factors'); why = t('dec.form_factors.d'); const FFN = { phone: 'Phone', tablet: 'Tablet', android_auto: 'Android Auto', android_automotive: 'Android Automotive OS', wear_os: 'Wear OS', tv: 'Google TV', chromebook: 'Chromebook' }, rv = recValue(d);
+        body = `<div class="opts two">${optTile(d, rv, esc(rv.map(f => FFN[f] || f).join(' + ')), '')}${optTile(d, ['phone'], esc(FFN.phone), '')}</div>`; break; }
       case 'icon': title = t('dec.icon'); why = t('dec.icon.d');
-        body = GEN ? `<div class="opts three img">${GEN.icons.map((v, k) => optTile(d, k, esc(t('icon.' + v.style)), '512×512', `<img src="${v.dataUrl}" alt="" class="opt-icon">`)).join('')}</div>` : skel(); break;
+        body = GEN ? `<div class="opts three img">${d.existing ? optTile(d, 'existing', esc(t('icon.existing')), esc(A.icon.path), `<img src="${A.icon.dataUrl}" alt="" class="opt-icon">`) : ''}${GEN.icons.map((v, k) => optTile(d, k, esc(t('icon.' + v.style)), '512×512', `<img src="${v.dataUrl}" alt="" class="opt-icon">`)).join('')}</div>` : skel(); break;
       case 'feature': title = t('dec.feature'); why = t('dec.feature.d');
-        body = GEN ? `<div class="opts three img wide">${GEN.features.map((v, k) => optTile(d, k, esc(t('feat.' + ['split', 'shot', 'minimal'][k])), '1024×500', `<img src="${v}" alt="" class="opt-feature">`)).join('')}</div>` : skel(); break;
+        body = GEN ? `<div class="opts three img wide">${A.featureGraphic ? optTile(d, 'existing', esc(t('feat.existing')), esc(A.featureGraphic.path), `<img src="${A.featureGraphic.dataUrl}" alt="" class="opt-feature">`) : ''}${GEN.features.map((v, k) => optTile(d, k, esc(t('feat.' + ['split', 'shot', 'minimal'][k])), '1024×500', `<img src="${v}" alt="" class="opt-feature">`)).join('')}</div>` : skel(); break;
       case 'shots': title = t('dec.shots'); why = A.screenshots.length ? t('dec.shots.d', { n: A.screenshots.length }) : t('dec.shots.none');
-        body = `<div class="shots-row" id="shotsRow">${GEN && GEN.shots ? GEN.shots.map(s => `<img src="${s}" alt="">`).join('') : skel()}</div><div class="opts two">${optTile(d, 'ok', esc(t('opt.useThese')), '')}</div>`; break;
+        body = `<div class="shots-row" id="shotsRow">${GEN && GEN.shots ? GEN.shots.map(s => `<img src="${s}" alt="">`).join('') : skel()}</div><div class="opts two">${d.existing ? optTile(d, 'existing', esc(t('shots.existing')), '') : ''}${optTile(d, 'ok', esc(t('opt.useThese')), '')}</div>`; break;
       case 'privacy': title = t('dec.privacy'); why = t('dec.privacy.d');
         body = `<div class="doc-prev">${policyBody(G.privacyPolicy(A, L, { photoRemoved: S.dec['fix:photoPerm'] === 'apply' }))}</div><div class="opts two">${optTile(d, 'ok', esc(t('opt.approve')), esc(t('dec.privacy.host')))}</div>`; break;
       case 'safety': { title = t('dec.safety'); why = t('dec.safety.d'); const ds = G.dataSafety(A, L, F.privacyOpts(A, S.dec));
@@ -412,13 +414,15 @@
     if (d.keep) body = `<div class="opts two">${optTile(d, 'keep', esc(t('opt.keep')), esc(d.key === 'privacy' && A.developer && A.developer.privacyUrl ? A.developer.privacyUrl : t('opt.keep.d')))}</div>` + body;
     return wrapCard(d, i, '', title, why, body, done);
   }
+  const iconSrc = () => S.dec.icon === 'existing' && S.A && S.A.icon ? S.A.icon.dataUrl : GEN.icons[ix(S.dec.icon)].dataUrl;
+  const featSrc = () => S.dec.feature === 'existing' && S.A && S.A.featureGraphic ? S.A.featureGraphic.dataUrl : GEN.features[ix(S.dec.feature)];
   function wrapCard(d, i, badges, title, why, body, done) {
     const cur = S.dec[d.key];
     let summary = '';
     if (done) {
       const L = S.lang, gl = GEN && GEN.listing[L];
       summary = cur === 'keep' ? t('opt.keep') : d.key.startsWith('stage:') ? t('stage.' + cur) : d.key.startsWith('binary:') ? t('binary.' + cur) : d.key === 'title' && gl ? gl.titles[cur] : d.key === 'short' && gl ? gl.shorts[cur] : d.key === 'langs' ? cur.map(x => x.toUpperCase()).join(' · ') : d.key === 'category' ? G.CAT[S.A.categories[cur]][L][1]
-        : d.key === 'icon' ? t('icon.' + ['original', 'brand', 'light'][cur]) : d.key === 'feature' ? t('feat.' + ['split', 'shot', 'minimal'][cur]) : d.key === 'stores' ? t('store.' + cur) : d.key === 'tone' ? t('tone.' + cur) : d.key === 'track' ? t('track.' + cur) : d.key === 'access' || d.key === 'location' ? t(d.key + '.' + cur)
+        : d.key === 'icon' ? (cur === 'existing' ? t('icon.existing') : t('icon.' + ['original', 'brand', 'light'][cur])) : d.key === 'shots' && cur === 'existing' ? t('shots.existing') : d.key === 'feature' ? (cur === 'existing' ? t('feat.existing') : t('feat.' + ['split', 'shot', 'minimal'][cur])) : d.key === 'form_factors' ? cur.join(' + ') : d.key === 'stores' ? t('store.' + cur) : d.key === 'tone' ? t('tone.' + cur) : d.key === 'track' ? t('track.' + cur) : d.key === 'access' || d.key === 'location' ? t(d.key + '.' + cur)
         : cur === 'ok' ? t('approved') : t('opt.' + cur);
     }
     return `<article class="dcard card ${done ? 'is-done' : ''} m-stagger" style="--i:${Math.min(i, 10)}" id="dc-${d.key.replace(/[:]/g, '-')}">
@@ -494,8 +498,8 @@
     <section class="card">
       <h2 class="h-ic">${ic('image')}${esc(t('as.graphics'))}</h2>
       <div class="gfx">
-        <figure><img src="${GEN.icons[ix(S.dec.icon)].dataUrl}" alt="" class="g-icon"><figcaption>${esc(t('g.icon'))} · 512×512 <button class="btn ghost sm" data-dl="icon" data-press>${ic('download')}</button></figcaption></figure>
-        <figure class="g-wide"><img src="${GEN.features[ix(S.dec.feature)]}" alt=""><figcaption>${esc(t('g.feature'))} · 1024×500 <button class="btn ghost sm" data-dl="feature" data-press>${ic('download')}</button></figcaption></figure>
+        <figure><img src="${iconSrc()}" alt="" class="g-icon"><figcaption>${esc(t('g.icon'))} · 512×512 <button class="btn ghost sm" data-dl="icon" data-press>${ic('download')}</button></figcaption></figure>
+        <figure class="g-wide"><img src="${featSrc()}" alt=""><figcaption>${esc(t('g.feature'))} · 1024×500 <button class="btn ghost sm" data-dl="feature" data-press>${ic('download')}</button></figcaption></figure>
       </div>
       <div class="shots-row big">${(GEN.shots || []).map((s, k) => `<figure><img src="${s}" alt=""><figcaption>${k + 1} · 1080×1920 <button class="btn ghost sm" data-dl="shot${k}" data-press>${ic('download')}</button></figcaption></figure>`).join('')}</div>
       ${st.apple ? `<p class="small muted">${ic('apple')} ${esc(t('as.iosShots'))}</p>` : ''}
@@ -524,9 +528,10 @@
   }
   function bundleFiles() {
     const A = S.A, slug = F.slugOf(A), files = F.textFiles(A, S.dec, S.lang, t);
-    if (S.dec.icon !== 'keep') files.push({ path: 'graphics/icon-512.png', data: dataU8(GEN.icons[ix(S.dec.icon)].dataUrl) });
-    if (S.dec.feature !== 'keep') files.push({ path: 'graphics/feature-graphic-1024x500.png', data: dataU8(GEN.features[ix(S.dec.feature)]) });
-    if (S.dec.shots !== 'keep') (GEN.shots || []).forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${S.lang}.png`, data: dataU8(s) }));
+    if (S.dec.icon !== 'keep') files.push({ path: 'graphics/icon-512.png', data: dataU8(iconSrc()) });
+    if (S.dec.feature !== 'keep') files.push({ path: 'graphics/feature-graphic-1024x500.png', data: dataU8(featSrc()) });
+    if (S.dec.shots === 'existing') S.A.screenshots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}.png`, data: dataU8(s.dataUrl) }));
+    else if (S.dec.shots !== 'keep') (GEN.shots || []).forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${S.lang}.png`, data: dataU8(s) }));
     files.push({ path: 'README.txt', data: `Rocket Launcher — ${A.appName} (${A.pkg || ''})\n${new Date().toISOString().slice(0, 10)}\n\n${t('zip.readme')}\n` });
     return { slug, files };
   }
@@ -540,8 +545,8 @@
     $('#zipAll').onclick = () => { const { slug, files } = bundleFiles(); download(`rocketlauncher-${slug}.zip`, window.RLZip.writeZip(files)); toast(t('downloaded')); };
     $$('[data-dl]').forEach(b => b.onclick = () => {
       const k = b.dataset.dl, A = S.A;
-      if (k === 'icon') download('icon-512.png', GEN.icons[ix(S.dec.icon)].dataUrl);
-      else if (k === 'feature') download('feature-graphic-1024x500.png', GEN.features[ix(S.dec.feature)]);
+      if (k === 'icon') download('icon-512.png', iconSrc());
+      else if (k === 'feature') download('feature-graphic-1024x500.png', featSrc());
       else if (k.startsWith('shot')) download(`screenshot-${+k.slice(4) + 1}.png`, GEN.shots[+k.slice(4)]);
       else if (k === 'privacy') download(`privacy-policy-${S.lang}.html`, G.privacyPolicy(A, S.lang, { photoRemoved: S.dec['fix:photoPerm'] === 'apply', nonPersonalized: !!A.sdk.ads && !F.trackingOn(A, S.dec) }), 'text/html;charset=utf-8');
       else if (k === 'support') download(`support-${S.lang}.html`, G.supportPage(A, S.lang), 'text/html;charset=utf-8');
@@ -693,7 +698,7 @@
     return `
     <section class="done m-rise">
       <div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>
-      <div class="done-ic">${GEN ? `<img src="${GEN.icons[ix(S.dec.icon)].dataUrl}" alt="">` : ''}<span class="done-check">${ic('check')}</span></div>
+      <div class="done-ic">${GEN ? `<img src="${iconSrc()}" alt="">` : ''}<span class="done-check">${ic('check')}</span></div>
       <p class="kicker">${ic('party')}${esc(t('done.kicker'))}</p>
       <h1>${esc(t('done.h1', { app: appName() }))}</h1>
       <p class="lead">${esc(t('done.d'))}</p>

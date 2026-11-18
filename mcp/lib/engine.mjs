@@ -18,6 +18,7 @@ const PROJ = path.join(HOME, 'projects');
 /* 'ko' → ko, 'zh-TW' / 'zh-CN' / 'zh-Hans' / 'zh-Hant' → zh, 'th_TH' → th; anything else → en */
 export const normLang = l => { const p = String(l || '').trim().toLowerCase().split(/[-_]/)[0]; return LANGS.includes(p) ? p : 'en'; };
 const STORE_NAME = { play: 'Google Play', apple: 'App Store' };
+const BIN_DIRS = new Set(['dist', 'build', 'release', 'outputs']);
 const SKIP_DIRS = new Set(['node_modules', '.git', 'build', '.gradle', 'Pods', 'DerivedData', '.dart_tool', '.idea', 'intermediates', 'generated', '.expo', '.next', 'dist', '.cxx']);
 
 export class UserError extends Error { constructor(m, code) { super(m); this.code = code || 'user'; } }
@@ -45,11 +46,22 @@ async function walkDir(root) {
     for (const e of ents) {
       if (out.length > 20000) return;
       const abs = path.join(dir, e.name), r = rel ? rel + '/' + e.name : e.name;
-      if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name)) await walk(abs, r); }
+      if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name)) await walk(abs, r); else if (BIN_DIRS.has(e.name)) await walkBins(abs, r, 0); }
       else if (e.isFile()) {
         let size = 0; try { size = (await fs.promises.stat(abs)).size; } catch { continue; }
         out.push({ name: e.name, webkitRelativePath: top + '/' + r, size, arrayBuffer: async () => { const b = await fs.promises.readFile(abs); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); } });
       }
+    }
+  }
+  /* 0.2.6: build output folders are skipped, except built app bundles / APKs (dist/app-release.aab, build/outputs/bundle/…) */
+  let binDirs = 0;
+  async function walkBins(dir, rel, depth) {
+    if (depth > 6 || ++binDirs > 400) return;
+    let ents; try { ents = await fs.promises.readdir(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of ents) {
+      const abs = path.join(dir, e.name), r = rel + '/' + e.name;
+      if (e.isDirectory()) { if (!['intermediates', 'tmp', 'node_modules', '.git', 'generated', 'kotlin', 'cxx', '.cxx'].includes(e.name)) await walkBins(abs, r, depth + 1); }
+      else if (e.isFile() && /\.(aab|apk)$/i.test(e.name)) { let size = 0; try { size = (await fs.promises.stat(abs)).size; } catch { continue; } out.push({ name: e.name, webkitRelativePath: top + '/' + r, size, arrayBuffer: async () => { const b = await fs.promises.readFile(abs); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); } }); }
     }
   }
   await walk(path.resolve(root), '');
@@ -199,7 +211,8 @@ export function report(st, lang) {
       targetSdk: (A.android && A.android.targetSdk) || null, categories: A.categories.map(k => Gen.CAT[k] ? `${Gen.CAT[k][L][1]} (${Gen.CAT[k].play})` : k),
       sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k), languages_in_app: A.locales, icon_found: !!A.icon, screenshots_found: A.screenshots.length,
       source: st.source, privacy_url_found: (A.developer && A.developer.privacyUrl) || null, ...privacyInfo(A), icon_check: A.iconCheck || undefined,
-      ads_hint: A.adsHint ? { note: 'An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.', files: A.adsHint.files } : undefined },
+      ads_hint: A.adsHint ? { note: 'An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.', files: A.adsHint.files } : undefined,
+      ...extraInfo(A) },
     store_stage: stageInfo(st, L),
     readiness: A.readiness, counts: c,
     issues: issues.map(i => ({ key: i.fix && i.fix !== 'info' ? Flow.issueKey(i) : null, severity: t('sev.' + i.sev), sev: i.sev, store: i.plat === 'android' ? 'Google Play' : i.plat === 'ios' ? 'App Store' : 'both',
@@ -207,6 +220,29 @@ export function report(st, lang) {
     release_checks: releaseSafe(st, L),
     ...learned(st, L),
     next: stageNext(st, L) || msg(L, 'nextDecide', { n: Flow.decisions(A, st.dec).length })
+  };
+}
+/* 0.2.6: where the less obvious facts came from, so a wrong value can be traced and overridden in rocketlauncher.json */
+function extraInfo(A) {
+  const P = A.prepared, an = A.android || {}, D = A.deletionInfo || {};
+  return {
+    category_source: A.categorySource || 'guessed from the app name, text and libraries (needs confirmation; set "category" in rocketlauncher.json)',
+    sign_in_required: A.accessRestricted ? { source: A.accessRestricted.source, evidence: A.accessRestricted.text || undefined, note: 'The app is only for approved users, so reviewers need a demo account (App access: restricted).' } : undefined,
+    needs_confirmation: (() => { const n = [];
+      if (!A.categorySource) n.push('category (guessed)');
+      if (!(A.prepared && (A.prepared.defaultLang || A.prepared.listingLangs))) n.push('store languages and default language (no prepared listing or default_language found; English is only a suggestion)');
+      if (A.platforms.android && !(A.android && A.android.targetSdk)) n.push('targetSdk (not readable from source or a built file)');
+      if (A.sdk.auth && !(A.deletionInfo && A.deletionInfo.url)) n.push('account deletion web URL (not found)');
+      return n.length ? n : undefined; })(),
+    category_warning: A.categoryConfigUnknown ? `rocketlauncher.json category "${A.categoryConfigUnknown}" is not a known store category; set it to a Google Play category name such as "Business" or "Maps & Navigation".` : undefined,
+    ads_disabled: A.adsDisabled ? { note: 'An ad SDK is mentioned but switched off (or rocketlauncher.json says ads: false); not treated as ads.', source: A.adsDisabled.source, files: A.adsDisabled.files || undefined } : undefined,
+    built_binary: an.built ? { file: an.built.file, kind: an.built.kind, targetSdk: an.built.targetSdk || undefined, package: an.built.package || undefined, versionCode: an.built.versionCode || undefined, versionName: an.built.versionName || undefined, differs_from_source: an.builtMismatch && an.builtMismatch.length ? an.builtMismatch : undefined, note: an.builtMismatch && an.builtMismatch.length ? 'The built file differs from the source files; the built values are used. Rebuild if the source is newer.' : undefined } : undefined,
+    form_factors: an.formFactors && an.formFactors.length ? ['phone', ...an.formFactors] : undefined,
+    feature_graphic_found: A.featureGraphic ? A.featureGraphic.path : undefined,
+    prepared_forms: A.preparedForms && Object.values(A.preparedForms).some(Boolean) ? Object.fromEntries(Object.entries(A.preparedForms).filter(([, v]) => v)) : undefined,
+    screenshots: A.screenshots.length ? A.screenshots.map(x => x.path) : undefined,
+    prepared_listing: P && P.files.length ? { files: P.files, default_language: P.defaultLang || undefined, languages: P.langs, titles: Object.fromEntries(Object.entries(P.copy).filter(([, c]) => c.title).map(([l, c]) => [l, c.title])) } : undefined,
+    account_deletion: D.url || D.inAppPath ? { url: D.url || undefined, url_source: D.urlSource || undefined, in_app_path: D.inAppPath || undefined, path_source: D.pathSource || undefined } : undefined
   };
 }
 function privacyInfo(A) {
@@ -244,15 +280,26 @@ function optionBase(st, d, L, A, t, C) {
   }
   switch (d.key) {
     case 'stores': return d.opts.map(o => ({ value: o, label: t('store.' + o) }));
-    case 'title': return C.listing(L).titles.map((v, k) => ({ value: k, label: v, detail: `${v.length}/30` }));
-    case 'short': return C.listing(L).shorts.map((v, k) => ({ value: k, label: v, detail: `${v.length}/80` }));
+    /* 0.2.6: shown in the store's (first listing) language when the conversation language is not one of the listing languages */
+    case 'title': { const ll = C.langs.includes(L) ? L : C.langs[0], tag = ll !== L ? ` · ${t('lang.' + ll)}` : ''; return C.listing(ll).titles.map((v, k) => ({ value: k, label: v, detail: `${v.length}/30${tag}` })); }
+    case 'short': { const ll = C.langs.includes(L) ? L : C.langs[0], tag = ll !== L ? ` · ${t('lang.' + ll)}` : ''; return C.listing(ll).shorts.map((v, k) => ({ value: k, label: v, detail: `${v.length}/80${tag}` })); }
     case 'tone': return ['friendly', 'pro'].map(o => ({ value: o, label: t('tone.' + o), detail: Gen.listing(A, L, o).full.split('\n')[0].slice(0, 120) }));
     case 'category': return A.categories.map((c, k) => ({ value: k, label: Gen.CAT[c][L][1], detail: `Play: ${Gen.CAT[c].play} · Apple: ${Gen.CAT[c].apple}` }));
     case 'langs': { const nm = v => v.map(l => t('lang.' + l)).join(' + ');
-      return [{ value: Flow.DEFAULT_LANGS.slice(), label: t('dec.langs.rec') }, ...['ko', 'th', 'zh', 'hi'].map(l => ({ value: ['en', l], label: nm(['en', l]) })), { value: LANGS.slice(), label: nm(LANGS) }]; }
-    case 'icon': return STYLE.icon.map((s, k) => ({ value: k, label: t('icon.' + s), detail: '512×512 · rocketlauncher_preview_graphics kind=icons' }));
-    case 'feature': return STYLE.feature.map((s, k) => ({ value: k, label: t('feat.' + s), detail: '1024×500 · rocketlauncher_preview_graphics kind=feature' }));
-    case 'shots': return [{ value: 'ok', label: t('opt.useThese'), detail: A.screenshots.length ? t('dec.shots.d', { n: A.screenshots.length }) : t('dec.shots.none') }];
+      /* 0.2.6: the languages of the prepared listing come first (a Korean-only listing is offered as Korean only), then single languages */
+      const rec = (d.recLangs || Flow.DEFAULT_LANGS).slice(), P = A.prepared, base = [];
+      const push = (value, label, detail) => { if (!base.some(o => JSON.stringify(o.value) === JSON.stringify(value))) base.push({ value, label, ...(detail ? { detail } : {}) }); };
+      if (JSON.stringify(rec) !== JSON.stringify(Flow.DEFAULT_LANGS)) push(rec, nm(rec), P && P.files.length ? 'prepared store listing: ' + P.files.slice(0, 3).join(', ') : undefined);
+      push(Flow.DEFAULT_LANGS.slice(), JSON.stringify(rec) === JSON.stringify(Flow.DEFAULT_LANGS) ? t('dec.langs.rec') : nm(Flow.DEFAULT_LANGS));
+      ['ko', 'th', 'zh', 'hi'].forEach(l => push([l], nm([l])));
+      ['ko', 'th', 'zh', 'hi'].forEach(l => push(rec[0] === l ? [l, 'en'] : ['en', l], nm(rec[0] === l ? [l, 'en'] : ['en', l])));
+      push(LANGS.slice(), nm(LANGS));
+      return base; }
+    case 'form_factors': { const FF = { phone: 'Phone', tablet: 'Tablet', android_auto: 'Android Auto', android_automotive: 'Android Automotive OS', wear_os: 'Wear OS', tv: 'Google TV', chromebook: 'Chromebook' };
+      const rec = (d.recFF || ['phone']).slice(); return [{ value: rec, label: rec.map(f => FF[f]).join(' + '), detail: 'Found in the app: ' + rec.slice(1).map(f => FF[f]).join(', ') + '. Play Console > Test and release > Advanced settings > Form factors' }, { value: ['phone'], label: 'Phone only', detail: 'Do not opt in to ' + rec.slice(1).map(f => FF[f]).join(', ') }]; }
+    case 'icon': return [...(d.existing ? [{ value: 'existing', label: t('icon.existing'), detail: A.icon.path }] : []), ...STYLE.icon.map((s, k) => ({ value: k, label: t('icon.' + s), detail: '512×512 · rocketlauncher_preview_graphics kind=icons' }))];
+    case 'feature': return [...(A.featureGraphic ? [{ value: 'existing', label: t('feat.existing'), detail: A.featureGraphic.path }] : []), ...STYLE.feature.map((s, k) => ({ value: k, label: t('feat.' + s), detail: '1024×500 · rocketlauncher_preview_graphics kind=feature' }))];
+    case 'shots': return [...(d.existing ? [{ value: 'existing', label: t('shots.existing'), detail: A.screenshots.map(x => x.path).join(', ') }] : []), { value: 'ok', label: t('opt.useThese'), detail: A.screenshots.length ? t('dec.shots.d', { n: A.screenshots.length }) + ' ' + A.screenshots.map(x => x.path).join(', ') : t('dec.shots.none') }];
     case 'privacy': return [{ value: 'ok', label: t('opt.approve'), detail: t('dec.privacy.d') + ' (' + C.langs.map(l => `privacy-policy-${l}.html`).join(', ') + ')' }];
     case 'safety': { const ds = Gen.dataSafety(A, L, Flow.privacyOpts(A, st.dec));
       return [{ value: 'ok', label: t('opt.approve'), detail: ds.rows.map(r => `${r.label}: ${r.purposes}${r.shared ? ' · shared' : ''}${r.tracking ? ' · tracking' : ''}`).concat(ds.notCollected.map(r => `${r.label}: ${r.note}`)).join(' / ') }]; }
@@ -294,9 +341,12 @@ function validate(st, d, val, L) {
     case 'title': return idx(C.listing(L).titles.length);
     case 'short': return idx(C.listing(L).shorts.length);
     case 'category': return idx(st.A.categories.length);
-    case 'icon': case 'feature': return idx(3);
+    case 'icon': if (val === 'existing') { if (!st.A.icon) bad(); return 'existing'; } return idx(3);
+    case 'feature': if (val === 'existing') { if (!st.A.featureGraphic) bad(); return 'existing'; } return idx(3);
+    case 'form_factors': { const v = Flow.normFormFactors(val); if (!v) bad(); return v; }
     case 'langs': { const a = Array.isArray(val) ? [...new Set(val)] : bad(); if (!a.length || a.some(x => !LANGS.includes(x))) bad(); return a; }
-    case 'shots': case 'privacy': case 'safety': case 'rating': if (val !== 'ok') bad(); return 'ok';
+    case 'shots': if (val === 'existing' && st.A.screenshots.length) return 'existing'; if (val !== 'ok') bad(); return 'ok';
+    case 'privacy': case 'safety': case 'rating': if (val !== 'ok') bad(); return 'ok';
   }
   bad();
 }
@@ -327,9 +377,12 @@ export function decide(st, { choices, accept_all_recommended }, lang) {
   return { project_id: st.id, applied, open_count: left.length, open_keys: left, stage_not_picked: skipped.length ? msg(L, 'stageAsk', { keys: skipped.join(', ') }) : undefined,
     next: undecidedStages(st).length ? sn : left.length ? msg(L, 'openLeft', { n: left.length }) : (sn && !/rocketlauncher_get_decisions/.test(sn) ? sn : msg(L, 'allDecided')) };
 }
-function requireDecided(st, L) {
-  const left = Flow.decisions(st.A, st.dec).filter(d => st.dec[d.key] === undefined).map(d => d.key);
-  if (left.length) throw new UserError(msg(L, 'needDecisions', { n: left.length, keys: left.join(', ') }), 'needDecisions');
+/* 0.2.6: no tool waits for every decision. Open ones are filled with their recommended values for this run (not saved as the user's
+   choice) and listed, so the agent can confirm them with the user. */
+function withRecommended(st) {
+  const dec = { ...st.dec }, undecided = [];
+  for (let pass = 0; pass < 3; pass++) Flow.decisions(st.A, dec).forEach(d => { if (dec[d.key] === undefined) { dec[d.key] = Flow.recValue(d); if (!undecided.includes(d.key)) undecided.push(d.key); } });
+  return { dec, undecided };
 }
 
 /* ---------- 4. 그래픽 ---------- */
@@ -361,7 +414,13 @@ export async function preview(st, kind, lang) {
 
 /* ---------- 5. 스토어 자료 ---------- */
 export async function generate(st, { output_dir, lang }, { allowPath }) {
-  const L = normLang(lang || st.lang), t = T(L); requireDecided(st, L);
+  const L = normLang(lang || st.lang), t = T(L);
+  const { dec: filled, undecided } = withRecommended(st), userDec = st.dec;
+  st.dec = filled;
+  try { const out = await generateWith(st, L, t, output_dir, allowPath); if (undecided.length) { out.undecided = undecided; out.summary += ' ' + msg(L, 'guidePartial', { n: undecided.length, keys: undecided.join(', ') }); } return out; }
+  finally { st.dec = userDec; save(st); }
+}
+async function generateWith(st, L, t, output_dir, allowPath) {
   const A = st.A, C = Flow.chosen(A, st.dec), stores = Flow.stores(A, st.dec);
   const files = Flow.textFiles(A, st.dec, L, t);
   const rel = relevantLessons(A, stores, L);
@@ -369,9 +428,12 @@ export async function generate(st, { output_dir, lang }, { allowPath }) {
   const g = await graphics(st, L, ['feature', 'screenshots']);
   /* "keep" = the live store graphic stays; nothing new is made for it. */
   if (g) {
-    if (st.dec.icon !== 'keep') files.push({ path: 'graphics/icon-512.png', data: Buffer.from(b64(g.icons[Number.isInteger(st.dec.icon) ? st.dec.icon : 0]), 'base64') });
-    if (st.dec.feature !== 'keep') files.push({ path: 'graphics/feature-graphic-1024x500.png', data: Buffer.from(b64(g.features[Number.isInteger(st.dec.feature) ? st.dec.feature : 0]), 'base64') });
-    if (st.dec.shots !== 'keep') g.shots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${L}.png`, data: Buffer.from(b64(s), 'base64') }));
+    if (st.dec.icon === 'existing' && A.icon) files.push({ path: 'graphics/icon-512.png', data: Buffer.from(b64(A.icon.dataUrl), 'base64') });
+    else if (st.dec.icon !== 'keep') files.push({ path: 'graphics/icon-512.png', data: Buffer.from(b64(g.icons[Number.isInteger(st.dec.icon) ? st.dec.icon : 0]), 'base64') });
+    if (st.dec.feature === 'existing' && A.featureGraphic) files.push({ path: 'graphics/feature-graphic-1024x500' + (/\.jpe?g$/i.test(A.featureGraphic.path) ? '.jpg' : '.png'), data: Buffer.from(b64(A.featureGraphic.dataUrl), 'base64') });
+    else if (st.dec.feature !== 'keep') files.push({ path: 'graphics/feature-graphic-1024x500.png', data: Buffer.from(b64(g.features[Number.isInteger(st.dec.feature) ? st.dec.feature : 0]), 'base64') });
+    if (st.dec.shots === 'existing') A.screenshots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-${path.basename(s.path).replace(/^\d+[-_]?/, '')}`, data: Buffer.from(b64(s.dataUrl), 'base64') }));
+    else if (st.dec.shots !== 'keep') g.shots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${L}.png`, data: Buffer.from(b64(s), 'base64') }));
   }
   files.push({ path: 'README.txt', data: `Rocket Launcher — ${A.appName} (${A.pkg || ''})\n${new Date().toISOString().slice(0, 10)}\n\n${t('zip.readme')}\n\nFeedback: ${CFG.feedbackUrl}\n` });
   const base = output_dir && allowPath ? path.resolve(String(output_dir).replace(/^~(?=$|\/)/, os.homedir())) : path.join(dirOf(st.id), 'store-materials');
@@ -413,10 +475,12 @@ export function guide(st, store, lang) {
   const L = normLang(lang || st.lang), t = T(L);
   const stage = Flow.stageOf(st.dec, store);
   /* In review / rejected: the guide is about waiting or fixing, so it does not wait for listing choices (recommended values fill the gaps). */
-  let dec = st.dec;
-  if (stage === 'in_review' || stage === 'rejected') { storeCheck(st, store, L); dec = { ...st.dec }; Flow.decisions(st.A, dec).forEach(d => { if (dec[d.key] === undefined) dec[d.key] = Flow.recValue(d); }); }
-  else { requireDecided(st, L); storeCheck(st, store, L); }
-  const approved = !!st.approved[store], R = st.review[store] || {};
+  /* 0.2.6: the guide also works with partial decisions. Open choices are shown with their recommended values and listed in `undecided`;
+     the final submit step stays locked until every decision is made and the user approves (rocketlauncher_approve still requires all). */
+  storeCheck(st, store, L);
+  const { dec, undecided } = withRecommended(st);
+  const partial = undecided.length > 0 && !(stage === 'in_review' || stage === 'rejected');
+  const approved = !!st.approved[store] && !partial, R = st.review[store] || {};
   const raw = Flow.guide(st.A, dec, L, store, t);
   const msgStep = raw.find(s => s.id === 'r-message');
   if (msgStep) msgStep.fields = R.plan ? [[t('f.reason'), R.plan.reason], ...R.plan.fix_plan.map((x, k) => [`${k + 1}`, x]), ...(R.plan.reply ? [[t('g.r-reply.t'), R.plan.reply]] : [])] : [['rocketlauncher_report_review', 'event=rejected · store=' + store + ' · rejection_text']];
@@ -440,13 +504,17 @@ export function guide(st, store, lang) {
     steps.forEach((s, k) => { s.n = k + 1; });
   }
   return { project_id: st.id, store: STORE_NAME[store], approved, materials: st.generated ? { folder: st.generated.folder, zip: st.generated.zip } : null,
-    note: approved ? msg(L, 'guideUnlocked') : msg(L, 'guideLocked'), steps, learned_lessons: rel.length ? rel : undefined };
+    note: (partial ? msg(L, 'guidePartial', { n: undecided.length, keys: [...new Set(undecided)].join(', ') }) + ' ' : '') + (approved ? msg(L, 'guideUnlocked') : msg(L, 'guideLocked')),
+    undecided: partial ? [...new Set(undecided)] : undefined, steps, learned_lessons: rel.length ? rel : undefined };
 }
 export function approve(st, store, userWords, lang) {
-  const L = normLang(lang || st.lang); requireDecided(st, L); storeCheck(st, store, L);
-  st.approved[store] = { at: new Date().toISOString(), user_words: String(userWords || '').slice(0, 300) }; save(st);
+  const L = normLang(lang || st.lang); storeCheck(st, store, L);
+  /* the user approves what the guide showed: open decisions are saved with the recommended values that were shown */
+  const { dec, undecided } = withRecommended(st);
+  if (undecided.length) { st.dec = dec; st.auto = [...new Set([...(st.auto || []), ...undecided])]; }
+  st.approved[store] = { at: new Date().toISOString(), user_words: String(userWords || '').slice(0, 300), filled_with_recommended: undecided.length ? undecided : undefined }; save(st);
   const g = guide(st, store, L);
-  return { project_id: st.id, store: STORE_NAME[store], approved: true, message: msg(L, 'approved', { store: STORE_NAME[store] }), final_step: g.steps[g.steps.length - 1], auto_submit: false };
+  return { project_id: st.id, store: STORE_NAME[store], approved: true, message: msg(L, 'approved', { store: STORE_NAME[store] }), filled_with_recommended: undecided.length ? undecided : undefined, final_step: g.steps[g.steps.length - 1], auto_submit: false };
 }
 
 /* ---------- 7. 심사 결과 ---------- */

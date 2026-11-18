@@ -1,0 +1,24 @@
+{
+  "description": "0.2.6 (T-FLOW A5, Gaddy B2/B5/B7): rocketlauncher.json sets category \"Business\" (Play naming) over a utility-looking app, default_language ko-KR, account_deletion_url / account_deletion_path, and ads: false for an ad block left in a web config.",
+  "framework": "capacitor",
+  "package": "com.sim.shiftnote",
+  "category": "business",
+  "ads": false,
+  "ads_hint": false,
+  "issues_absent": [
+    "adsCodeOnly"
+  ],
+  "extra": {
+    "category_source": "project config",
+    "prepared_default_lang": "ko",
+    "rec_langs": [
+      "ko"
+    ],
+    "guide_default_lang": {
+      "match": "ko-KR"
+    },
+    "deletion_url": "https://simstudio.github.io/shiftnote/account/delete",
+    "deletion_path": "Settings > Account > Delete account",
+    "deletion_note_placeholder": false
+  }
+}

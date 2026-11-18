@@ -1,0 +1,10 @@
+apply plugin: 'com.android.application'
+android {
+    namespace "com.sim.shiftnote"
+    defaultConfig {
+        applicationId "com.sim.shiftnote"
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 21
+        versionName "2.1.0"
+    }
+}

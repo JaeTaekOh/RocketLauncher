@@ -97,7 +97,10 @@ export function scanProject(project, A) {
     kinds: del.kinds || [],
     confidence: del.confidence,
     pages: textP.filter(p => /\.(html?|md)$/i.test(p) && /delet/i.test(p)).slice(0, 5),
-    urls: [...urls].filter(u => /delet/i.test(u)).slice(0, 5)
+    /* 0.2.6: also a deletion URL written in the README, a listing draft or rocketlauncher.json, not only one in code */
+    urls: [...new Set([...(A.deletionInfo && A.deletionInfo.url ? [A.deletionInfo.url] : []), ...[...urls].filter(u => /delet/i.test(u))])].slice(0, 5),
+    path: A.deletionInfo && A.deletionInfo.inAppPath || null, url: A.deletionInfo && A.deletionInfo.url || null,
+    path_source: A.deletionInfo && A.deletionInfo.pathSource || null, url_source: A.deletionInfo && A.deletionInfo.urlSource || null
   };
   const loc = (Detect && Detect.locationFlow(codeP, F, '')) || { sent: false, confidence: null, kinds: [] };
   X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
@@ -137,23 +140,31 @@ export function requirements(st, L, opts = {}) {
   };
   const stage = k => Flow.stageOf(st.dec, k);
   if (an) {
-    const t = an.targetSdk;
-    if (t && t < 36) add('play.target_api_36', 'block', `targetSdk is ${t}.`, 'Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.');
-    else if (t) add('play.target_api_36', 'ok', `targetSdk is ${t}.`);
+    const B = an.built && an.built.targetSdk ? an.built : null;
+    /* 0.2.6: the built AAB / APK is what Play checks; when it disagrees with the source, the built value is reported */
+    const t = B && an.targetSdk && B.targetSdk !== an.targetSdk ? B.targetSdk : an.targetSdk;
+    const bt = B ? (B.targetSdk === an.targetSdk ? ` (the built ${B.kind.toUpperCase()} ${B.file} says the same)` : ` in the built ${B.kind.toUpperCase()} ${B.file}${an.targetSdk ? `; the source says ${an.targetSdk}, rebuild before uploading` : ''}`) : '';
+    if (t && t < 36) add('play.target_api_36', 'block', `targetSdk is ${t}${bt}.`, 'Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.');
+    else if (t) add('play.target_api_36', 'ok', `targetSdk is ${t}${bt}.`);
     else add('play.target_api_36', 'warn', `targetSdk could not be read (${an.targetSdkRaw || 'not set'}).`, 'Check the targetSdk your build actually uses; it must be 36 or higher.');
     if (stage('play') === 'live' && t && t < 35) add('play.existing_api_35', 'block', `The live app targets ${t}.`, 'Ship an update that targets 36; until then new users on newer Android cannot install it.');
     /* 16 KB */
     if (!X) add('play.16kb_page_size', 'warn', rx(L, 'req.rescan'), 'Connect the app again.');
     else {
-      const N = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
+      const N0 = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
+      /* 0.2.6: with a built AAB / APK in the project, its own native libraries decide (that is what Play checks); source folders only explain */
+      const bins = (N0.binaries || []).filter(b => !b.error);
+      const N = bins.length ? { ...N0, libs: N0.libs.filter(l => l.binary), nativeSrc: false } : { ...N0, libs: N0.libs.filter(l => !l.binary) };
       const bad = N.libs.filter(l => l.bits === 64 && l.align != null && l.align < 16384), unread = N.libs.filter(l => l.align == null);
-      const hybrid = ['react-native', 'expo', 'flutter', 'unity', 'godot', 'maui', 'nativescript'].includes(A.framework) || X.build.reactNative || X.build.flutter;
-      const agpOld = X.build.agp && vcmp(X.build.agp, '8.5.1') < 0;
-      if (bad.length) add('play.16kb_page_size', 'block', `${bad.length} 64-bit native librar${bad.length > 1 ? 'ies are' : 'y is'} aligned to ${Math.min(...bad.map(l => l.align))} bytes: ${bad.slice(0, 4).map(l => l.path).join(', ')}.`, 'Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.', { files: bad.map(l => l.path) });
+      const binNote = bins.length ? ` Checked inside the built ${bins.map(b => `${b.kind.toUpperCase()} ${b.path} (${b.libs} native librar${b.libs === 1 ? 'y' : 'ies'}${b.abis.length ? ': ' + b.abis.join(', ') : ''})`).join('; ')}.` : '';
+      const hybrid = !bins.length && (['react-native', 'expo', 'flutter', 'unity', 'godot', 'maui', 'nativescript'].includes(A.framework) || X.build.reactNative || X.build.flutter);
+      const agpOld = X.build.agp && vcmp(X.build.agp, '8.5.1') < 0 && !(bins.length && !N.libs.length);
+      if (bad.length) add('play.16kb_page_size', 'block', `${bad.length} 64-bit native librar${bad.length > 1 ? 'ies are' : 'y is'} aligned to ${Math.min(...bad.map(l => l.align))} bytes: ${bad.slice(0, 4).map(l => l.path).join(', ')}.${binNote}`, 'Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.', { files: bad.map(l => l.path) });
       else if (N.nativeSrc || unread.length || hybrid || agpOld) add('play.16kb_page_size', 'warn',
         [N.nativeSrc ? 'The project builds native code (CMake / ndk-build).' : '', hybrid ? `${A.framework} apps ship native libraries at build time.` : '', unread.length ? `${unread.length} native librar${unread.length > 1 ? 'ies' : 'y'} could not be read.` : '', agpOld ? `Android Gradle Plugin ${X.build.agp} is older than 8.5.1.` : ''].filter(Boolean).join(' '),
         'Use AGP 8.5.1+ and NDK r28+, update React Native / Flutter / game engines and native SDKs to 16 KB-ready versions, then confirm "Supports 16 KB" in Play Console > App bundle explorer.');
-      else if (N.libs.length) add('play.16kb_page_size', 'ok', `${N.libs.length} native librar${N.libs.length > 1 ? 'ies are' : 'y is'} 16 KB aligned.`);
+      else if (N.libs.length) add('play.16kb_page_size', 'ok', `${N.libs.length} native librar${N.libs.length > 1 ? 'ies are' : 'y is'} 16 KB aligned.${binNote}`);
+      else if (bins.length) add('play.16kb_page_size', 'ok', `The built app contains no native libraries (.so), so 16 KB page size does not apply.${binNote}`);
       else add('play.16kb_page_size', 'ok', 'No native code found (Java/Kotlin only apps already support 16 KB).');
     }
     add('play.app_registration', 'check', 'Rocket Launcher cannot see Play Console.', 'Open the Play Console home page and register any app it lists as unregistered. The developer account must be verified.');
@@ -199,10 +210,13 @@ export function requirements(st, L, opts = {}) {
 
 /* ---------- H6: account deletion ---------- */
 function deletionStatus(st) {
-  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [], kinds: [], confidence: null };
+  const A = st.A, X = st.X || {}, D = { code: [], text: false, pages: [], urls: [], kinds: [], confidence: null, ...(X.deletion || {}) };
+  const DI = A.deletionInfo || {};
+  if (DI.url && !D.urls.includes(DI.url)) D.urls = [DI.url, ...D.urls];
+  D.path = D.path || DI.inAppPath || null; D.url = D.url || DI.url || null; D.path_source = D.path_source || DI.pathSource || null; D.url_source = D.url_source || DI.urlSource || null;
   const generated = !!(st.generated && A.sdk.auth);   // generate_store_materials made account-deletion-<lang>.html
   const R = A.review || {}, corr = (st.corrections || {}).account_deletion;
-  let inApp = D.code.length > 0 || D.text || !!R.deletionInApp;
+  let inApp = D.code.length > 0 || D.text || !!R.deletionInApp || !!D.path;
   let confidence = D.confidence || R.deletionConfidence || (inApp ? 'certain' : null);
   if (corr && corr.actual === 'present') { inApp = true; confidence = 'certain'; }
   if (corr && corr.actual === 'missing') { inApp = false; confidence = 'certain'; }
@@ -218,11 +232,13 @@ export function deletionCheck(st, L) {
   const d = deletionStatus(st), rows = [];
   const inSev = d.inApp ? 'ok' : (d.confidence === 'uncertain' ? 'check' : 'block');
   rows.push({ id: 'in_app', severity: inSev, what: 'Delete account inside the app (Play + App Store 5.1.1(v)).',
-    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : '', ...((d.D.kinds || []).map(k => 'pattern:' + k)), d.corrected ? 'overridden by a correction report' : ''].filter(Boolean).join(', ')}` : (d.confidence === 'uncertain' ? 'Not certain — please confirm there is an in-app Delete account path.' : 'Not found.'),
+    finding: d.inApp ? `Found: ${[d.D.path ? `path "${d.D.path}" (${d.D.path_source})` : '', ...d.D.code, d.D.text ? 'a "Delete account" text' : '', ...((d.D.kinds || []).map(k => 'pattern:' + k)), d.corrected ? 'overridden by a correction report' : ''].filter(Boolean).join(', ')}` : (d.confidence === 'uncertain' ? 'Not certain — please confirm there is an in-app Delete account path.' : 'Not found.'),
+    in_app_path: d.D.path || undefined,
     action: d.inApp ? undefined : 'Add Settings > Delete account. It must delete the account and its data (not just sign out), ask once for confirmation and say how long deletion takes.',
     source: 'https://developer.apple.com/support/offering-account-deletion-in-your-app/' });
   rows.push({ id: 'web', severity: d.web ? 'ok' : (A.platforms.android ? 'block' : 'warn'), what: 'A web page where users can request deletion without the app (Google Play requires it; enter the URL in Play Console > App content > Data safety).',
-    finding: d.web ? `Found: ${[...d.D.pages, ...d.D.urls, d.generated ? 'account-deletion page from rocketlauncher_generate_store_materials' : ''].filter(Boolean).join(', ')}` : 'Not found.',
+    finding: d.web ? `Found: ${[...d.D.urls, ...d.D.pages, d.generated ? 'account-deletion page from rocketlauncher_generate_store_materials' : ''].filter(Boolean).join(', ')}` : 'Not found.',
+    url: d.D.url || undefined,
     action: d.web ? undefined : 'rocketlauncher_generate_store_materials makes account-deletion-<lang>.html. Host it (for example on GitHub Pages, free) and paste its URL in Play Console.',
     source: 'https://support.google.com/googleplay/android-developer/answer/13327111' });
   rows.push({ id: 'retention', severity: X && X.policy.deletion ? 'ok' : 'warn', what: 'The privacy policy says what is deleted, what is kept and for how long.',
@@ -230,10 +246,11 @@ export function deletionCheck(st, L) {
     source: 'https://support.google.com/googleplay/android-developer/answer/13327111' });
   if (A.ios && (A.sdk.appleSignIn || (A.ios && A.ios.appleSignIn))) rows.push({ id: 'siwa_revoke', severity: 'warn', what: 'Sign in with Apple: when an account is deleted, revoke the user\'s Apple tokens (REST API).',
     finding: 'Sign in with Apple is enabled.', action: 'Call Apple\'s token revocation endpoint from your server when the account is deleted.', source: 'https://developer.apple.com/support/offering-account-deletion-in-your-app/' });
-  const notes = 'Account deletion: in the app, open Settings > Delete account (no extra steps, the account and its data are deleted). On the web: [https://<your-site>/account-deletion.html].';
+  /* 0.2.6: the real path and URL when the project names them; placeholders only for what is unknown */
+  const notes = `Account deletion: in the app, open ${d.D.path ? d.D.path : '[the in-app path, e.g. Settings > Delete account]'} (the account and its data are deleted). On the web: ${d.D.url || '[https://<your-site>/account-deletion.html]'}.`;
   sortRows(rows); const c = counts(rows);
   return { title: rx(L, 'del.title'), summary: d.missing.length ? rx(L, 'del.missing', { missing: d.missing.join('; ') }) : rx(L, 'del.ok'), required: true, counts: c, rows: label(L, rows),
-    review_note_text: notes, play_console_field: 'Play Console > Policy and programs > App content > Data safety > "Delete account URL"' };
+    review_note_text: notes, in_app_path: d.D.path || null, deletion_url: d.D.url || null, play_console_field: 'Play Console > Policy and programs > App content > Data safety > "Delete account URL"' + (d.D.url ? ': ' + d.D.url : '') };
 }
 
 /* ---------- H3: privacy consistency + drafts ---------- */
@@ -284,6 +301,9 @@ export function privacyCheck(st, L) {
     const map = { CONTACTS: 'contacts', CALENDAR: 'calendar', HEALTH: 'health', FITNESS: 'fitness', SMS_CALL_LOG: 'sms', PHOTOS: 'photo', VIDEOS: 'video', AUDIO: 'audio', PHONE: 'phone' };
     for (const [k, word] of Object.entries(map)) if (X.signals[k] && !declared.includes(word)) add('ds.' + k.toLowerCase(), 'warn', `Google's scanner patterns found ${k.toLowerCase().replace(/_/g, ' ')} access (${X.signals[k][0]}), but the Data safety draft does not list it.`, 'If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
   }
+  /* 0.2.6: every privacy page, including copies bundled inside the app, must name this app and its current operator */
+  for (const x of A.privacyPages || []) if (x.stale && x.stale.length && !x.old) add('policy.stale', 'warn', `${x.path}${x.bundled ? ' (bundled inside the app)' : ''}: ${x.stale.join('; ')}.`,
+    x.bundled ? 'Update the bundled copy (or point the in-app link at the live privacy URL) and rebuild; users and reviewers can open this page from inside the app.' : 'Update this page or move it out of the project (archive/ folders are ignored).');
   /* PrivacyInfo required reasons */
   if (io) {
     const used = Object.keys((X && X.reasons) || {}), declaredApis = (X && X.manifestApis) || [];
@@ -393,7 +413,10 @@ export function closedTestStatus(st, L, T = today()) {
 }
 export function closedTestDraft(st, L, T = today()) {
   const A = st.A, S = closedTestStatus(st, L, T), C = st.closedTest || { feedback: [] };
-  const feats = (Gen.features ? Gen.features(A, 'en') : []).slice(0, 5).map(f => (typeof f === 'string' ? f : f.title || f.t || '')).filter(Boolean);
+  /* 0.2.6: the developer's prepared store listing (default language) describes the app; a README about the project folder does not */
+  const P = A.prepared, pl = P && (P.defaultLang && P.copy[P.defaultLang] ? P.defaultLang : P.langs[0]), pc = pl ? P.copy[pl] : null;
+  const feats = ((pl && P.features[pl]) || (Gen.features ? Gen.features(A, pl || 'en') : [])).slice(0, 5).map(f => (typeof f === 'string' ? f : f.title || f.t || '')).filter(Boolean);
+  const pitch = (pc && pc.short) || (A.tagline && (A.tagline[pl] || A.tagline.en)) || '[one-sentence value]', appTitle = (pc && pc.title) || A.appName;
   const fb = (C.feedback || []).slice(-8).map(f => `- ${f.date}: ${f.text}`).join('\n') || '- [summarize what testers reported]';
   const cat = (A.categories || [])[0] || 'app';
   return {
@@ -407,7 +430,7 @@ export function closedTestDraft(st, L, T = today()) {
       },
       about_your_app: {
         target_audience: `[Who it is for, as specific as possible — for example: drivers in Thailand who want the cheapest ${cat === 'travel' ? 'route' : 'nearby option'}.]`,
-        value: `${A.appName}: ${(A.tagline && A.tagline.en) || '[one-sentence value]'}${feats.length ? ' Main features: ' + feats.join('; ') + '.' : ''}`,
+        value: `${appTitle}: ${pitch}${feats.length ? ' Main features: ' + feats.join('; ') + '.' : ''}`,
         installs_first_year: '[pick an honest estimate]'
       },
       about_your_production_readiness: {
@@ -415,6 +438,7 @@ export function closedTestDraft(st, L, T = today()) {
         why_ready: `The app ran for ${S.qualified_testers >= NEED_TESTERS ? '14+' : '[n]'} days with ${S.active_testers} testers without blocking issues, the reported problems are fixed, the store listing, Data safety and content rating are complete, and the pre-launch report shows no critical issues. [Edit to match reality.]`
       }
     },
+    listing_source: pc ? `prepared store listing (${pl}): ${Object.values(pc.files || {}).filter((v, i, a) => a.indexOf(v) === i).join(', ')}` : undefined,
     source: req('play.closed_testing_personal').source
   };
 }

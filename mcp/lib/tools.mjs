@@ -5,7 +5,7 @@ import * as E from './engine.mjs';
 import { CFG } from './runtime.mjs';
 import { ensureShared } from './shared.mjs';
 
-export const VERSION = '0.2.5';
+export const VERSION = '0.2.6';
 
 export const INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
@@ -85,7 +85,7 @@ export function createServer({ allowPath = true, inlineZip = false } = {}) {
 
   server.registerTool('rocketlauncher_generate_store_materials', {
     title: 'Make all store materials',
-    description: 'After every decision is made, create the full launch kit: store listing text per chosen language (English by default; Korean, Thai, Simplified Chinese or Hindi if picked), privacy policy and account-deletion pages, Data safety CSV and App Privacy answers, content-rating answers, PrivacyInfo.xcprivacy, code-fix diff for the approved fixes, icon, feature graphic and screenshots. Saves a folder and a ZIP and returns the texts so you can show them.',
+    description: 'Create the full launch kit. Open decisions are filled with their recommended values for this run and listed in `undecided` (confirm them with the user). What the project already prepared is used as is: store listing text and default language (play/, fastlane, listing drafts, rocketlauncher.json), the store icon, feature graphic and screenshots. Contents: store listing text per chosen language, privacy policy and account-deletion pages, Data safety CSV and App Privacy answers, content-rating answers, PrivacyInfo.xcprivacy, code-fix diff for the approved fixes, icon, feature graphic and screenshots. Saves a folder and a ZIP and returns the texts so you can show them.',
     inputSchema: { project_id: pid, output_dir: z.string().optional().describe('Optional folder to save into (local stdio use only). Default: ~/.rocketlauncher/projects/<id>/store-materials'), lang }, annotations: { ...W, openWorldHint: true }
   }, wrap(async a => {
     await ensureShared();
@@ -96,7 +96,7 @@ export function createServer({ allowPath = true, inlineZip = false } = {}) {
 
   server.registerTool('rocketlauncher_submission_guide', {
     title: 'Step-by-step console guide',
-    description: 'Plain-language, step-by-step guide for Google Play Console (store=play) or App Store Connect (store=apple) with the exact value to paste into every field. The guide follows the store stage: first submit, waiting in review (wait, Information Needed reply draft, metadata-only fixes, no new build unless chosen), rejected (fix plan and resubmit) or live (new version, What\'s new, listing kept). The final submit step stays locked until the user approves with rocketlauncher_approve_submission.',
+    description: 'Plain-language, step-by-step guide for Google Play Console (store=play) or App Store Connect (store=apple) with the exact value to paste into every field. The guide follows the store stage: first submit, waiting in review (wait, Information Needed reply draft, metadata-only fixes, no new build unless chosen), rejected (fix plan and resubmit) or live (new version, What\'s new, listing kept). Works before every decision is made: open ones are shown with their recommended values and listed in `undecided`. The final submit step stays locked until the user approves with rocketlauncher_approve_submission.',
     inputSchema: { project_id: pid, store, lang }, annotations: { ...RO, openWorldHint: true }
   }, wrap(async a => { await ensureShared(); return ok(E.guide(E.load(a.project_id, a.lang), a.store, a.lang)); }));
 

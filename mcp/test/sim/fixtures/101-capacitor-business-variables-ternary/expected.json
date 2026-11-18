@@ -1,0 +1,49 @@
+{
+  "description": "0.2.6 (T-FLOW report A1-A5): Capacitor 7 field-work app for company staff. targetSdk 36 lives in variables.gradle while a Cordova plugin build.gradle has a hasProperty ternary with 35 (A1). Location / storage permissions are taken out with tools:node=\"remove\" (A2). The README lists the web deletion URL and the in-app path in Korean (A3). A release AAB under android/app/build/outputs has no .so, so 16 KB does not apply, read from the bundle (A4). The Korean listing draft says the category is Business (A5).",
+  "framework": "capacitor",
+  "package": "com.sim.sitecrew",
+  "version": "1.0.0",
+  "versionCode": "1",
+  "targetSdk": 36,
+  "category": "business",
+  "ads": false,
+  "sdk": {
+    "location": false,
+    "camera": true
+  },
+  "privacy_url": "https://simstudio.github.io/sitecrew/privacy",
+  "requirements": {
+    "play.target_api_36": "ok",
+    "play.16kb_page_size": "ok"
+  },
+  "issues_absent": [
+    "targetSdk",
+    "bgLocation",
+    "locationPerm",
+    "storagePerm"
+  ],
+  "extra": {
+    "removed_permissions": [
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_FINE_LOCATION",
+      "READ_EXTERNAL_STORAGE",
+      "WRITE_EXTERNAL_STORAGE"
+    ],
+    "deletion_url": "https://simstudio.github.io/sitecrew/delete-account",
+    "deletion_path": "설정 > 내 계정 > 계정 삭제 요청",
+    "deletion_note_placeholder": false,
+    "guide_deletion_url": "https://simstudio.github.io/sitecrew/delete-account",
+    "built_target": 36,
+    "binaries": 1,
+    "category_source": "store listing draft",
+    "feature_graphic": true,
+    "screenshots": 4,
+    "prepared_default_lang": "ko",
+    "rec_langs": [
+      "ko"
+    ],
+    "guide_default_lang": {
+      "match": "ko-KR"
+    }
+  }
+}

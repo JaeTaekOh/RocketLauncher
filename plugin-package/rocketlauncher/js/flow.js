@@ -8,6 +8,27 @@
   const DEFAULT_LANGS = ['en'];
 
   const issueKey = i => 'fix:' + i.id + (i.vars && i.vars.key ? ':' + i.vars.key : '');
+  /* 0.2.6: listing languages the developer already chose: rocketlauncher.json listing_languages, else the prepared store copy with its default
+     language first (a Korean-only listing stays Korean-only). English only when nothing says otherwise. */
+  function recLangs(A) {
+    const P = A.prepared; if (!P) return DEFAULT_LANGS.slice();
+    if (P.listingLangs && P.listingLangs.filter(l => LANGS.includes(l)).length) return P.listingLangs.filter(l => LANGS.includes(l));
+    const ls = (P.langs || []).filter(l => LANGS.includes(l));
+    if (P.defaultLang && LANGS.includes(P.defaultLang)) return [P.defaultLang, ...ls.filter(l => l !== P.defaultLang)];
+    return ls.length ? ls : DEFAULT_LANGS.slice();
+  }
+  /* 0.2.6: graphics the developer already prepared for the store (play/, store/, fastlane/) are used as they are, not redrawn */
+  const PREP_DIR = /(^|\/)(play|store|fastlane|metadata|listing|google[-_]?play|play[-_]?store)[^/]*\//i;
+  const preparedIcon = A => !!(A.icon && PREP_DIR.test(A.icon.path) && /512/.test(A.icon.path));
+  const preparedShots = A => !!(A.screenshots && A.screenshots.length && A.screenshots.every(x => PREP_DIR.test(x.path || '')));
+  /* 0.2.6: form factors to opt in to in Play Console (Advanced settings > Form factors). "phone" is always included. */
+  const FORM_FACTORS = ['phone', 'tablet', 'android_auto', 'android_automotive', 'wear_os', 'tv', 'chromebook'];
+  function normFormFactors(v) {
+    const arr = Array.isArray(v) ? v : String(v == null ? '' : v).split(/\s*(?:,|\+|&|\band\b|\/)\s*/i);
+    const map = x => { const k = String(x).toLowerCase().replace(/[^a-z]/g, ''); if (!k) return null; if (/automotive|aaos/.test(k)) return 'android_automotive'; if (/auto|car/.test(k)) return 'android_auto'; if (/wear|watch/.test(k)) return 'wear_os'; if (/^(tv|androidtv|googletv|leanback)$/.test(k)) return 'tv'; if (/tablet/.test(k)) return 'tablet'; if (/chrome/.test(k)) return 'chromebook'; if (/phone|mobile|handset|only/.test(k)) return 'phone'; return undefined; };
+    const out = arr.map(map); if (out.some(x => x === undefined)) return null;
+    return ['phone', ...FORM_FACTORS.filter(f => f !== 'phone' && out.includes(f))];
+  }
 
   /* ---------- 0.1.5: store stage (per store) ----------
      not_submitted = first submit · in_review = uploaded, waiting · rejected = fix and resubmit · live = update of a live app */
@@ -71,9 +92,11 @@
     const K = d => (keep && KEEPABLE.includes(d.key) ? { ...d, keep: true } : d);
     list.push({ key: 'stores', group: 'store', opts: A.platforms.android && A.platforms.ios ? ['both', 'play', 'apple'] : A.platforms.ios ? ['apple', 'both'] : ['play', 'both'], rec: 0 });
     list.push(...[{ key: 'title', group: 'store', rec: 0 }, { key: 'short', group: 'store', rec: 0 }, { key: 'tone', group: 'store', opts: ['friendly', 'pro'], rec: 0 },
-      { key: 'category', group: 'store', rec: 0 }, { key: 'langs', group: 'store', rec: 0 }, { key: 'icon', group: 'store', rec: A.icon ? 0 : 1 }, { key: 'feature', group: 'store', rec: 0 }, { key: 'shots', group: 'store', rec: 0 }].map(K));
+      { key: 'category', group: 'store', rec: 0 }, { key: 'langs', group: 'store', rec: 0, recLangs: recLangs(A) }, { key: 'icon', group: 'store', rec: A.icon ? 0 : 1, existing: preparedIcon(A) }, { key: 'feature', group: 'store', rec: 0, existing: !!A.featureGraphic }, { key: 'shots', group: 'store', rec: 0, existing: preparedShots(A) }].map(K));
+    const ff = (A.android && A.android.formFactors) || [];
+    if (A.platforms.android && ff.length) list.push({ key: 'form_factors', group: 'store', rec: 0, recFF: ['phone', ...FORM_FACTORS.filter(f => ff.includes(f))] });
     // Browse-first (Guideline 5.1.1(v)): core features without login is the recommended answer.
-    if (A.sdk.auth) list.push({ key: 'access', group: 'policy', opts: ['optional', 'required'], rec: 0 });
+    if (A.sdk.auth) list.push({ key: 'access', group: 'policy', opts: ['optional', 'required'], rec: A.accessRestricted ? 1 : 0 });
     // Location used only on the device is "not collected"; the answer must be truthful.
     if (A.sdk.location) list.push({ key: 'location', group: 'policy', opts: ['device', 'server'], rec: A.review && A.review.locationSent ? 1 : 0 });
     /* An existing privacy policy can always be kept. It is the default for an app already in a store or when a public privacy URL was found;
@@ -93,7 +116,9 @@
   function recValue(d) {
     if (d.keep && d.keepRec !== false) return 'keep';
     if (d.opts) return d.rec >= 0 ? d.opts[d.rec] : undefined;
-    if (d.key === 'langs') return DEFAULT_LANGS.slice();
+    if (d.key === 'langs') return (d.recLangs || DEFAULT_LANGS).slice();
+    if (d.key === 'form_factors') return (d.recFF || ['phone']).slice();
+    if (['feature', 'icon', 'shots'].includes(d.key) && d.existing) return 'existing';
     if (['shots', 'privacy', 'safety', 'rating'].includes(d.key)) return 'ok';
     return d.rec;
   }
@@ -110,7 +135,7 @@
     const pc = l => (LS.play.copy || {})[l] || {}, ac = l => (LS.apple.copy || {})[l] || {};
     const existingLangs = [...new Set([...(LS.play.langs || []), ...(LS.apple.langs || [])])].filter(l => LANGS.includes(l));
     const keepLangs = existingLangs.length ? existingLangs : [...new Set(['en', ...(A.locales || []).filter(l => LANGS.includes(l))])];
-    const langs = d.langs === 'keep' ? keepLangs : (Array.isArray(d.langs) && d.langs.length ? d.langs : DEFAULT_LANGS.slice());
+    const langs = d.langs === 'keep' ? keepLangs : (Array.isArray(d.langs) && d.langs.length ? d.langs : recLangs(A));
     const keep = { title: d.title === 'keep', short: d.short === 'keep', tone: d.tone === 'keep', category: d.category === 'keep', langs: d.langs === 'keep', icon: d.icon === 'keep', feature: d.feature === 'keep', shots: d.shots === 'keep', privacy: d.privacy === 'keep' };
     return {
       langs, listing: li, keep,
@@ -130,7 +155,7 @@
     return st === 'tracking' || (st === 'mixed' && (dec || {})['fix:trackingMismatch'] === 'track');
   }
   function locationAnswer(A, dec) { const d = dec || {}; return !A.sdk.location ? null : d.location || (A.review && A.review.locationSent ? 'server' : 'device'); }
-  function loginRequired(A, dec) { return !!A.sdk.auth && (dec || {}).access === 'required'; }
+  function loginRequired(A, dec) { const a = (dec || {}).access; return !!A.sdk.auth && (a === 'required' || (a === undefined && !!A.accessRestricted)); }
   function privacyOpts(A, dec) { return { tracking: trackingOn(A, dec), location: locationAnswer(A, dec) }; }
 
   /* Review notes in English (what App Review reads). Placeholders stay placeholders: never real keys or passwords. */
@@ -139,7 +164,8 @@
     if (!A.sdk.auth) out.push('No login required. All features are available on launch.');
     else if (!loginRequired(A, d)) out.push('Signing in is optional. All core features work without an account.' + (A.sdk.appleSignIn || d['fix:loginOption'] === 'apple' ? ' Reviewers can also use Sign in with Apple with their own Apple ID.' : '') + ' No demo account is required.');
     else out.push('Sign-in is required because [explain why the core feature needs an account]. Demo account (working): [username] / [password].');
-    if (A.sdk.auth) out.push(`Account deletion: in the app, Settings > Delete account. On the web: https://<your-site>/account-deletion-${l0 || 'en'}.html`);
+    const DI = A.deletionInfo || {};
+    if (A.sdk.auth) out.push(`Account deletion: in the app, ${DI.inAppPath || 'Settings > Delete account'}. On the web: ${DI.url || `https://<your-site>/account-deletion-${l0 || 'en'}.html`}`);
     if (R.byok) out.push('This app has no in-app purchases or subscriptions. AI features use the user\'s own API key, which the user obtains from a third-party provider (for example, Google AI Studio). We do not sell or provide API keys. A working sample key for review: [attach a review-only key here; never commit a real key].');
     if (A.ios && (A.sdk.ads || A.ios.gad)) out.push(trackingOn(A, d) ? 'The App Tracking Transparency prompt appears [where], right after launch and before any tracking. No login is needed to see it.' : 'The app does not track users and does not show an App Tracking Transparency prompt.');
     return out.join('\n\n');
@@ -155,7 +181,7 @@
     const vc = +(an.versionCode || 1), build = +(io.build || 1);
     const version = play ? [['applicationId', A.pkg || ''], [t('f.versionNow'), `${an.versionName || A.version} / ${vc}`], [t('f.versionNext'), `${bumpName(an.versionName || A.version)} / ${vc + 1}`], ['targetSdk', an.targetSdk ? String(an.targetSdk) : t('f.unread', { need: 36 })]]
       : [['Bundle ID', io.bundleId || A.pkg || ''], [t('f.versionNow'), `${io.version || A.version} (${build})`], [t('f.versionNext'), `${bumpName(io.version || A.version)} (${build + 1})`], ['Xcode', '26+ (iOS 26 SDK)']];
-    const checks = play ? [[t('f.privacyUrl'), privacyUrl], [t('f.dataSafety'), 'data-safety.csv'], [t('f.ads'), A.sdk.ads ? t('yes') : t('no')], ...(A.sdk.ads ? [[t('f.adId'), t('f.adIdYes')]] : []), ...(A.sdk.auth ? [[t('f.deletionUrl'), 'https://<your-site>/account-deletion-' + l0 + '.html']] : [])]
+    const checks = play ? [[t('f.privacyUrl'), privacyUrl], [t('f.dataSafety'), 'data-safety.csv'], [t('f.ads'), A.sdk.ads ? t('yes') : t('no')], ...(A.sdk.ads ? [[t('f.adId'), t('f.adIdYes')]] : []), ...(A.sdk.auth ? [[t('f.deletionUrl'), deletionUrlOf(A, l0)]] : [])]
       : [[t('f.trackForm'), po.tracking ? t('f.trackForm.yes') : t('f.trackForm.no')], [t('f.privacyUrl'), privacyUrl], [t('f.supportUrl'), (A.listing && A.listing.supportUrl) || 'https://<your-site>/support/'], [t('f.supportNote'), t('f.supportNote.d')], ...(A.sdk.thirdPartyLogin ? [['Sign in with Apple', A.sdk.appleSignIn || d['fix:loginOption'] === 'apple' ? t('yes') : t('f.required')]] : []), [t('f.reviewNotes'), reviewNotes(A, d, l0)]];
     const keepListing = C.keep.title || C.keep.short;
     const listing = keepListing ? [[t('f.listingKeep'), t('f.listingKeep.d')]] : C.langs.flatMap(l => play ? [[`${t('f.title')} (${l})`, C.title(l)], [`${t('f.short')} (${l})`, C.short(l)]] : [[`${t('f.name')} (${l})`, C.title(l)], [`${t('f.subtitle')} (${l})`, C.ios(l).subtitle]]);
@@ -192,10 +218,14 @@
     if (stage && stage !== 'not_submitted') return stageGuide(A, dec, lang, store, t, stage);
     const C = chosen(A, dec), L = lang, l0 = C.langs.includes(L) ? L : C.langs[0];
     const closed = dec.track !== 'production';
+    /* 0.2.6: the store's default language is the first listing language (not the language of this conversation) */
+    const dl = C.langs[0] || l0, ff = Array.isArray(dec.form_factors) ? dec.form_factors : null;
+    const FF = { phone: 'Phone', tablet: 'Tablet', android_auto: 'Android Auto', android_automotive: 'Android Automotive OS', wear_os: 'Wear OS', tv: 'Google TV / Android TV', chromebook: 'Chromebook' };
     if (store === 'play') return [
       { id: 'p-account', fields: [] },
-      { id: 'p-create', fields: [[t('f.name'), C.title(l0)], [t('f.defaultLang'), { ko: '한국어 – ko-KR', en: 'English (United States) – en-US', th: 'ภาษาไทย – th', zh: '中文（简体）– zh-CN', hi: 'हिन्दी – hi-IN' }[l0]], [t('f.appOrGame'), A.categories[0] === 'games' ? t('f.game') : t('f.app')], [t('f.freePaid'), t('f.free')]] },
-      { id: 'p-content', fields: [[t('f.privacyUrl'), (A.developer && A.developer.privacyUrl) || 'https://<your-site>/privacy-policy-' + l0 + '.html'], [t('f.ads'), A.sdk.ads ? t('yes') : t('no')], [t('f.access'), A.sdk.auth ? (loginRequired(A, dec) ? t('f.accessRequired') : t('f.accessOptional')) : t('f.accessAll')], [t('f.audience'), '18+'], [t('f.rating'), G.rating(A, L).result.play], [t('f.dataSafety'), 'data-safety.csv'], ...(A.sdk.auth ? [[t('f.deletionUrl'), 'https://<your-site>/account-deletion-' + l0 + '.html']] : []), ...(A.sdk.ads ? [[t('f.adId'), t('f.adIdYes')]] : []), ...(A.categories[0] === 'finance' ? [[t('f.finance'), t('f.financeNone')]] : [])] },
+      { id: 'p-create', fields: [[t('f.name'), C.title(dl)], [t('f.defaultLang'), { ko: '한국어 – ko-KR', en: 'English (United States) – en-US', th: 'ภาษาไทย – th', zh: '中文（简体）– zh-CN', hi: 'हिन्दी – hi-IN' }[dl]], [t('f.appOrGame'), A.categories[0] === 'games' ? t('f.game') : t('f.app')], [t('f.freePaid'), t('f.free')],
+        ...(ff && ff.length > 1 ? [['Form factors (Test and release > Advanced settings > Form factors)', ff.map(f => FF[f] || f).join(' + ') + (ff.includes('android_auto') ? ' · opt in to Android Auto; the car app is reviewed against the Android Auto app quality guidelines (template category, driver distraction)' : '')]] : [])] },
+      { id: 'p-content', fields: [[t('f.privacyUrl'), (A.developer && A.developer.privacyUrl) || 'https://<your-site>/privacy-policy-' + l0 + '.html'], [t('f.ads'), A.sdk.ads ? t('yes') : t('no')], [t('f.access'), A.sdk.auth ? (loginRequired(A, dec) ? t('f.accessRequired') : t('f.accessOptional')) : t('f.accessAll')], [t('f.audience'), '18+'], [t('f.rating'), prepForm(A, 'contentRating') ? prepForm(A, 'contentRating') + ' (your prepared answers) · Rocket Launcher estimate: ' + G.rating(A, L).result.play : G.rating(A, L).result.play], [t('f.dataSafety'), prepForm(A, 'dataSafety') ? prepForm(A, 'dataSafety') + ' (your prepared answers; Rocket Launcher draft for comparison: data-safety.csv)' : 'data-safety.csv'], ...(A.sdk.auth ? [[t('f.deletionUrl'), deletionUrlOf(A, l0)]] : []), ...(A.sdk.ads ? [[t('f.adId'), t('f.adIdYes')]] : []), ...(A.categories[0] === 'finance' ? [[t('f.finance'), t('f.financeNone')]] : [])] },
       { id: 'p-listing', fields: C.langs.flatMap(l => [[`${t('f.title')} (${l})`, C.title(l)], [`${t('f.short')} (${l})`, C.short(l)], [`${t('f.full')} (${l})`, C.full(l)]]).concat([[t('f.category'), C.cat.play], [t('f.email'), A.developer.email || '']]) },
       { id: 'p-build', fields: [['applicationId', A.pkg || ''], ['versionName / versionCode', `${A.version} / ${(A.android && A.android.versionCode) || 1}`], ['targetSdk', '36']] },
       closed ? { id: 'p-closed', fields: [[t('f.testers'), '12+'], [t('f.days'), '14']] } : null,
@@ -217,6 +247,9 @@
     ];
   }
 
+  /* 0.2.6: answers the developer already prepared (play/data-safety-ko.md, content-rating…, play-forms.md) come first */
+  const prepForm = (A, k) => (A.preparedForms && A.preparedForms[k]) || null;
+  const deletionUrlOf = (A, l0) => (A.deletionInfo && A.deletionInfo.url) || 'https://<your-site>/account-deletion-' + l0 + '.html';
   function ratingTxt(A, lang) { const r = G.rating(A, lang); return r.qa.map(([q, a]) => `${q}: ${a}`).join('\n') + `\n\n=> ${r.result.play}\n=> App Store: ${r.result.apple}\n`; }
   function appliedFixes(A, dec, lang) {
     const p = G.patches(A, lang);
@@ -256,5 +289,5 @@
   }
   const slugOf = A => (A.pkg || A.appName).replace(/[^\w.-]+/g, '-');
 
-  window.RLFlow = { issuesFor, STAGES, storesOf, stageHints, stageRec, stageFromState, stageRecorded, stageOf, stagesOf, hasListing, firstSubmit, KEEPABLE, WHATS_NEW, LANGS, DEFAULT_LANGS, issueKey, decisions, recValue, defaultStores, stores, chosen, guide, ratingTxt, appliedFixes, patchText, textFiles, slugOf, trackingOn, locationAnswer, loginRequired, privacyOpts, reviewNotes };
+  window.RLFlow = { issuesFor, STAGES, storesOf, stageHints, stageRec, stageFromState, stageRecorded, stageOf, stagesOf, hasListing, firstSubmit, KEEPABLE, WHATS_NEW, LANGS, DEFAULT_LANGS, recLangs, preparedIcon, preparedShots, FORM_FACTORS, normFormFactors, issueKey, decisions, recValue, defaultStores, stores, chosen, guide, ratingTxt, appliedFixes, patchText, textFiles, slugOf, trackingOn, locationAnswer, loginRequired, privacyOpts, reviewNotes };
 })();

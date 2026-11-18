@@ -41,9 +41,12 @@
     /* 0.2.5: project.targetSdkVersion.toInteger() / "as int" (gradle.properties values are strings) */
     const name = String(raw).replace(/^(rootProject\.ext\.|project\.ext\.|rootProject\.|project\.|ext\.)/, '').replace(/\.(get|toInteger|toString)$/, '').replace(/\.(toInteger|get)$/, '');
     if (!/^[A-Za-z_][\w]*$/.test(name)) return null;
-    const re = new RegExp('(?:^|[\\s{;.,(])' + name + '\\s*(?:=|:)?\\s*["\']?(\\d{2})\\b', 'm');
-    const texts = gradles.map(p => F[p].text).concat(find(F, /(^|\/)gradle\.properties$/).map(p => F[p].text));
-    for (const t of texts) { const m = t.match(re); if (m) return +m[1]; }
+    /* 0.2.6: where the value is defined comes first (Capacitor variables.gradle `ext { targetSdkVersion = 36 }`, the root build.gradle ext block,
+       gradle.properties), and a fallback in a ternary of another module (`hasProperty('x') ? rootProject.ext.x : 35`) is never a definition. */
+    const re = new RegExp('(?:^|[\\s{;,(])(?:ext\\.|project\\.ext\\.|rootProject\\.ext\\.)?' + name + '\\s*(?:=|:)?\\s*["\']?(\\d{2})\\b', 'm');
+    const rank = p => /(^|\/)variables\.gradle$/.test(p) ? 0 : /(^|\/)gradle\.properties$/.test(p) ? 2 : /(^|\/)(android\/)?build\.gradle(\.kts)?$/.test(p) && !/\/app\//.test(p) ? 1 : 3;
+    const files = gradles.concat(find(F, /(^|\/)gradle\.properties$/)).sort((a, b) => rank(a) - rank(b) || a.length - b.length);
+    for (const p of files) for (const line of stripCode(F[p].text).split(/\r?\n/)) { if (/\?[^:]*:/.test(line) || /hasProperty|findProperty/.test(line)) continue; const m = line.match(re); if (m) return +m[1]; }
     return null;
   }
   const REJECT_FILE_RE = /(^|\/)[^/]*(reject|rejection|app-?review|review-?notes?|resolution-?center|policy-?violation)[^/]*\.(md|txt)$|(^|\/)(app-?review|review-?notes?|rejections?)\/[^/]+\.(md|txt)$/i;
@@ -92,6 +95,130 @@
     L.play.langs = Object.keys(L.play.copy); L.apple.langs = Object.keys(L.apple.copy);
     return L;
   }
+  /* 0.2.6: store-listing copy the developer already prepared: play/ or store/ text files (title.txt, short-description-ko.txt,
+     full_description.txt …), fastlane/metadata/android/<locale>/, and listing drafts in Markdown (listing-ko.md, STORE.md) with
+     headings ("## 앱 이름", "## Short description") or "Title: …" lines. Also the default language and category they name. */
+  const SCRIPT_LANG = t => { const s = String(t || ''); return /[\uAC00-\uD7A3]/.test(s) ? 'ko' : /[\u0E00-\u0E7F]/.test(s) ? 'th' : /[\u0900-\u097F]/.test(s) ? 'hi' : /[\u3040-\u30FF]/.test(s) ? 'ja' : /[\u4E00-\u9FFF]/.test(s) ? 'zh' : /[A-Za-z]/.test(s) ? 'en' : null; };
+  const LANG_NAME = [[/\b(ko|ko[-_]kr)\b|korean|한국어|韩语|เกาหลี/i, 'ko'], [/\b(th|th[-_]th)\b|thai|태국어|ภาษาไทย|泰语/i, 'th'], [/\b(zh|zh[-_](cn|tw|hans|hant))\b|chinese|중국어|中文|简体/i, 'zh'], [/\b(hi|hi[-_]in)\b|hindi|힌디어|हिन्दी|हिंदी/i, 'hi'], [/\b(en|en[-_](us|gb))\b|english|영어|อังกฤษ|英语/i, 'en']];
+  const langFromText = v => { for (const [re, l] of LANG_NAME) if (re.test(String(v || ''))) return l; return null; };
+  const LISTING_DIR = /(^|\/)(play|store|listing|listings|store[-_]?listing|google[-_]?play|playstore|play[-_]?store|metadata|marketing|aso)\//i;
+  const LISTING_MD = /(^|\/)([^/]*listing[^/]*|store|store[-_]?(listing|info|facts)|play[-_]?(store|listing|console)|google[-_]?play)\.md$/i;
+  const KIND_RE = { title: /(^|[\/_.-])(title|app[-_]?name|app[-_]?title)([-_.][a-z]{2}([-_][a-z]{2,4})?)?\.txt$/i, short: /(^|[\/_.-])(short[-_ ]?desc(ription)?|short)([-_.][a-z]{2}([-_][a-z]{2,4})?)?\.txt$/i,
+    full: /(^|[\/_.-])(full[-_ ]?desc(ription)?|long[-_ ]?desc(ription)?|description)([-_.][a-z]{2}([-_][a-z]{2,4})?)?\.txt$/i };
+  const HEAD_KIND = [[/^(앱 ?이름|앱 ?제목|app ?name|app ?title|title|name|ชื่อแอป|应用名称|ऐप का नाम)(?![\w])/i, 'title'], [/^(간단한 ?설명|짧은 ?설명|short ?description|คำอธิบายแบบย่อ|简短说明|简短描述|संक्षिप्त विवरण)/i, 'short'], [/^(자세한 ?설명|상세 ?설명|full ?description|long ?description|description|คำอธิบายแบบเต็ม|完整说明|详细描述|पूरा विवरण)/i, 'full']];
+  const clean = v => String(v || '').replace(/\*\*|__|`/g, '').replace(/^\s*[-*]\s+/, '').trim();
+  const refersToFile = v => /\.(txt|md|py|json)\b/i.test(v) && String(v).length < 240 || /^(see|보세요|참고)\b/i.test(String(v).trim());
+  function featuresOf(full) {
+    const out = [];
+    for (const l of String(full || '').split(/\r?\n/)) {
+      const m = l.match(/^\s*(?:[■□▶▷◆◇●○•✔✓★☆※▪◼️-]|\d+[.)]|#{2,4})\s*(.+)$/u); if (!m) continue;
+      let f = m[1].trim(); if (/^(이용 안내|권한|permissions?|contact|문의)/i.test(f)) continue;
+      const c = f.search(/[:：]/); if (c > 1 && c < 40) f = f.slice(0, c); f = f.replace(/[.。]$/, '').trim();
+      if (f.length >= 2 && f.length <= 80 && !out.includes(f)) out.push(f);
+    }
+    return out.slice(0, 8);
+  }
+  function preparedListing(F, cfg) {
+    const R = { copy: {}, files: [], langs: [], defaultLang: null, category: null, categoryFile: null, features: {} };
+    const put = (l, k, v, file) => { v = String(v || '').replace(/\r\n/g, '\n').trim(); if (!l || !v || l === 'ja') return; const c = R.copy[l] = R.copy[l] || {}; if (c[k]) return; if (k === 'title' && v.length > 50) return; if (k === 'short' && v.length > 120) return; if (k === 'full' && v.length < 40) return; c[k] = v; (c.files = c.files || {})[k] = file; if (!R.files.includes(file)) R.files.push(file); };
+    const fileLang = p => { const m = p.match(/[-_.]([a-z]{2})(?:[-_]([A-Za-z]{2,4}))?\.(txt|md)$/i) || p.match(/(?:^|\/)([a-z]{2})(?:[-_][A-Za-z]{2,4})?\/[^/]+$/i); const l = m && m[1].toLowerCase(); return l && /^(ko|en|th|zh|hi|ja)$/.test(l) ? l : null; };
+    const P = Object.keys(F).filter(p => F[p].text != null && !F[p].code && !OLD_RE.test(p));
+    /* 1. plain text files, one field each */
+    for (const p of P) {
+      if (!/\.txt$/i.test(p)) continue;
+      const fl = p.match(/(?:^|\/)fastlane\/metadata\/android\/([^/]+)\/(title|short_description|full_description)\.txt$/i);
+      if (fl) { const l = LISTING_LANG(fl[1]); if (l) put(l, { title: 'title', short_description: 'short', full_description: 'full' }[fl[2].toLowerCase()], F[p].text, p); continue; }
+      if (/(^|\/)fastlane\//i.test(p) || REJECT_FILE_RE.test(p)) continue;
+      if (!LISTING_DIR.test(p) && !/desc(ription)?[^/]*\.txt$/i.test(p)) continue;
+      const kind = ['short', 'full', 'title'].find(k => KIND_RE[k].test(p)); if (!kind) continue;
+      put(fileLang(p) || SCRIPT_LANG(F[p].text), kind, F[p].text, p);
+    }
+    /* 2. Markdown listing drafts: headed sections, then "Key: value" lines */
+    const mds = P.filter(p => LISTING_MD.test(p) || (LISTING_DIR.test(p) && /(listing|store|description)[^/]*\.md$/i.test(p))).sort((a, b) => /listing/i.test(b) - /listing/i.test(a) || a.length - b.length);
+    for (const p of mds) {
+      const t = F[p].text.replace(/\r\n/g, '\n'), fl = fileLang(p);
+      const parts = t.split(/^#{1,4}\s+/m).slice(1);
+      for (const part of parts) {
+        const nl = part.indexOf('\n'), head = (nl < 0 ? part : part.slice(0, nl)).replace(/\(.*?\)/g, '').trim(), body = nl < 0 ? '' : part.slice(nl + 1);
+        const hk = HEAD_KIND.find(([re]) => re.test(head)); if (!hk) continue;
+        const fence = body.match(/```[^\n]*\n([\s\S]*?)```/);
+        let v = fence ? fence[1] : body.split(/\n\s*\n/).map(x => x.trim()).find(Boolean) || '';
+        v = hk[1] === 'full' ? v.trim() : clean(v.split('\n').map(clean).filter(Boolean).join(' '));
+        if (!v || refersToFile(v)) continue;
+        put(fl || SCRIPT_LANG(v), hk[1], v, p);
+      }
+      for (const line of t.split('\n')) {
+        const kv = line.match(/^\s*[-*]?\s*\**\s*(title|app ?name|app ?title|display ?title|앱 ?이름|앱 ?제목|short ?description|간단한 ?설명)\s*\**\s*(?:\([^)]*\))?\s*[:：]\s*(.+)$/i);
+        if (kv) { const v = clean(kv[2]); if (v && !refersToFile(v)) put(SCRIPT_LANG(v.replace(/\([^)]*\)/g, '')) || fl, /short|간단/i.test(kv[1]) ? 'short' : 'title', v, p); }
+        const dl = !R.defaultLang && line.match(/(default (store )?language|primary language|기본 ?언어)\s*\**\s*[:：]?\s*\**\s*([^\n·|]+)/i);
+        if (dl) R.defaultLang = langFromText(dl[3]);
+        const ct = !R.category && line.match(/(?:^|[\s/])(?:app )?(category|카테고리)\s*\**\s*[:：]\s*(.+)$/i);
+        if (ct) { const k = catKey(clean(ct[2]).replace(/\*\*/g, '')); if (k) { R.category = k; R.categoryFile = p; } }
+      }
+    }
+    R.langs = Object.keys(R.copy).filter(l => R.copy[l].title || R.copy[l].short || R.copy[l].full);
+    for (const l of R.langs) { const f = featuresOf(R.copy[l].full); if (f.length) R.features[l] = f; }
+    const cfgLang = cfg && (cfg.default_language || cfg.listing_default_language);
+    if (cfgLang) R.defaultLang = langFromText(cfgLang) || R.defaultLang;
+    if (!R.defaultLang && R.langs.length === 1) R.defaultLang = R.langs[0];
+    if (!R.defaultLang && R.langs.length) R.defaultLang = R.langs.slice().sort((a, b) => Object.keys(R.copy[b]).length - Object.keys(R.copy[a]).length)[0];
+    if (cfg && Array.isArray(cfg.listing_languages)) { const ls = cfg.listing_languages.map(langFromText).filter(Boolean); if (ls.length) R.listingLangs = [...new Set(ls)]; }
+    return R.langs.length || R.defaultLang || R.category || R.listingLangs ? R : null;
+  }
+  /* 0.2.6: the account-deletion path and web page the developer already wrote down (rocketlauncher.json, README, listing drafts),
+     so guidance and review notes use them instead of a generic "Settings > Delete account" and a placeholder URL. */
+  const DEL_WORD = /(삭제|탈퇴|delete|deletion|ลบ|删除|注销|हटा)/i;
+  const DEL_URL_RE = /https?:\/\/[^\s"'<>)\]`*]+/g;
+  function deletionInfoOf(F, A) {
+    const cfg = A.projectConfig || {}, out = { url: null, urlSource: null, inAppPath: null, pathSource: null };
+    const cu = cfg.account_deletion_url || cfg.deletion_url || cfg.delete_account_url, cp = cfg.account_deletion_path || cfg.deletion_path || cfg.in_app_deletion_path;
+    if (/^https?:\/\//.test(cu || '')) { out.url = String(cu); out.urlSource = cfg._file || 'rocketlauncher.json'; }
+    if (cp) { out.inAppPath = String(cp).slice(0, 120); out.pathSource = cfg._file || 'rocketlauncher.json'; }
+    const P = Object.keys(F).filter(p => F[p].text != null && !F[p].code && !OLD_RE.test(p) && /\.(md|txt)$|(^|\/)README[^/]*$/i.test(p));
+    const rank = p => /(^|\/)README[^/]*$/i.test(p) ? (p.includes('/') ? 2 : 0) : LISTING_MD.test(p) || LISTING_DIR.test(p) ? 1 : 3;
+    P.sort((a, b) => rank(a) - rank(b) || a.length - b.length);
+    for (const p of P) {
+      for (const line of F[p].text.split(/\r?\n/)) {
+        if (!out.url) for (const m of line.matchAll(DEL_URL_RE)) { const u = m[0].replace(/[.,;:]+$/, ''); if (/delet|withdraw|탈퇴|remove-?account|account-?removal/i.test(u) && !/<your-site>|example\.|localhost|play\.google\.com|support\.google\.com|developer\.apple\.com/i.test(u)) { out.url = u; out.urlSource = p; break; } }
+        if (!out.inAppPath && DEL_WORD.test(line)) {
+          const m = line.replace(/`/g, '').match(/((?:[^\s>→›»＞:：(（*][^>→›»＞\n:：(（*]{0,40}?\s*(?:->|>|→|›|»|＞)\s*)+[^>→›»＞\n:：(（*.,;]{1,40})/);
+          if (m) { const segs = m[1].split(/\s*(?:->|>|→|›|»|＞)\s*/).map(x => x.trim()).filter(Boolean); if (segs.length >= 2 && DEL_WORD.test(segs[segs.length - 1]) && segs.every(x => x.length <= 40)) { segs[0] = segs[0].replace(/^(앱 ?안에서(는)?|in the app,?|in-app:?)\s*/i, ''); out.inAppPath = segs.join(' > '); out.pathSource = p; } }
+        }
+      }
+      if (out.url && out.inAppPath) break;
+    }
+    return out.url || out.inAppPath ? out : null;
+  }
+  /* 0.2.6: every privacy page in the project, including copies bundled inside the app (assets / www / public), with the package ids and
+     operator it names. A page that names another package or another operator than the current one is stale. */
+  const BUNDLED_PAGE = /(^|\/)(src\/main\/assets|www|public|App\/App\/public|assets\/public)\//i;
+  const PKG_IN_TEXT = /\b((?:com|kr|net|org|io|app|co|dev|me|jp|th|cn|in)\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+)\b/gi;
+  const LIB_PKG = /^(com\.(google|android|apple|facebook|squareup|github)|org\.(w3|apache|jetbrains)|io\.(flutter|reactivex))\./i;
+  function operatorOf(html) {
+    const t = String(html || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+    let m = t.match(/(?:operated|run|provided|published|developed|maintained) by\s+([^.,;<\n]{2,60}?)(?:\s*[.,;(]|\s+(?:in|from|and)\s)/i) || t.match(/\b(?:operator|developer|controller)\s*[:：]\s*([^.,;<\n]{2,60})/i) || t.match(/운영자\s*[:：]\s*([^.,;<\n]{2,60})/);
+    if (m) return m[1].trim();
+    const i = t.search(/(?:이|가)\s*운영(합니다|하는|함)/); if (i < 0) return null;
+    let pre = t.slice(Math.max(0, i - 80), i); pre = pre.split(/[”"」』:：.。!\n]/).pop().replace(/^\s*[은는이가]\s+/, '').trim().replace(/^\S+[은는]\s+(?=\S)/, '');
+    return pre.length >= 2 ? pre : null;
+  }
+  const normOp = v => String(v || '').toLowerCase().replace(/\([^)]*\)/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  function privacyPagesOf(F, A) {
+    const pages = Object.keys(F).filter(p => F[p].text != null && /(^|\/)[^/]*privacy[^/]*\.(html?|md)$/i.test(p)).map(p => {
+      const t = F[p].text, pkgs = [...new Set([...t.matchAll(PKG_IN_TEXT)].map(m => m[1]).filter(x => !LIB_PKG.test(x) && !/\.(html?|css|js|png|svg|json|md|com|kr|net|org|io)$/i.test(x)))];
+      return { path: p, bundled: BUNDLED_PAGE.test(p), old: OLD_RE.test(p), pkgs, operator: operatorOf(t) };
+    });
+    if (!pages.length) return [];
+    const ids = [A.android && A.android.pkg, A.ios && A.ios.bundleId].filter(Boolean);
+    const current = pages.filter(x => ids.some(id => x.pkgs.includes(id)));
+    const curOps = new Set(current.map(x => normOp(x.operator)).filter(Boolean));
+    for (const x of pages) {
+      x.stale = [];
+      if (ids.length && x.pkgs.length && !ids.some(id => x.pkgs.includes(id))) x.stale.push('names ' + x.pkgs.slice(0, 3).join(', ') + ' instead of ' + ids.join(' / '));
+      if (x.operator && curOps.size && !curOps.has(normOp(x.operator))) x.stale.push('operator "' + x.operator + '" differs from "' + current.find(c => c.operator).operator + '"');
+    }
+    return pages;
+  }
   /* 0.2.3: iOS = the 1024 App Store icon of AppIcon.appiconset (from Contents.json, else by file name); Android = Play / xxxhdpi launcher icon. */
   function iconsByPlatform(F, imgs) {
     const pick = p => p ? { path: p, dataUrl: F[p].dataUrl } : null;
@@ -112,7 +239,7 @@
      config, config scripts) · 3 the current README · 4 any other page (weak: only a hint). Archived / old / backup / build folders are skipped.
      Candidates that disagree are all reported with a warning; a URL seen only in a loose page is never adopted silently. */
   const OLD_RE = /(^|\/)(archive|archived|archives|old|backup|backups|bak|dist|build|out|legacy|deprecated|previous|prev|site-old|old-site|_old|[^/]*[-_.](old|bak|backup|orig|copy))\/|\.(bak|orig|old)$|(^|\/)[^/]*[-_.](old|backup)\.[a-z]+$/i;
-  const PRIV_URL_RE = /https?:\/\/[^\s"'<>)\]\\]*(privacy|개인정보|policy)[^\s"'<>)\]\\]*/gi;
+  const PRIV_URL_RE = /https?:\/\/[^\s"'<>)\]\\`*]*(privacy|개인정보|policy)[^\s"'<>)\]\\`*]*/gi;
   const THIRD_PARTY = /(apple|google|firebase|android|admob|policies\.google|facebook|github|w3|schema|cloudflare|opinet|kakao|naver|microsoft)\.(com|org|io|co\.kr)|developer\.|example\.|<your-site>|localhost|127\.0\.0\.1/i;
   /* 0.2.4: pages a developer hosts on a shared domain are the developer's own (GitHub Pages, Google Sites, Notion, Firebase Hosting) */
   const OWN_HOST = /^https?:\/\/([\w-]+\.github\.io\/|sites\.google\.com\/(view|site)\/|[\w-]+\.notion\.site\/|[\w-]+\.web\.app\/|[\w-]+\.firebaseapp\.com\/|[\w-]+\.pages\.dev\/|[\w-]+\.netlify\.app\/|[\w-]+\.vercel\.app\/)/i;
@@ -244,11 +371,26 @@
     social: /\b(social|friends?|chat|chatting|messag(e|es|ing)|posts?|feeds?|comments?|community|followers?|meet new people)\b|친구|채팅|커뮤니티|게시글|เพื่อน|แชท|ชุมชน|社交|好友|聊天|社区|दोस्त|चैट|सोशल/i,
     games: /\b(game|games|puzzle|arcade|high ?score)\b|게임|เกม|游戏|गेम/i,
     lifestyle: /\b(lifestyle|diary|habits?|daily)\b|일기|습관|ไลฟ์สไตล์|生活|日记|आदत/i,
+    /* 0.2.6: business apps (staff / field-work tools, quotations, invoices, work reports; Play "Business", App Store "Business") */
+    business: /\b(business|b2b|crm|invoices?|invoicing|quotations?|work orders?|work reports?|field (service|work|staff|team|crew)s?|employees?|staff[- ]only|workforce|timesheets?|time ?clock|inventory|erp|point of sale|sales team|client management|job ?sites?)\b|업무|직원|견적서|견적|인수증|작업 ?보고서|현장 ?관리|거래처|고객사|사내|기업용|비즈니스|ธุรกิจ|พนักงาน|ใบเสนอราคา|ใบแจ้งหนี้|商务|商业|业务|员工|报价单|发票|व्यवसाय|बिज़नेस|कर्मचारी|इनवॉइस/i,
     /* 0.2.5: weather apps (Play "Weather", App Store "Weather") */
     weather: /\b(weather|forecasts?|rain radar|radar|temperature|humidity|uv index|air quality)\b|날씨|일기예보|미세먼지|기온|สภาพอากาศ|พยากรณ์อากาศ|天气|天氣|气温|मौसम/i
   };
   /* When only one category is clear, the second suggestion is a close neighbour (not always Productivity). */
-  const CAT_NEXT = { navigation: 'travel', travel: 'navigation', finance: 'productivity', health: 'lifestyle', education: 'productivity', productivity: 'tools', photography: 'tools', food: 'lifestyle', shopping: 'lifestyle', tools: 'productivity', games: 'education', lifestyle: 'productivity', music: 'lifestyle', social: 'lifestyle', weather: 'lifestyle' };
+  const CAT_NEXT = { navigation: 'travel', travel: 'navigation', finance: 'productivity', health: 'lifestyle', education: 'productivity', productivity: 'tools', photography: 'tools', food: 'lifestyle', shopping: 'lifestyle', tools: 'productivity', games: 'education', lifestyle: 'productivity', music: 'lifestyle', social: 'lifestyle', weather: 'lifestyle', business: 'productivity' };
+  /* 0.2.6: a category written by the developer (rocketlauncher.json "category", a store-listing draft) as Rocket Launcher's key, the
+     Play Console / App Store Connect name, or a common local name ("Maps & Navigation", "Business", "비즈니스 (Business)", "지도 및 내비게이션"). */
+  const CAT_ALIAS = { mapsnavigation: 'navigation', maps: 'navigation', navigation: 'navigation', business: 'business', finance: 'finance', healthfitness: 'health', health: 'health', medical: 'health',
+    education: 'education', productivity: 'productivity', photography: 'photography', photo: 'photography', travellocal: 'travel', travel: 'travel', fooddrink: 'food', food: 'food', shopping: 'shopping',
+    tools: 'tools', utilities: 'tools', utility: 'tools', musicaudio: 'music', music: 'music', social: 'social', socialnetworking: 'social', games: 'games', game: 'games', casual: 'games',
+    lifestyle: 'lifestyle', weather: 'weather', 비즈니스: 'business', 업무: 'business', 지도및내비게이션: 'navigation', 지도내비게이션: 'navigation', 지도: 'navigation', 내비게이션: 'navigation', 금융: 'finance',
+    쇼핑: 'shopping', 도구: 'tools', 생산성: 'productivity', 교육: 'education', 건강및피트니스: 'health', 건강: 'health', 여행및지역정보: 'travel', 여행: 'travel', 식음료: 'food', 음식: 'food', 날씨: 'weather',
+    소셜: 'social', 음악및오디오: 'music', 음악: 'music', 사진: 'photography', 게임: 'games', 라이프스타일: 'lifestyle', ธุรกิจ: 'business', 商务: 'business', 商业: 'business', व्यवसाय: 'business' };
+  function catKey(v) {
+    if (v == null || v === '') return null;
+    const raw = String(v).toLowerCase().replace(/_and_|\band\b/g, ' '), k = x => CAT_ALIAS[String(x).replace(/[^\p{L}]/gu, '')] || null;
+    return k(raw) || [...raw.matchAll(/\(([^)]+)\)/g)].map(m => k(m[1])).find(Boolean) || raw.replace(/\([^)]*\)/g, ' ').split(/[\/,|·;]| or | 또는 /).map(k).find(Boolean) || null;
+  }
 
   function analyze(project) {
     const F = project.files; const P = Object.keys(F);
@@ -314,17 +456,20 @@
     const expoBP = expo ? expoBuildProps(expo) : {};
     if (manPath || appGradle || (expo && (expo.android || expoPlat.includes('android'))) || (cdv && cdv.android) || (ext && ext.android)) {
       A.platforms.android = true; if (A.framework === 'unknown') A.framework = 'android-native';
-      const an = { permissions: [], features: [], activities: [], deps: [], cleartext: false, debuggable: false, allowBackup: null, adId: false, adsAppId: null };
+      const an = { permissions: [], features: [], activities: [], deps: [], cleartext: false, debuggable: false, allowBackup: null, adId: false, adsAppId: null, removedPermissions: [] };
       if (manPath) {
         note(manPath); const d = parseXml(F[manPath].text);
         if (d) {
           an.manifestPackage = d.documentElement.getAttribute('package');
-          d.querySelectorAll('uses-permission, uses-permission-sdk-23').forEach(n => an.permissions.push(aAttr(n, 'name')));
-          d.querySelectorAll('uses-feature').forEach(n => an.features.push(aAttr(n, 'name')));
+          /* 0.2.6: tools:node="remove" (manifest merger) takes a permission out of the merged manifest, also one added by a library */
+          d.querySelectorAll('uses-permission, uses-permission-sdk-23').forEach(n => { const nm = aAttr(n, 'name'), tn = (n.getAttribute('tools:node') || '').toLowerCase(); if (tn === 'remove' || tn === 'removeall') an.removedPermissions.push(nm); else an.permissions.push(nm); });
+          d.querySelectorAll('uses-feature').forEach(n => { if (!/^remove/i.test(n.getAttribute('tools:node') || '')) an.features.push(aAttr(n, 'name')); });
           d.querySelectorAll('activity').forEach(n => an.activities.push(aAttr(n, 'name')));
           const app = d.querySelector('application');
           if (app) { an.label = aAttr(app, 'label'); an.cleartext = aAttr(app, 'usesCleartextTraffic') === 'true'; an.debuggable = aAttr(app, 'debuggable') === 'true'; an.allowBackup = aAttr(app, 'allowBackup'); an.iconRef = aAttr(app, 'icon'); }
           d.querySelectorAll('meta-data').forEach(n => { if (/ads\.APPLICATION_ID/.test(aAttr(n, 'name') || '')) an.adsAppId = aAttr(n, 'value'); });
+          an.metaData = [...d.querySelectorAll('meta-data')].map(n => aAttr(n, 'name')).filter(Boolean);
+          an.categories = [...d.querySelectorAll('category')].map(n => aAttr(n, 'name')).filter(Boolean);
           /* 0.2.5: <uses-sdk> (used only when no Gradle module sets the SDK levels: MAUI, old Ant projects) and declared services */
           const us = d.querySelector('uses-sdk'); if (us) { an.manifestTarget = aAttr(us, 'targetSdkVersion'); an.manifestMin = aAttr(us, 'minSdkVersion'); }
           an.services = [...d.querySelectorAll('service')].map(n => ({ name: aAttr(n, 'name'), permission: aAttr(n, 'permission'), fgsType: aAttr(n, 'foregroundServiceType') }));
@@ -362,9 +507,33 @@
       if (an.versionName != null && !/^\d/.test(String(an.versionName))) an.versionName = /flutter/i.test(an.versionName) && pubVer ? pubVer[1] : null;
       if (an.versionCode != null && !/^\d+$/.test(String(an.versionCode))) an.versionCode = /flutter/i.test(an.versionCode) && pubVer ? (pubVer[2] || null) : null;
       an.pkg = an.pkg || an.manifestPackage || an.namespace || null;
-      an.permissions = [...new Set(an.permissions.filter(Boolean).map(p => p.startsWith('android.permission.') || p.includes('.') ? p : 'android.permission.' + p))];
+      /* 0.2.6: an application id has at least two dot-separated parts ("is" from a stray "applicationId is …" text is not one) */
+      const okPkg = v => /^[A-Za-z][\w]*(\.[A-Za-z_][\w]*)+$/.test(String(v || '')) && !/^(rootProject|project|ext|libs|flutter)\./.test(v);
+      if (an.pkg && !okPkg(an.pkg)) an.pkg = [an.manifestPackage, an.namespace, cdv && cdv.androidId, expo && expo.android && expo.android.package].find(okPkg) || null;
+      const fullPerm = p => p.startsWith('android.permission.') || p.includes('.') ? p : 'android.permission.' + p;
+      const removed = new Set(an.removedPermissions.filter(Boolean).map(fullPerm));
+      an.removedPermissions = [...removed];
+      an.permissions = [...new Set(an.permissions.filter(Boolean).map(fullPerm))].filter(p => !removed.has(p));
       an.adId = an.permissions.includes('com.google.android.gms.permission.AD_ID');
       an.manifestPath = manPath;
+      /* 0.2.6: the built AAB / APK (when the project has one) is what Play receives: its manifest confirms or fills the source values */
+      const bin = ((project.natives && project.natives.binaries) || []).find(b => b.manifest && (b.manifest.targetSdk || b.manifest.package));
+      if (bin) {
+        const m = bin.manifest; an.built = { file: bin.path, kind: bin.kind, targetSdk: m.targetSdk || null, minSdk: m.minSdk || null, package: m.package || null, versionCode: m.versionCode || null, versionName: m.versionName || null };
+        /* order of truth: the built file wins over values read (or guessed) from source; a difference is reported, not hidden */
+        const src = 'built ' + bin.kind.toUpperCase() + ' (' + bin.path + ')'; an.builtMismatch = [];
+        const take = (k, v, raw) => { if (v == null || v === '') return; if (an[k] != null && an[k] !== '' && String(an[k]) !== String(v)) an.builtMismatch.push({ field: k, source: an[k], built: v }); an[k] = v; if (raw) an[raw] = src; };
+        take('targetSdk', m.targetSdk, 'targetSdkRaw'); take('pkg', m.package); take('versionCode', m.versionCode);
+        if (m.versionName) { if (an.versionName && an.versionName !== m.versionName) an.builtMismatch.push({ field: 'versionName', source: an.versionName, built: m.versionName }); an.builtVersionName = m.versionName; }
+      }
+      /* 0.2.6: form factors beyond phones (Play Console > Advanced settings > Form factors needs an opt-in for each) */
+      const md = an.metaData || [], cats = an.categories || [], feats = an.features;
+      an.formFactors = [
+        (md.includes('com.google.android.gms.car.application') || an.deps.some(x => /^androidx\.car\.app:app(:|$)/.test(x)) || find(F, /res\/xml\/automotive_app_desc\.xml$/).length) && !feats.includes('android.hardware.type.automotive') ? 'android_auto' : null,
+        feats.includes('android.hardware.type.automotive') || an.deps.some(x => /androidx\.car\.app:app-automotive/.test(x)) ? 'android_automotive' : null,
+        feats.includes('android.hardware.type.watch') ? 'wear_os' : null,
+        feats.includes('android.software.leanback') || cats.includes('android.intent.category.LEANBACK_LAUNCHER') ? 'tv' : null
+      ].filter(Boolean);
       A.android = an;
     }
 
@@ -431,13 +600,30 @@
     if (!A.names.en) A.names.en = A.appName;
     A.tagline = { };
     for (const [lang, s] of Object.entries(A.strings)) { const t = s.tagline || s.app_tagline || s.slogan || s.app_description; if (t) A.tagline[lang === 'default' ? 'en' : lang] = t; }
+    /* 0.2.6: prepared store copy (short description) is the app's own pitch; a README that describes the folder itself is not */
+    A.prepared = preparedListing(F, A.projectConfig);
+    { const txt = Object.keys(F).filter(p => F[p].text != null && /\.(md|txt|csv|json)$/i.test(p) && !/(^|\/)(node_modules|build|dist)\//.test(p));
+      const pick = re => txt.filter(p => re.test(p.split('/').pop())).sort((a, b) => a.length - b.length)[0] || null;
+      A.preparedForms = { dataSafety: pick(/data[-_ ]?safety/i), contentRating: pick(/content[-_ ]?rating|iarc/i), forms: pick(/play[-_ ]?forms|console[-_ ]?forms/i) };
+      if (A.preparedForms.forms && !A.preparedForms.dataSafety && /data ?safety|데이터 ?보안/i.test(F[A.preparedForms.forms].text)) A.preparedForms.dataSafety = A.preparedForms.forms;
+      if (A.preparedForms.forms && !A.preparedForms.contentRating && /content ?rating|콘텐츠 ?등급|IARC/i.test(F[A.preparedForms.forms].text)) A.preparedForms.contentRating = A.preparedForms.forms; }
+    /* 0.2.6: the app is only for invited / approved users (staff apps): sign-in is required for review, not optional */
+    { const RESTRICT = /(직원 ?전용|임직원 ?전용|사내 ?전용|승인을 받아야|관리자의? ?승인|employees? only|staff only|for (our |company )?employees|invite[- ]only|invitation only|requires? (an )?(admin|administrator|manager) approval|internal (use|app) only)/i;
+      const cfgAcc = A.projectConfig && (A.projectConfig.login_required ?? A.projectConfig.sign_in_required);
+      const texts = [...Object.values((A.prepared && A.prepared.copy) || {}).flatMap(c => [c.short, c.full]).filter(Boolean).map(t => ['listing', t]), ...Object.keys(F).filter(p => /(^|\/)README[^/]*\.md$/i.test(p) && F[p].text).map(p => [p, F[p].text])];
+      const hit = texts.find(([, t]) => RESTRICT.test(t));
+      if (cfgAcc != null) A.accessRestricted = cfgAcc ? { source: 'project config' } : null;
+      else if (hit) A.accessRestricted = { source: hit[0] === 'listing' ? 'prepared store listing' : hit[0], text: (hit[1].match(RESTRICT) || [])[0] }; }
+    if (A.prepared) for (const l of A.prepared.langs) { const c = A.prepared.copy[l]; if (c.short) A.tagline[l] = c.short.replace(/[.。]$/, ''); if (c.title && !A.names[l]) A.names[l] = c.title.split(/\s+[-–:|]\s+/)[0].trim(); }
+    const metaReadme = /\b(analysis folder|reconstructed (for|from)|not a buildable|this folder (is|contains)|this repo(sitory)? (is|contains)|for rocket launcher)\b|분석(용)? 폴더/i;
+    if (metaReadme.test(rm.summary)) { rm.summary = ''; A.readmeIsMeta = true; }
     if (!A.tagline.en && project.meta && project.meta.description) A.tagline.en = project.meta.description;
     if (!A.tagline.en && rm.summary) A.tagline.en = rm.summary.split(/(?<=\.)\s/)[0].replace(/\.$/, '');
     /* 0.2.4: also locale files of JS / native apps (locales/ko.json, i18n/th.json, ko.lproj/Localizable.strings) */
     const fileLocales = P.map(p => (p.match(/(?:^|\/)(?:locales?|i18n|lang|langs|translations|l10n)\/([a-z]{2})(?:[-_][A-Za-z]{2,4})?\.json$/i) || p.match(/(?:^|\/)([a-z]{2})(?:[-_][A-Za-z]{2,4})?\.lproj\//i) || [])[1]).filter(Boolean).map(l => l.toLowerCase());
     A.locales = [...new Set(Object.keys(A.strings).map(l => l === 'default' ? 'en' : l).concat(fileLocales))];
     A.pkg = (A.android && A.android.pkg) || (A.ios && A.ios.bundleId) || null;
-    A.version = (A.android && A.android.versionName) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
+    A.version = (A.android && (A.android.builtVersionName || A.android.versionName)) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
 
     // ---------- 연락처 ----------
     const lic = txt(F, shortest(find(F, /(^|\/)LICENSE/i)));
@@ -446,6 +632,8 @@
     const email = (allText.match(/[\w.+-]+@[\w-]+\.[\w.]+/g) || []).find(e => !/noreply|example\.com|users\.noreply|android\.com|apple\.com|googlegroups/.test(e));
     A.listing = listingOf(F, A);
     A.developer = { name: (holder || (project.meta && project.meta.owner) || '').trim() || null, email: email || null, policyFound: !!find(F, /privacy[^/]*\.(md|html)$/i).filter(p => !OLD_RE.test(p)).length || !!A.listing.privacyUrl, privacyUrl: A.listing.privacyUrl || null };
+    A.deletionInfo = deletionInfoOf(F, A);
+    A.privacyPages = privacyPagesOf(F, A);
 
     // ---------- SDK ----------
     /* 0.2.4: comments do not count (a "// TODO: add Firebase Analytics" line is not analytics) */
@@ -483,6 +671,10 @@
       mic: has(hay, /RECORD_AUDIO|NSMicrophone/i)
     };
     A.adsHint = adsCodeFiles.length ? { files: adsCodeFiles } : null;
+    /* 0.2.6: a leftover ads config block that is explicitly switched off (adsEnabled: false, ads: { enabled: false }) is not even a hint */
+    const ADS_OFF = /\b(ads_?enabled|enable_?ads|show_?ads|ads_?on|use_?ads)\s*[:=]\s*(false|0|['"]false['"])\b|\bads\s*[:=]\s*\{[^{}]*\benabled\s*:\s*false\b|\bADS_ENABLED\s*=\s*false\b/i;
+    const cfgAds = A.projectConfig && (A.projectConfig.ads === false || A.projectConfig.contains_ads === false || A.projectConfig.has_ads === false);
+    if (A.adsHint && (cfgAds || A.adsHint.files.every(p => ADS_OFF.test(stripCode(F[p].text))))) { A.adsDisabled = { files: A.adsHint.files, source: cfgAds ? 'project config' : 'ads switched off in code' }; A.adsHint = null; }
     /* 0.2.5: auto-renewing subscriptions (vs one-time products), ad consent (Google UMP / an IAB TCF CMP) and attribution SDKs that use the IDFA */
     A.sdk.subscriptions = A.sdk.billing && (has(declHay, /purchases_flutter|react-native-purchases|@revenuecat|\bRevenueCat\b|\bpod\s+['"]Purchases['"]|adapty|qonversion|superwall/i)
       || has(codeHay, /ProductType\.SUBS\b|SkuType\.SUBS\b|\.autoRenewable\b|SubscriptionStoreView|\.subscription\??\.subscriptionPeriod|subscriptionPeriod|Product\.SubscriptionInfo|subscriptionOfferDetails|\bSKProductSubscriptionPeriod\b|ProductType\.subs\b|['"]subs['"]/));
@@ -520,8 +712,11 @@
     const topScore = scores[0][1];
     A.categories = scores.filter((s, i) => s[1] > 0 && (i === 0 || s[1] >= Math.max(2, topScore * 0.2))).map(s => s[0]);
     if (A.sdk.ocr) A.categories = A.categories.filter(c => c !== 'photography');
-    const cfgCat = A.projectConfig && A.projectConfig.category && String(A.projectConfig.category).toLowerCase().replace(/[^a-z]/g, '');
-    if (cfgCat && CATS[cfgCat]) A.categories = [cfgCat, ...A.categories.filter(c => c !== cfgCat)];
+    /* 0.2.6: the developer's own category (rocketlauncher.json, else a prepared store-listing draft) always comes first, in any naming */
+    const cfgRaw = A.projectConfig && A.projectConfig.category, cfgCat = catKey(cfgRaw);
+    if (cfgRaw && !cfgCat) A.categoryConfigUnknown = String(cfgRaw).slice(0, 60);
+    const ownCat = cfgCat || (A.prepared && A.prepared.category) || null;
+    if (ownCat && CATS[ownCat]) { A.categories = [ownCat, ...A.categories.filter(c => c !== ownCat)]; A.categorySource = cfgCat ? 'project config (' + (A.projectConfig._file || 'rocketlauncher.json') + ')' : 'store listing draft (' + A.prepared.categoryFile + ')'; }
     if (!A.categories.length) A.categories = ['tools'];
     if (A.categories.length < 2) A.categories.push(CAT_NEXT[A.categories[0]] || 'productivity');
     A.categories = A.categories.slice(0, 3);
@@ -541,11 +736,20 @@
 
     // ---------- 그림 ----------
     const imgs = P.filter(p => F[p].dataUrl);
-    const iconPath = imgs.find(p => /playstore/i.test(p)) || imgs.find(p => /AppIcon.*(1024|512@2x)/i.test(p)) || imgs.find(p => /mipmap-xxxhdpi\/ic_launcher\./i.test(p)) || imgs.find(p => /ic_launcher\./i.test(p)) || imgs.find(p => /AppIcon/i.test(p)) || imgs.find(p => /(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p));
+    const iconPath = imgs.find(p => /playstore/i.test(p)) || imgs.find(p => /(^|\/)(play|store|fastlane)\/[^/]*(icon)[-_]?512[^/]*\.png$/i.test(p)) || imgs.find(p => /AppIcon.*(1024|512@2x)/i.test(p)) || imgs.find(p => /mipmap-xxxhdpi\/ic_launcher\./i.test(p)) || imgs.find(p => /ic_launcher\./i.test(p)) || imgs.find(p => /AppIcon/i.test(p)) || imgs.find(p => /(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p));
     A.icon = iconPath ? { path: iconPath, dataUrl: F[iconPath].dataUrl } : null;
     /* 0.2.3: the iOS and the Android icon separately, so a blank icon or two different icons can be flagged (pixels are checked by the MCP server) */
     A.icons = iconsByPlatform(F, imgs);
-    A.screenshots = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p)).sort().slice(0, 8).map(p => ({ path: p, dataUrl: F[p].dataUrl }));
+    /* 0.2.6: an existing feature graphic (1024×500) and store icon are kept apart from screenshots; the same picture saved in two folders
+       (play/screenshots and screenshots) counts once. */
+    const FEATURE_RE = /(^|\/)[^/]*(feature[-_ ]?graphic|featureGraphic|feature[-_]?1024|1024[x×]500)[^/]*\.(png|jpe?g)$/i, STORE_ICON_RE = /(^|\/)[^/]*(icon|logo)[-_]?(512|1024)[^/]*\.png$|(^|\/)(play[-_]?)?store[-_]?icon[^/]*\.png$/i;
+    const fg = imgs.filter(p => FEATURE_RE.test(p) && !OLD_RE.test(p)).sort((a, b) => /(^|\/)(play|store|fastlane)\//i.test(b) - /(^|\/)(play|store|fastlane)\//i.test(a) || a.length - b.length)[0];
+    A.featureGraphic = fg ? { path: fg, dataUrl: F[fg].dataUrl } : null;
+    const seenShot = new Set(), shotRank = p => /(^|\/)(play|store|fastlane)\//i.test(p) ? 0 : 1;
+    const shotPaths = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p) && !/(^|\/)(tablet|tenInch|sevenInch|wear|tv)[^/]*\//i.test(p))
+      .sort((a, b) => shotRank(a) - shotRank(b) || a.localeCompare(b)).filter(p => { const k = F[p].dataUrl; if (seenShot.has(k)) return false; seenShot.add(k); return true; });
+    A.screenshotsTotal = shotPaths.length;
+    A.screenshots = shotPaths.slice(0, 8).map(p => ({ path: p, dataUrl: F[p].dataUrl }));
     const colors = txt(F, shortest(find(F, /res\/values\/colors\.xml$/)));
     const cm = colors.match(/name="(?:brand|primary|colorPrimary|purple_500|accent)[^"]*"\s*>\s*#(?:FF)?([0-9a-f]{6})\b/i) || colors.match(/#(?:FF)?([0-9a-f]{6})\b/i);
     A.brandColor = cm ? '#' + cm[1].toLowerCase() : null;
@@ -729,6 +933,8 @@
     if (A.listing && A.listing.privacyDead) add('privacyUrlDead', 'check', 'both', 'info', { url: A.listing.privacyUrl });
     if (A.listing && A.listing.privacyWeak) add('privacyUrlUnsure', 'check', 'both', 'info', { urls: A.listing.privacyCandidates.map(c => c.url + ' (' + c.file + ')').join(', ') });
     if (!A.screenshots.length) add('noShots', 'warn', 'both', 'info');
+    /* 0.2.6: a privacy page (often a copy bundled inside the app) that names another package or operator */
+    (A.privacyPages || []).filter(x => x.stale && x.stale.length && !x.old).slice(0, 3).forEach(x => add('privacyStale', 'warn', 'both', 'info', { file: x.path + (x.bundled ? ' (bundled in the app)' : ''), why: x.stale.join('; ') }));
     if (A.appName && A.appName.length > 30) add('longName', 'warn', 'both', 'choose-name', { len: A.appName.length });
     const order = { block: 0, warn: 1, check: 2, tip: 3 };
     return out.sort((a, b) => (order[a.sev] ?? 9) - (order[b.sev] ?? 9));
@@ -753,6 +959,6 @@
   }
   function refreshIssues(A) { A.issues = checks(A); score(A); return A; }
 
-  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET, score, refreshIssues };
+  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET, score, refreshIssues, catKey };
 
 })();

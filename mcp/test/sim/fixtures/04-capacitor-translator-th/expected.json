@@ -1,5 +1,5 @@
 {
-  "description": "Capacitor Thai-Korean translator. targetSdk 35 from variables.gradle (too low), AdMob only in a disabled web config (hint only), privacy policy hosted on GitHub Pages (README).",
+  "description": "Capacitor Thai-Korean translator. targetSdk 35 from variables.gradle (too low), AdMob only in a web config switched off with adsEnabled: false (0.2.6: no ads, no hint; reported as ads_disabled), privacy policy hosted on GitHub Pages (README).",
   "framework": "capacitor",
   "platforms": [
     "android",
@@ -15,7 +15,7 @@
     "apple": "unknown"
   },
   "ads": false,
-  "ads_hint": true,
+  "ads_hint": false,
   "sdk": {
     "camera": true
   },
@@ -25,13 +25,13 @@
     "mismatch": false
   },
   "issues_present": [
-    "targetSdk",
-    "adsCodeOnly"
+    "targetSdk"
   ],
   "issues_absent": [
     "adsDeclare",
     "privacyPolicy",
     "privacyUrlUnsure",
-    "missingUsage"
+    "missingUsage",
+    "adsCodeOnly"
   ]
 }

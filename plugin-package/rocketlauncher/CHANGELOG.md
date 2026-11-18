@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.2.6
+
+Fixes from two real Android launches (a Capacitor staff app and a Korean fuel-price app with Android Auto), where the agents did better on their own than with 0.2.5: Rocket Launcher replaced what the projects already had with guesses. The core rule is now **never override what the project already has**. Order of truth: `rocketlauncher.json` and explicit flags, then prepared store files, then the built AAB / APK, then values found elsewhere in the project, and only then guesses, which are listed under `needs_confirmation`.
+
+Tests: 4 new sim fixtures (trimmed, anonymized layouts of both projects; 104 apps, 688 of 688 checks), `test/fixes026.mjs` (46 checks) and `test/real-projects.mjs` (51 checks on the two real folders, read in place and skipped when absent). On the new and changed fixtures, 0.2.5 gets 47 of 105 checks right and 0.2.2 gets 43.
+
+- **targetSdk.** `variables.gradle` / `ext` values win over a plugin's `project.hasProperty(...) ? ... : 35` fallback.
+- **Permissions.** `tools:node="remove"` permissions (and features) are taken out, as the manifest merger does, so removed location permissions no longer trigger location checks.
+- **Built AAB / APK.** Bundles in `dist/`, `release/` and `build/outputs/` are read: package, versions and targetSdk from the manifest (they win over source values; differences are reported as `built_binary.differs_from_source`), and native libraries with their ELF alignment for the 16 KB check. No `.so` in the bundle means 16 KB does not apply.
+- **Prepared listing.** Title, short and full description, default language and category are read from `play/*.txt`, `store/`, fastlane metadata and Markdown listing drafts (headings, code blocks, `Title:` lines, Korean headings such as `## 앱 이름`). They are option 0 and used as is; the closed-test application draft uses them too. A README that only describes an analysis folder is not used as app copy.
+- **Store languages.** A Korean-only listing recommends Korean only, and the guide's default language is the first listing language, not the conversation language. Single-language options were added.
+- **Graphics.** A prepared feature graphic, 512 store icon and screenshots are recommended and copied unchanged. Screenshots in a second folder with the same images are counted once; feature graphics, icons and tablet / wear / TV shots are not counted as phone screenshots.
+- **Category.** Business was added. A category from `rocketlauncher.json` or a listing draft wins, in any naming (Play, App Store, `MAPS_AND_NAVIGATION`, Korean); an unknown value gives `category_warning`.
+- **Ads.** An ad block switched off with `adsEnabled: false` (or `ads: false` in `rocketlauncher.json`) is reported as `ads_disabled`, not as a hint.
+- **Account deletion.** The web URL and in-app path documented in the README, listing docs or `rocketlauncher.json` go into the deletion check, the reviewer notes and the Play Console field; no `<your-site>` placeholder when a real value exists.
+- **Stale privacy pages.** A privacy page that names another package or operator than the current one is flagged (`privacyStale`), with "bundled in the app" when it ships in the assets.
+- **Android Auto and other form factors.** Detected from the manifest meta-data, the Car App Library or `automotive_app_desc.xml`; a `form_factors` decision and a guide line tell you to opt in under Advanced settings > Form factors.
+- **Staff-only apps.** A listing or README saying the app is only for employees or approved users recommends "sign-in required", so reviewer notes ask for a demo account instead of saying sign-in is optional.
+- **Prepared forms.** Your Data safety and content-rating drafts are named first in the guide; Rocket Launcher's own drafts are for comparison.
+- **No tool waits for every decision.** The submission guide, the launch kit and the approval use recommended values for anything still open and list it under `undecided` / `filled_with_recommended`. The final submit step still unlocks only after the user approves.
+- **Behaviour changes.** Fixture 04 now expects no ad hint for an ad block switched off with `adsEnabled: false`. `rocketlauncher_generate_store_materials` no longer returns a `needDecisions` error.
+
+Known limitations:
+- The AAB manifest is read with a small protobuf scan (attribute values shorter than 128 bytes); the APK manifest with a binary-XML parser. At most 3 bundles of up to 300 MB are opened.
+- "Staff-only" is recognized from phrases in the listing or README (Korean and English); set `login_required` in `rocketlauncher.json` to be sure.
+- A stale privacy page is found by package names and an "operated by" / "…가 운영합니다" sentence; other wording is not compared.
+- Rocket Launcher does not edit project files: stale pages and empty `privacyUrl` / `deletionUrl` settings must be fixed in the project.
+
 ## 0.2.5
 
 The simulation corpus grew from 39 to 100 small synthetic apps (`mcp/test/sim/`, about 200 KB on disk; large model files are created at run time as sparse files). On all 100 apps, 0.2.4 got 526 of 574 checks right, and 3 apps (Unity and Godot) could not be connected at all, so 31 more checks never ran. 0.2.5 gets all 605 checks right.

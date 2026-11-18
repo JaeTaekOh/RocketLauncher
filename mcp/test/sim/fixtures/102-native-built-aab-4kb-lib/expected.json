@@ -1,0 +1,13 @@
+{
+  "description": "0.2.6 (T-FLOW report A4): the 16 KB check reads native libraries from the built AAB in dist/ (skipped as a build folder before). The source gradle takes targetSdk from a version catalog Rocket Launcher cannot resolve, so the bundle's manifest (36) fills it. The bundle's arm64 .so has 4 KB LOAD alignment.",
+  "framework": "android-native",
+  "package": "com.sim.nativecam",
+  "targetSdk": 36,
+  "requirements": {
+    "play.16kb_page_size": "block"
+  },
+  "extra": {
+    "built_target": 36,
+    "binaries": 1
+  }
+}

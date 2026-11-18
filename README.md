@@ -8,7 +8,7 @@ A free **MCP server** and **web tool** that helps people who already built an An
 
 You connect the app once. From then on you only **pick, approve, or reject**. Nothing is submitted to a store automatically. The final step of the guide unlocks only after you approve, and you press the store’s Submit button yourself.
 
-[![Version 0.2.5](https://img.shields.io/badge/version-0.2.5-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
+[![Version 0.2.6](https://img.shields.io/badge/version-0.2.6-F4A261?style=flat-square)](https://github.com/JaeTaekOh/RocketLauncher)
 [![npm](https://img.shields.io/npm/v/rocket-launcher-mcp?style=flat-square&color=F4A261)](https://www.npmjs.com/package/rocket-launcher-mcp)
 [![MCP](https://img.shields.io/badge/MCP-server-171717?style=flat-square)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/license-MIT-171717?style=flat-square)](LICENSE)
@@ -70,11 +70,31 @@ Put this file at the root of your app to record what the code cannot show. It al
 {
   "privacy_url": "https://example.com/privacy",
   "support_url": "https://example.com/support",
-  "category": "navigation",
+  "category": "Maps & Navigation",
+  "default_language": "ko-KR",
+  "listing_languages": ["ko"],
+  "account_deletion_url": "https://example.com/delete-account",
+  "account_deletion_path": "Settings > Account > Delete account",
+  "ads": false,
+  "login_required": false,
   "store_stage": { "play": "live" },
   "app_store_state": "WAITING_FOR_REVIEW"
 }
 ```
+
+- `category` accepts Rocket Launcher's key (`navigation`, `business`), the Play Console or App Store Connect name (`Maps & Navigation`, `Business`), the Play constant (`MAPS_AND_NAVIGATION`) or a Korean name (`지도/내비게이션`, `비즈니스`). An unknown value is reported as `category_warning`.
+- `default_language` is the store's default listing language; `listing_languages` is the full list. Without them, the language of a prepared listing (for example `play/short-description-ko.txt`) is used, and English only when nothing says otherwise.
+- `account_deletion_url` and `account_deletion_path` go into the Play Console deletion field and the reviewer notes.
+- `ads: false` marks an ad block left in the code as switched off. `login_required: true` marks an app only approved users can use (reviewers need a demo account).
+
+**What Rocket Launcher trusts, in order.** It never replaces what your project already has:
+1. `rocketlauncher.json` and explicit flags in the code (for example `adsEnabled: false`).
+2. Store files you prepared: listing text in `play/`, `store/`, `fastlane/metadata`, `*-description-*.txt` and listing drafts (title, short and full description, default language, category), your store icon, feature graphic and screenshots (copied unchanged), and your Data safety / content-rating drafts.
+3. A built AAB or APK in the project (`dist/`, `release/`, `build/outputs/`): its package, versions, targetSdk and native libraries win over the source files, and a difference is reported.
+4. Values found elsewhere in the same project, such as the account-deletion URL and in-app path in the README. No placeholder is shown when a real value was found.
+5. Only then guesses, which are listed under `needs_confirmation` instead of being stated as facts.
+
+No tool waits for every decision: the guide and the launch kit use the recommended value for anything still open and list it under `undecided`.
 
 `app_store_state` and `play_state` accept the names App Store Connect and Play Console show (for example `WAITING_FOR_REVIEW`, `READY_FOR_SALE`, `METADATA_REJECTED`). With nothing recorded and no store hints, the stage is shown as **unknown — please confirm**, never silently as a first submit.
 

@@ -58991,6 +58991,7 @@ var M = {
     needDecisions: "\uBA3C\uC800 \uB0A8\uC740 \uACB0\uC815 {n}\uAC1C\uB97C \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uBB3C\uC5B4\uBD10 \uC8FC\uC138\uC694: {keys}",
     generated: "\uC2A4\uD1A0\uC5B4 \uC790\uB8CC {n}\uAC1C \uD30C\uC77C\uC744 \uB9CC\uB4E4\uC5C8\uC5B4\uC694.",
     guideLocked: "\uB9C8\uC9C0\uB9C9 \uB2E8\uACC4\uB294 \uC0AC\uC6A9\uC790\uAC00 \uC81C\uCD9C\uC744 \uC2B9\uC778\uD55C \uB4A4\uC5D0\uB9CC \uC5F4\uB824\uC694 (rocketlauncher_approve_submission).",
+    guidePartial: "\uC544\uC9C1 \uC815\uD558\uC9C0 \uC54A\uC740 \uACB0\uC815 {n}\uAC1C\uB294 \uCD94\uCC9C\uAC12\uC73C\uB85C \uCC44\uC6CC \uBCF4\uC5EC \uC918\uC694 ({keys}). \uC0AC\uC6A9\uC790\uC5D0\uAC8C \uD655\uC778\uD55C \uB4A4 rocketlauncher_decide \uB85C \uD655\uC815\uD574 \uC8FC\uC138\uC694.",
     guideUnlocked: "\uC0AC\uC6A9\uC790\uAC00 \uC2B9\uC778\uD588\uC5B4\uC694. \uB9C8\uC9C0\uB9C9 \uB2E8\uACC4\uC758 \uC81C\uCD9C \uBC84\uD2BC\uC740 \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uB20C\uB7EC\uC694. Rocket Launcher\uB294 \uC790\uB3D9\uC73C\uB85C \uC81C\uCD9C\uD558\uC9C0 \uC54A\uC544\uC694.",
     approved: "{store} \uC81C\uCD9C \uC900\uBE44\uB97C \uC2B9\uC778\uBC1B\uC558\uC5B4\uC694. \uC774\uC81C \uC0AC\uC6A9\uC790\uAC00 \uCF58\uC194\uC5D0\uC11C \uC9C1\uC811 \uC81C\uCD9C \uBC84\uD2BC\uC744 \uB204\uB974\uBA74 \uB3FC\uC694.",
     notChosenStore: "\uC774 \uC571\uC740 {store}\uC5D0 \uCD9C\uC2DC\uD558\uC9C0 \uC54A\uAE30\uB85C \uC815\uD588\uC5B4\uC694.",
@@ -59027,6 +59028,7 @@ var M = {
     needDecisions: "Ask the user about the {n} remaining decisions first: {keys}",
     generated: "Created {n} store-material files.",
     guideLocked: "The final step unlocks only after the user approves submission (rocketlauncher_approve_submission).",
+    guidePartial: "{n} decisions are still open and are shown with their recommended values ({keys}). Confirm them with the user, then save them with rocketlauncher_decide.",
     guideUnlocked: "The user approved. The user presses the final submit button themselves. Rocket Launcher never submits automatically.",
     approved: "Submission to {store} approved by the user. The user now presses the submit button in the console themselves.",
     notChosenStore: "This app was set not to launch on {store}.",
@@ -59063,6 +59065,7 @@ var M = {
     needDecisions: "\u0E16\u0E32\u0E21\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E40\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E17\u0E35\u0E48\u0E40\u0E2B\u0E25\u0E37\u0E2D {n} \u0E02\u0E49\u0E2D\u0E01\u0E48\u0E2D\u0E19: {keys}",
     generated: "\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E44\u0E1F\u0E25\u0E4C\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E2A\u0E42\u0E15\u0E23\u0E4C {n} \u0E44\u0E1F\u0E25\u0E4C\u0E41\u0E25\u0E49\u0E27",
     guideLocked: "\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E38\u0E14\u0E17\u0E49\u0E32\u0E22\u0E08\u0E30\u0E40\u0E1B\u0E34\u0E14\u0E2B\u0E25\u0E31\u0E07\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E2D\u0E19\u0E38\u0E21\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E40\u0E17\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19 (rocketlauncher_approve_submission)",
+    guidePartial: "\u0E22\u0E31\u0E07\u0E21\u0E35 {n} \u0E40\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E15\u0E31\u0E14\u0E2A\u0E34\u0E19\u0E43\u0E08 \u0E08\u0E36\u0E07\u0E41\u0E2A\u0E14\u0E07\u0E04\u0E48\u0E32\u0E17\u0E35\u0E48\u0E41\u0E19\u0E30\u0E19\u0E33\u0E44\u0E27\u0E49\u0E01\u0E48\u0E2D\u0E19 ({keys}) \u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E01\u0E31\u0E1A\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E41\u0E25\u0E49\u0E27\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E14\u0E49\u0E27\u0E22 rocketlauncher_decide",
     guideUnlocked: "\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E2D\u0E19\u0E38\u0E21\u0E31\u0E15\u0E34\u0E41\u0E25\u0E49\u0E27 \u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E01\u0E14\u0E1B\u0E38\u0E48\u0E21\u0E2A\u0E48\u0E07\u0E02\u0E31\u0E49\u0E19\u0E2A\u0E38\u0E14\u0E17\u0E49\u0E32\u0E22\u0E40\u0E2D\u0E07 Rocket Launcher \u0E44\u0E21\u0E48\u0E2A\u0E48\u0E07\u0E43\u0E2B\u0E49\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34",
     approved: "\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E2D\u0E19\u0E38\u0E21\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E44\u0E1B\u0E17\u0E35\u0E48 {store} \u0E41\u0E25\u0E49\u0E27 \u0E15\u0E48\u0E2D\u0E44\u0E1B\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E01\u0E14\u0E1B\u0E38\u0E48\u0E21\u0E2A\u0E48\u0E07\u0E43\u0E19\u0E04\u0E2D\u0E19\u0E42\u0E0B\u0E25\u0E40\u0E2D\u0E07",
     notChosenStore: "\u0E41\u0E2D\u0E1B\u0E19\u0E35\u0E49\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E44\u0E21\u0E48\u0E40\u0E1B\u0E34\u0E14\u0E15\u0E31\u0E27\u0E1A\u0E19 {store}",
@@ -59099,6 +59102,7 @@ var M = {
     needDecisions: "\u8BF7\u5148\u8BE2\u95EE\u7528\u6237\u5269\u4E0B\u7684 {n} \u9879\u51B3\u5B9A\uFF1A{keys}",
     generated: "\u5DF2\u751F\u6210 {n} \u4E2A\u5546\u5E97\u7D20\u6750\u6587\u4EF6\u3002",
     guideLocked: "\u6700\u540E\u4E00\u6B65\u53EA\u6709\u5728\u7528\u6237\u6279\u51C6\u63D0\u4EA4\u540E\u624D\u4F1A\u5F00\u653E\uFF08rocketlauncher_approve_submission\uFF09\u3002",
+    guidePartial: "\u8FD8\u6709 {n} \u9879\u51B3\u5B9A\u672A\u786E\u5B9A\uFF0C\u5148\u6309\u63A8\u8350\u503C\u663E\u793A\uFF08{keys}\uFF09\u3002\u8BF7\u4E0E\u7528\u6237\u786E\u8BA4\u540E\u7528 rocketlauncher_decide \u4FDD\u5B58\u3002",
     guideUnlocked: "\u7528\u6237\u5DF2\u6279\u51C6\u3002\u6700\u540E\u7684\u63D0\u4EA4\u6309\u94AE\u7531\u7528\u6237\u4EB2\u81EA\u70B9\u51FB\u3002Rocket Launcher \u7EDD\u4E0D\u4F1A\u81EA\u52A8\u63D0\u4EA4\u3002",
     approved: "\u7528\u6237\u5DF2\u6279\u51C6\u63D0\u4EA4\u5230 {store}\u3002\u73B0\u5728\u7531\u7528\u6237\u5728\u63A7\u5236\u53F0\u4E2D\u4EB2\u81EA\u70B9\u51FB\u63D0\u4EA4\u6309\u94AE\u3002",
     notChosenStore: "\u6B64\u5E94\u7528\u5DF2\u8BBE\u5B9A\u4E0D\u5728 {store} \u4E0A\u67B6\u3002",
@@ -59135,6 +59139,7 @@ var M = {
     needDecisions: "\u092A\u0939\u0932\u0947 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0938\u0947 \u092C\u093E\u0915\u0940 {n} \u092B\u093C\u0948\u0938\u0932\u094B\u0902 \u0915\u0947 \u092C\u093E\u0930\u0947 \u092E\u0947\u0902 \u092A\u0942\u091B\u0947\u0902: {keys}",
     generated: "{n} \u0938\u094D\u091F\u094B\u0930 \u0938\u093E\u092E\u0917\u094D\u0930\u0940 \u092B\u093C\u093E\u0907\u0932\u0947\u0902 \u092C\u0928\u093E\u0908 \u0917\u0908\u0902\u0964",
     guideLocked: "\u0906\u0916\u093F\u0930\u0940 \u0915\u0926\u092E \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0915\u0947 \u0938\u092C\u092E\u093F\u0936\u0928 \u092E\u0902\u091C\u093C\u0942\u0930 \u0915\u0930\u0928\u0947 \u0915\u0947 \u092C\u093E\u0926 \u0939\u0940 \u0916\u0941\u0932\u0924\u093E \u0939\u0948 (rocketlauncher_approve_submission)\u0964",
+    guidePartial: "\u0905\u092D\u0940 {n} \u092B\u093C\u0948\u0938\u0932\u0947 \u092C\u093E\u0915\u0940 \u0939\u0948\u0902, \u0907\u0938\u0932\u093F\u090F \u0938\u0941\u091D\u093E\u090F \u0917\u090F \u092E\u093E\u0928 \u0926\u093F\u0916\u093E\u090F \u0917\u090F \u0939\u0948\u0902 ({keys})\u0964 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0938\u0947 \u092A\u0941\u0937\u094D\u091F\u093F \u0915\u0930\u0915\u0947 rocketlauncher_decide \u0938\u0947 \u0938\u0939\u0947\u091C\u0947\u0902\u0964",
     guideUnlocked: "\u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0928\u0947 \u092E\u0902\u091C\u093C\u0942\u0930\u0940 \u0926\u0947 \u0926\u0940\u0964 \u0906\u0916\u093F\u0930\u0940 \u0938\u092C\u092E\u093F\u091F \u092C\u091F\u0928 \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0916\u0941\u0926 \u0926\u092C\u093E\u0924\u0947 \u0939\u0948\u0902\u0964 Rocket Launcher \u0915\u092D\u0940 \u0905\u092A\u0928\u0947 \u0906\u092A \u0938\u092C\u092E\u093F\u091F \u0928\u0939\u0940\u0902 \u0915\u0930\u0924\u093E\u0964",
     approved: "\u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0928\u0947 {store} \u092A\u0930 \u0938\u092C\u092E\u093F\u0936\u0928 \u092E\u0902\u091C\u093C\u0942\u0930 \u0915\u093F\u092F\u093E\u0964 \u0905\u092C \u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E \u0915\u0902\u0938\u094B\u0932 \u092E\u0947\u0902 \u0938\u092C\u092E\u093F\u091F \u092C\u091F\u0928 \u0916\u0941\u0926 \u0926\u092C\u093E\u090F\u0901\u0917\u0947\u0964",
     notChosenStore: "\u0907\u0938 \u0910\u092A \u0915\u094B {store} \u092A\u0930 \u0932\u0949\u0928\u094D\u091A \u0928 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u0938\u0947\u091F \u0915\u093F\u092F\u093E \u0917\u092F\u093E \u0939\u0948\u0964",
@@ -59536,7 +59541,12 @@ function scanProject(project, A) {
     kinds: del.kinds || [],
     confidence: del.confidence,
     pages: textP.filter((p) => /\.(html?|md)$/i.test(p) && /delet/i.test(p)).slice(0, 5),
-    urls: [...urls].filter((u) => /delet/i.test(u)).slice(0, 5)
+    /* 0.2.6: also a deletion URL written in the README, a listing draft or rocketlauncher.json, not only one in code */
+    urls: [.../* @__PURE__ */ new Set([...A.deletionInfo && A.deletionInfo.url ? [A.deletionInfo.url] : [], ...[...urls].filter((u) => /delet/i.test(u))])].slice(0, 5),
+    path: A.deletionInfo && A.deletionInfo.inAppPath || null,
+    url: A.deletionInfo && A.deletionInfo.url || null,
+    path_source: A.deletionInfo && A.deletionInfo.pathSource || null,
+    url_source: A.deletionInfo && A.deletionInfo.urlSource || null
   };
   const loc = Detect && Detect.locationFlow(codeP, F, "") || { sent: false, confidence: null, kinds: [] };
   X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
@@ -59587,25 +59597,31 @@ function requirements(st, L, opts = {}) {
   };
   const stage = (k) => Flow.stageOf(st.dec, k);
   if (an) {
-    const t = an.targetSdk;
-    if (t && t < 36) add2("play.target_api_36", "block", `targetSdk is ${t}.`, "Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.");
-    else if (t) add2("play.target_api_36", "ok", `targetSdk is ${t}.`);
+    const B = an.built && an.built.targetSdk ? an.built : null;
+    const t = B && an.targetSdk && B.targetSdk !== an.targetSdk ? B.targetSdk : an.targetSdk;
+    const bt = B ? B.targetSdk === an.targetSdk ? ` (the built ${B.kind.toUpperCase()} ${B.file} says the same)` : ` in the built ${B.kind.toUpperCase()} ${B.file}${an.targetSdk ? `; the source says ${an.targetSdk}, rebuild before uploading` : ""}` : "";
+    if (t && t < 36) add2("play.target_api_36", "block", `targetSdk is ${t}${bt}.`, "Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.");
+    else if (t) add2("play.target_api_36", "ok", `targetSdk is ${t}${bt}.`);
     else add2("play.target_api_36", "warn", `targetSdk could not be read (${an.targetSdkRaw || "not set"}).`, "Check the targetSdk your build actually uses; it must be 36 or higher.");
     if (stage("play") === "live" && t && t < 35) add2("play.existing_api_35", "block", `The live app targets ${t}.`, "Ship an update that targets 36; until then new users on newer Android cannot install it.");
     if (!X) add2("play.16kb_page_size", "warn", rx(L, "req.rescan"), "Connect the app again.");
     else {
-      const N = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
+      const N0 = X.natives || { libs: [], unread: 0, nativeSrc: false, total: 0 };
+      const bins = (N0.binaries || []).filter((b) => !b.error);
+      const N = bins.length ? { ...N0, libs: N0.libs.filter((l) => l.binary), nativeSrc: false } : { ...N0, libs: N0.libs.filter((l) => !l.binary) };
       const bad = N.libs.filter((l) => l.bits === 64 && l.align != null && l.align < 16384), unread = N.libs.filter((l) => l.align == null);
-      const hybrid = ["react-native", "expo", "flutter", "unity", "godot", "maui", "nativescript"].includes(A.framework) || X.build.reactNative || X.build.flutter;
-      const agpOld = X.build.agp && vcmp(X.build.agp, "8.5.1") < 0;
-      if (bad.length) add2("play.16kb_page_size", "block", `${bad.length} 64-bit native librar${bad.length > 1 ? "ies are" : "y is"} aligned to ${Math.min(...bad.map((l) => l.align))} bytes: ${bad.slice(0, 4).map((l) => l.path).join(", ")}.`, "Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.", { files: bad.map((l) => l.path) });
+      const binNote = bins.length ? ` Checked inside the built ${bins.map((b) => `${b.kind.toUpperCase()} ${b.path} (${b.libs} native librar${b.libs === 1 ? "y" : "ies"}${b.abis.length ? ": " + b.abis.join(", ") : ""})`).join("; ")}.` : "";
+      const hybrid = !bins.length && (["react-native", "expo", "flutter", "unity", "godot", "maui", "nativescript"].includes(A.framework) || X.build.reactNative || X.build.flutter);
+      const agpOld = X.build.agp && vcmp(X.build.agp, "8.5.1") < 0 && !(bins.length && !N.libs.length);
+      if (bad.length) add2("play.16kb_page_size", "block", `${bad.length} 64-bit native librar${bad.length > 1 ? "ies are" : "y is"} aligned to ${Math.min(...bad.map((l) => l.align))} bytes: ${bad.slice(0, 4).map((l) => l.path).join(", ")}.${binNote}`, "Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.", { files: bad.map((l) => l.path) });
       else if (N.nativeSrc || unread.length || hybrid || agpOld) add2(
         "play.16kb_page_size",
         "warn",
         [N.nativeSrc ? "The project builds native code (CMake / ndk-build)." : "", hybrid ? `${A.framework} apps ship native libraries at build time.` : "", unread.length ? `${unread.length} native librar${unread.length > 1 ? "ies" : "y"} could not be read.` : "", agpOld ? `Android Gradle Plugin ${X.build.agp} is older than 8.5.1.` : ""].filter(Boolean).join(" "),
         'Use AGP 8.5.1+ and NDK r28+, update React Native / Flutter / game engines and native SDKs to 16 KB-ready versions, then confirm "Supports 16 KB" in Play Console > App bundle explorer.'
       );
-      else if (N.libs.length) add2("play.16kb_page_size", "ok", `${N.libs.length} native librar${N.libs.length > 1 ? "ies are" : "y is"} 16 KB aligned.`);
+      else if (N.libs.length) add2("play.16kb_page_size", "ok", `${N.libs.length} native librar${N.libs.length > 1 ? "ies are" : "y is"} 16 KB aligned.${binNote}`);
+      else if (bins.length) add2("play.16kb_page_size", "ok", `The built app contains no native libraries (.so), so 16 KB page size does not apply.${binNote}`);
       else add2("play.16kb_page_size", "ok", "No native code found (Java/Kotlin only apps already support 16 KB).");
     }
     add2("play.app_registration", "check", "Rocket Launcher cannot see Play Console.", "Open the Play Console home page and register any app it lists as unregistered. The developer account must be verified.");
@@ -59656,10 +59672,16 @@ function requirements(st, L, opts = {}) {
   };
 }
 function deletionStatus(st) {
-  const A = st.A, X = st.X || {}, D = X.deletion || { code: [], text: false, pages: [], urls: [], kinds: [], confidence: null };
+  const A = st.A, X = st.X || {}, D = { code: [], text: false, pages: [], urls: [], kinds: [], confidence: null, ...X.deletion || {} };
+  const DI = A.deletionInfo || {};
+  if (DI.url && !D.urls.includes(DI.url)) D.urls = [DI.url, ...D.urls];
+  D.path = D.path || DI.inAppPath || null;
+  D.url = D.url || DI.url || null;
+  D.path_source = D.path_source || DI.pathSource || null;
+  D.url_source = D.url_source || DI.urlSource || null;
   const generated = !!(st.generated && A.sdk.auth);
   const R = A.review || {}, corr = (st.corrections || {}).account_deletion;
-  let inApp = D.code.length > 0 || D.text || !!R.deletionInApp;
+  let inApp = D.code.length > 0 || D.text || !!R.deletionInApp || !!D.path;
   let confidence = D.confidence || R.deletionConfidence || (inApp ? "certain" : null);
   if (corr && corr.actual === "present") {
     inApp = true;
@@ -59692,7 +59714,8 @@ function deletionCheck(st, L) {
     id: "in_app",
     severity: inSev,
     what: "Delete account inside the app (Play + App Store 5.1.1(v)).",
-    finding: d.inApp ? `Found: ${[...d.D.code, d.D.text ? 'a "Delete account" text' : "", ...(d.D.kinds || []).map((k) => "pattern:" + k), d.corrected ? "overridden by a correction report" : ""].filter(Boolean).join(", ")}` : d.confidence === "uncertain" ? "Not certain \u2014 please confirm there is an in-app Delete account path." : "Not found.",
+    finding: d.inApp ? `Found: ${[d.D.path ? `path "${d.D.path}" (${d.D.path_source})` : "", ...d.D.code, d.D.text ? 'a "Delete account" text' : "", ...(d.D.kinds || []).map((k) => "pattern:" + k), d.corrected ? "overridden by a correction report" : ""].filter(Boolean).join(", ")}` : d.confidence === "uncertain" ? "Not certain \u2014 please confirm there is an in-app Delete account path." : "Not found.",
+    in_app_path: d.D.path || void 0,
     action: d.inApp ? void 0 : "Add Settings > Delete account. It must delete the account and its data (not just sign out), ask once for confirmation and say how long deletion takes.",
     source: "https://developer.apple.com/support/offering-account-deletion-in-your-app/"
   });
@@ -59700,7 +59723,8 @@ function deletionCheck(st, L) {
     id: "web",
     severity: d.web ? "ok" : A.platforms.android ? "block" : "warn",
     what: "A web page where users can request deletion without the app (Google Play requires it; enter the URL in Play Console > App content > Data safety).",
-    finding: d.web ? `Found: ${[...d.D.pages, ...d.D.urls, d.generated ? "account-deletion page from rocketlauncher_generate_store_materials" : ""].filter(Boolean).join(", ")}` : "Not found.",
+    finding: d.web ? `Found: ${[...d.D.urls, ...d.D.pages, d.generated ? "account-deletion page from rocketlauncher_generate_store_materials" : ""].filter(Boolean).join(", ")}` : "Not found.",
+    url: d.D.url || void 0,
     action: d.web ? void 0 : "rocketlauncher_generate_store_materials makes account-deletion-<lang>.html. Host it (for example on GitHub Pages, free) and paste its URL in Play Console.",
     source: "https://support.google.com/googleplay/android-developer/answer/13327111"
   });
@@ -59720,7 +59744,7 @@ function deletionCheck(st, L) {
     action: "Call Apple's token revocation endpoint from your server when the account is deleted.",
     source: "https://developer.apple.com/support/offering-account-deletion-in-your-app/"
   });
-  const notes = "Account deletion: in the app, open Settings > Delete account (no extra steps, the account and its data are deleted). On the web: [https://<your-site>/account-deletion.html].";
+  const notes = `Account deletion: in the app, open ${d.D.path ? d.D.path : "[the in-app path, e.g. Settings > Delete account]"} (the account and its data are deleted). On the web: ${d.D.url || "[https://<your-site>/account-deletion.html]"}.`;
   sortRows(rows);
   const c = counts(rows);
   return {
@@ -59730,7 +59754,9 @@ function deletionCheck(st, L) {
     counts: c,
     rows: label(L, rows),
     review_note_text: notes,
-    play_console_field: 'Play Console > Policy and programs > App content > Data safety > "Delete account URL"'
+    in_app_path: d.D.path || null,
+    deletion_url: d.D.url || null,
+    play_console_field: 'Play Console > Policy and programs > App content > Data safety > "Delete account URL"' + (d.D.url ? ": " + d.D.url : "")
   };
 }
 function reasonsXml(X) {
@@ -59785,6 +59811,12 @@ function privacyCheck(st, L) {
     const map2 = { CONTACTS: "contacts", CALENDAR: "calendar", HEALTH: "health", FITNESS: "fitness", SMS_CALL_LOG: "sms", PHOTOS: "photo", VIDEOS: "video", AUDIO: "audio", PHONE: "phone" };
     for (const [k, word] of Object.entries(map2)) if (X.signals[k] && !declared.includes(word)) add2("ds." + k.toLowerCase(), "warn", `Google's scanner patterns found ${k.toLowerCase().replace(/_/g, " ")} access (${X.signals[k][0]}), but the Data safety draft does not list it.`, "If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.", "https://support.google.com/googleplay/android-developer/answer/10787469");
   }
+  for (const x of A.privacyPages || []) if (x.stale && x.stale.length && !x.old) add2(
+    "policy.stale",
+    "warn",
+    `${x.path}${x.bundled ? " (bundled inside the app)" : ""}: ${x.stale.join("; ")}.`,
+    x.bundled ? "Update the bundled copy (or point the in-app link at the live privacy URL) and rebuild; users and reviewers can open this page from inside the app." : "Update this page or move it out of the project (archive/ folders are ignored)."
+  );
   if (io) {
     const used = Object.keys(X && X.reasons || {}), declaredApis = X && X.manifestApis || [];
     const miss = used.filter((c2) => !declaredApis.includes(c2));
@@ -59948,7 +59980,9 @@ function closedTestStatus(st, L, T2 = today()) {
 }
 function closedTestDraft(st, L, T2 = today()) {
   const A = st.A, S = closedTestStatus(st, L, T2), C = st.closedTest || { feedback: [] };
-  const feats = (Gen.features ? Gen.features(A, "en") : []).slice(0, 5).map((f) => typeof f === "string" ? f : f.title || f.t || "").filter(Boolean);
+  const P = A.prepared, pl = P && (P.defaultLang && P.copy[P.defaultLang] ? P.defaultLang : P.langs[0]), pc = pl ? P.copy[pl] : null;
+  const feats = (pl && P.features[pl] || (Gen.features ? Gen.features(A, pl || "en") : [])).slice(0, 5).map((f) => typeof f === "string" ? f : f.title || f.t || "").filter(Boolean);
+  const pitch = pc && pc.short || A.tagline && (A.tagline[pl] || A.tagline.en) || "[one-sentence value]", appTitle = pc && pc.title || A.appName;
   const fb = (C.feedback || []).slice(-8).map((f) => `- ${f.date}: ${f.text}`).join("\n") || "- [summarize what testers reported]";
   const cat = (A.categories || [])[0] || "app";
   return {
@@ -59965,7 +59999,7 @@ ${fb}`
       },
       about_your_app: {
         target_audience: `[Who it is for, as specific as possible \u2014 for example: drivers in Thailand who want the cheapest ${cat === "travel" ? "route" : "nearby option"}.]`,
-        value: `${A.appName}: ${A.tagline && A.tagline.en || "[one-sentence value]"}${feats.length ? " Main features: " + feats.join("; ") + "." : ""}`,
+        value: `${appTitle}: ${pitch}${feats.length ? " Main features: " + feats.join("; ") + "." : ""}`,
         installs_first_year: "[pick an honest estimate]"
       },
       about_your_production_readiness: {
@@ -59973,6 +60007,7 @@ ${fb}`
         why_ready: `The app ran for ${S.qualified_testers >= NEED_TESTERS ? "14+" : "[n]"} days with ${S.active_testers} testers without blocking issues, the reported problems are fixed, the store listing, Data safety and content rating are complete, and the pre-launch report shows no critical issues. [Edit to match reality.]`
       }
     },
+    listing_source: pc ? `prepared store listing (${pl}): ${Object.values(pc.files || {}).filter((v, i, a) => a.indexOf(v) === i).join(", ")}` : void 0,
     source: req("play.closed_testing_personal").source
   };
 }
@@ -60584,6 +60619,7 @@ var normLang = (l) => {
   return LANGS.includes(p) ? p : "en";
 };
 var STORE_NAME = { play: "Google Play", apple: "App Store" };
+var BIN_DIRS = /* @__PURE__ */ new Set(["dist", "build", "release", "outputs"]);
 var SKIP_DIRS = /* @__PURE__ */ new Set(["node_modules", ".git", "build", ".gradle", "Pods", "DerivedData", ".dart_tool", ".idea", "intermediates", "generated", ".expo", ".next", "dist", ".cxx"]);
 var UserError = class extends Error {
   constructor(m, code) {
@@ -60623,7 +60659,35 @@ async function walkDir(root) {
       const abs = path5.join(dir, e.name), r = rel ? rel + "/" + e.name : e.name;
       if (e.isDirectory()) {
         if (!SKIP_DIRS.has(e.name)) await walk(abs, r);
+        else if (BIN_DIRS.has(e.name)) await walkBins(abs, r, 0);
       } else if (e.isFile()) {
+        let size = 0;
+        try {
+          size = (await fs5.promises.stat(abs)).size;
+        } catch {
+          continue;
+        }
+        out.push({ name: e.name, webkitRelativePath: top + "/" + r, size, arrayBuffer: async () => {
+          const b = await fs5.promises.readFile(abs);
+          return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+        } });
+      }
+    }
+  }
+  let binDirs = 0;
+  async function walkBins(dir, rel, depth) {
+    if (depth > 6 || ++binDirs > 400) return;
+    let ents;
+    try {
+      ents = await fs5.promises.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of ents) {
+      const abs = path5.join(dir, e.name), r = rel + "/" + e.name;
+      if (e.isDirectory()) {
+        if (!["intermediates", "tmp", "node_modules", ".git", "generated", "kotlin", "cxx", ".cxx"].includes(e.name)) await walkBins(abs, r, depth + 1);
+      } else if (e.isFile() && /\.(aab|apk)$/i.test(e.name)) {
         let size = 0;
         try {
           size = (await fs5.promises.stat(abs)).size;
@@ -60833,7 +60897,8 @@ function report(st, lang2) {
       privacy_url_found: A.developer && A.developer.privacyUrl || null,
       ...privacyInfo(A),
       icon_check: A.iconCheck || void 0,
-      ads_hint: A.adsHint ? { note: "An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.", files: A.adsHint.files } : void 0
+      ads_hint: A.adsHint ? { note: "An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.", files: A.adsHint.files } : void 0,
+      ...extraInfo(A)
     },
     store_stage: stageInfo(st, L),
     readiness: A.readiness,
@@ -60850,6 +60915,30 @@ function report(st, lang2) {
     release_checks: releaseSafe(st, L),
     ...learned(st, L),
     next: stageNext(st, L) || msg(L, "nextDecide", { n: Flow.decisions(A, st.dec).length })
+  };
+}
+function extraInfo(A) {
+  const P = A.prepared, an = A.android || {}, D = A.deletionInfo || {};
+  return {
+    category_source: A.categorySource || 'guessed from the app name, text and libraries (needs confirmation; set "category" in rocketlauncher.json)',
+    sign_in_required: A.accessRestricted ? { source: A.accessRestricted.source, evidence: A.accessRestricted.text || void 0, note: "The app is only for approved users, so reviewers need a demo account (App access: restricted)." } : void 0,
+    needs_confirmation: (() => {
+      const n = [];
+      if (!A.categorySource) n.push("category (guessed)");
+      if (!(A.prepared && (A.prepared.defaultLang || A.prepared.listingLangs))) n.push("store languages and default language (no prepared listing or default_language found; English is only a suggestion)");
+      if (A.platforms.android && !(A.android && A.android.targetSdk)) n.push("targetSdk (not readable from source or a built file)");
+      if (A.sdk.auth && !(A.deletionInfo && A.deletionInfo.url)) n.push("account deletion web URL (not found)");
+      return n.length ? n : void 0;
+    })(),
+    category_warning: A.categoryConfigUnknown ? `rocketlauncher.json category "${A.categoryConfigUnknown}" is not a known store category; set it to a Google Play category name such as "Business" or "Maps & Navigation".` : void 0,
+    ads_disabled: A.adsDisabled ? { note: "An ad SDK is mentioned but switched off (or rocketlauncher.json says ads: false); not treated as ads.", source: A.adsDisabled.source, files: A.adsDisabled.files || void 0 } : void 0,
+    built_binary: an.built ? { file: an.built.file, kind: an.built.kind, targetSdk: an.built.targetSdk || void 0, package: an.built.package || void 0, versionCode: an.built.versionCode || void 0, versionName: an.built.versionName || void 0, differs_from_source: an.builtMismatch && an.builtMismatch.length ? an.builtMismatch : void 0, note: an.builtMismatch && an.builtMismatch.length ? "The built file differs from the source files; the built values are used. Rebuild if the source is newer." : void 0 } : void 0,
+    form_factors: an.formFactors && an.formFactors.length ? ["phone", ...an.formFactors] : void 0,
+    feature_graphic_found: A.featureGraphic ? A.featureGraphic.path : void 0,
+    prepared_forms: A.preparedForms && Object.values(A.preparedForms).some(Boolean) ? Object.fromEntries(Object.entries(A.preparedForms).filter(([, v]) => v)) : void 0,
+    screenshots: A.screenshots.length ? A.screenshots.map((x) => x.path) : void 0,
+    prepared_listing: P && P.files.length ? { files: P.files, default_language: P.defaultLang || void 0, languages: P.langs, titles: Object.fromEntries(Object.entries(P.copy).filter(([, c]) => c.title).map(([l, c]) => [l, c.title])) } : void 0,
+    account_deletion: D.url || D.inAppPath ? { url: D.url || void 0, url_source: D.urlSource || void 0, in_app_path: D.inAppPath || void 0, path_source: D.pathSource || void 0 } : void 0
   };
 }
 function privacyInfo(A) {
@@ -60897,24 +60986,43 @@ function optionBase(st, d, L, A, t, C) {
   switch (d.key) {
     case "stores":
       return d.opts.map((o) => ({ value: o, label: t("store." + o) }));
-    case "title":
-      return C.listing(L).titles.map((v, k) => ({ value: k, label: v, detail: `${v.length}/30` }));
-    case "short":
-      return C.listing(L).shorts.map((v, k) => ({ value: k, label: v, detail: `${v.length}/80` }));
+    /* 0.2.6: shown in the store's (first listing) language when the conversation language is not one of the listing languages */
+    case "title": {
+      const ll = C.langs.includes(L) ? L : C.langs[0], tag = ll !== L ? ` \xB7 ${t("lang." + ll)}` : "";
+      return C.listing(ll).titles.map((v, k) => ({ value: k, label: v, detail: `${v.length}/30${tag}` }));
+    }
+    case "short": {
+      const ll = C.langs.includes(L) ? L : C.langs[0], tag = ll !== L ? ` \xB7 ${t("lang." + ll)}` : "";
+      return C.listing(ll).shorts.map((v, k) => ({ value: k, label: v, detail: `${v.length}/80${tag}` }));
+    }
     case "tone":
       return ["friendly", "pro"].map((o) => ({ value: o, label: t("tone." + o), detail: Gen.listing(A, L, o).full.split("\n")[0].slice(0, 120) }));
     case "category":
       return A.categories.map((c, k) => ({ value: k, label: Gen.CAT[c][L][1], detail: `Play: ${Gen.CAT[c].play} \xB7 Apple: ${Gen.CAT[c].apple}` }));
     case "langs": {
       const nm = (v) => v.map((l) => t("lang." + l)).join(" + ");
-      return [{ value: Flow.DEFAULT_LANGS.slice(), label: t("dec.langs.rec") }, ...["ko", "th", "zh", "hi"].map((l) => ({ value: ["en", l], label: nm(["en", l]) })), { value: LANGS.slice(), label: nm(LANGS) }];
+      const rec = (d.recLangs || Flow.DEFAULT_LANGS).slice(), P = A.prepared, base = [];
+      const push2 = (value, label2, detail) => {
+        if (!base.some((o) => JSON.stringify(o.value) === JSON.stringify(value))) base.push({ value, label: label2, ...detail ? { detail } : {} });
+      };
+      if (JSON.stringify(rec) !== JSON.stringify(Flow.DEFAULT_LANGS)) push2(rec, nm(rec), P && P.files.length ? "prepared store listing: " + P.files.slice(0, 3).join(", ") : void 0);
+      push2(Flow.DEFAULT_LANGS.slice(), JSON.stringify(rec) === JSON.stringify(Flow.DEFAULT_LANGS) ? t("dec.langs.rec") : nm(Flow.DEFAULT_LANGS));
+      ["ko", "th", "zh", "hi"].forEach((l) => push2([l], nm([l])));
+      ["ko", "th", "zh", "hi"].forEach((l) => push2(rec[0] === l ? [l, "en"] : ["en", l], nm(rec[0] === l ? [l, "en"] : ["en", l])));
+      push2(LANGS.slice(), nm(LANGS));
+      return base;
+    }
+    case "form_factors": {
+      const FF = { phone: "Phone", tablet: "Tablet", android_auto: "Android Auto", android_automotive: "Android Automotive OS", wear_os: "Wear OS", tv: "Google TV", chromebook: "Chromebook" };
+      const rec = (d.recFF || ["phone"]).slice();
+      return [{ value: rec, label: rec.map((f) => FF[f]).join(" + "), detail: "Found in the app: " + rec.slice(1).map((f) => FF[f]).join(", ") + ". Play Console > Test and release > Advanced settings > Form factors" }, { value: ["phone"], label: "Phone only", detail: "Do not opt in to " + rec.slice(1).map((f) => FF[f]).join(", ") }];
     }
     case "icon":
-      return STYLE2.icon.map((s, k) => ({ value: k, label: t("icon." + s), detail: "512\xD7512 \xB7 rocketlauncher_preview_graphics kind=icons" }));
+      return [...d.existing ? [{ value: "existing", label: t("icon.existing"), detail: A.icon.path }] : [], ...STYLE2.icon.map((s, k) => ({ value: k, label: t("icon." + s), detail: "512\xD7512 \xB7 rocketlauncher_preview_graphics kind=icons" }))];
     case "feature":
-      return STYLE2.feature.map((s, k) => ({ value: k, label: t("feat." + s), detail: "1024\xD7500 \xB7 rocketlauncher_preview_graphics kind=feature" }));
+      return [...A.featureGraphic ? [{ value: "existing", label: t("feat.existing"), detail: A.featureGraphic.path }] : [], ...STYLE2.feature.map((s, k) => ({ value: k, label: t("feat." + s), detail: "1024\xD7500 \xB7 rocketlauncher_preview_graphics kind=feature" }))];
     case "shots":
-      return [{ value: "ok", label: t("opt.useThese"), detail: A.screenshots.length ? t("dec.shots.d", { n: A.screenshots.length }) : t("dec.shots.none") }];
+      return [...d.existing ? [{ value: "existing", label: t("shots.existing"), detail: A.screenshots.map((x) => x.path).join(", ") }] : [], { value: "ok", label: t("opt.useThese"), detail: A.screenshots.length ? t("dec.shots.d", { n: A.screenshots.length }) + " " + A.screenshots.map((x) => x.path).join(", ") : t("dec.shots.none") }];
     case "privacy":
       return [{ value: "ok", label: t("opt.approve"), detail: t("dec.privacy.d") + " (" + C.langs.map((l) => `privacy-policy-${l}.html`).join(", ") + ")" }];
     case "safety": {
@@ -60989,14 +61097,31 @@ function validate2(st, d, val, L) {
     case "category":
       return idx(st.A.categories.length);
     case "icon":
-    case "feature":
+      if (val === "existing") {
+        if (!st.A.icon) bad();
+        return "existing";
+      }
       return idx(3);
+    case "feature":
+      if (val === "existing") {
+        if (!st.A.featureGraphic) bad();
+        return "existing";
+      }
+      return idx(3);
+    case "form_factors": {
+      const v = Flow.normFormFactors(val);
+      if (!v) bad();
+      return v;
+    }
     case "langs": {
       const a = Array.isArray(val) ? [...new Set(val)] : bad();
       if (!a.length || a.some((x) => !LANGS.includes(x))) bad();
       return a;
     }
     case "shots":
+      if (val === "existing" && st.A.screenshots.length) return "existing";
+      if (val !== "ok") bad();
+      return "ok";
     case "privacy":
     case "safety":
     case "rating":
@@ -61057,9 +61182,15 @@ function decide(st, { choices, accept_all_recommended }, lang2) {
     next: undecidedStages(st).length ? sn : left.length ? msg(L, "openLeft", { n: left.length }) : sn && !/rocketlauncher_get_decisions/.test(sn) ? sn : msg(L, "allDecided")
   };
 }
-function requireDecided(st, L) {
-  const left = Flow.decisions(st.A, st.dec).filter((d) => st.dec[d.key] === void 0).map((d) => d.key);
-  if (left.length) throw new UserError(msg(L, "needDecisions", { n: left.length, keys: left.join(", ") }), "needDecisions");
+function withRecommended(st) {
+  const dec = { ...st.dec }, undecided = [];
+  for (let pass = 0; pass < 3; pass++) Flow.decisions(st.A, dec).forEach((d) => {
+    if (dec[d.key] === void 0) {
+      dec[d.key] = Flow.recValue(d);
+      if (!undecided.includes(d.key)) undecided.push(d.key);
+    }
+  });
+  return { dec, undecided };
 }
 var b64 = (u) => u.split(",")[1];
 async function graphics(st, L, kinds) {
@@ -61095,7 +61226,21 @@ async function preview(st, kind, lang2) {
 }
 async function generate2(st, { output_dir, lang: lang2 }, { allowPath }) {
   const L = normLang(lang2 || st.lang), t = T(L);
-  requireDecided(st, L);
+  const { dec: filled, undecided } = withRecommended(st), userDec = st.dec;
+  st.dec = filled;
+  try {
+    const out = await generateWith(st, L, t, output_dir, allowPath);
+    if (undecided.length) {
+      out.undecided = undecided;
+      out.summary += " " + msg(L, "guidePartial", { n: undecided.length, keys: undecided.join(", ") });
+    }
+    return out;
+  } finally {
+    st.dec = userDec;
+    save(st);
+  }
+}
+async function generateWith(st, L, t, output_dir, allowPath) {
   const A = st.A, C = Flow.chosen(A, st.dec), stores = Flow.stores(A, st.dec);
   const files = Flow.textFiles(A, st.dec, L, t);
   const rel = relevantLessons(A, stores, L);
@@ -61103,9 +61248,12 @@ async function generate2(st, { output_dir, lang: lang2 }, { allowPath }) {
   if (nf) nf.data = withLearnedNotes(String(nf.data).trimEnd(), rel) + "\n";
   const g2 = await graphics(st, L, ["feature", "screenshots"]);
   if (g2) {
-    if (st.dec.icon !== "keep") files.push({ path: "graphics/icon-512.png", data: Buffer.from(b64(g2.icons[Number.isInteger(st.dec.icon) ? st.dec.icon : 0]), "base64") });
-    if (st.dec.feature !== "keep") files.push({ path: "graphics/feature-graphic-1024x500.png", data: Buffer.from(b64(g2.features[Number.isInteger(st.dec.feature) ? st.dec.feature : 0]), "base64") });
-    if (st.dec.shots !== "keep") g2.shots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${L}.png`, data: Buffer.from(b64(s), "base64") }));
+    if (st.dec.icon === "existing" && A.icon) files.push({ path: "graphics/icon-512.png", data: Buffer.from(b64(A.icon.dataUrl), "base64") });
+    else if (st.dec.icon !== "keep") files.push({ path: "graphics/icon-512.png", data: Buffer.from(b64(g2.icons[Number.isInteger(st.dec.icon) ? st.dec.icon : 0]), "base64") });
+    if (st.dec.feature === "existing" && A.featureGraphic) files.push({ path: "graphics/feature-graphic-1024x500" + (/\.jpe?g$/i.test(A.featureGraphic.path) ? ".jpg" : ".png"), data: Buffer.from(b64(A.featureGraphic.dataUrl), "base64") });
+    else if (st.dec.feature !== "keep") files.push({ path: "graphics/feature-graphic-1024x500.png", data: Buffer.from(b64(g2.features[Number.isInteger(st.dec.feature) ? st.dec.feature : 0]), "base64") });
+    if (st.dec.shots === "existing") A.screenshots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-${path5.basename(s.path).replace(/^\d+[-_]?/, "")}`, data: Buffer.from(b64(s.dataUrl), "base64") }));
+    else if (st.dec.shots !== "keep") g2.shots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${L}.png`, data: Buffer.from(b64(s), "base64") }));
   }
   files.push({ path: "README.txt", data: `Rocket Launcher \u2014 ${A.appName} (${A.pkg || ""})
 ${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}
@@ -61166,18 +61314,10 @@ function storeCheck(st, store2, L) {
 function guide(st, store2, lang2) {
   const L = normLang(lang2 || st.lang), t = T(L);
   const stage = Flow.stageOf(st.dec, store2);
-  let dec = st.dec;
-  if (stage === "in_review" || stage === "rejected") {
-    storeCheck(st, store2, L);
-    dec = { ...st.dec };
-    Flow.decisions(st.A, dec).forEach((d) => {
-      if (dec[d.key] === void 0) dec[d.key] = Flow.recValue(d);
-    });
-  } else {
-    requireDecided(st, L);
-    storeCheck(st, store2, L);
-  }
-  const approved = !!st.approved[store2], R = st.review[store2] || {};
+  storeCheck(st, store2, L);
+  const { dec, undecided } = withRecommended(st);
+  const partial2 = undecided.length > 0 && !(stage === "in_review" || stage === "rejected");
+  const approved = !!st.approved[store2] && !partial2, R = st.review[store2] || {};
   const raw = Flow.guide(st.A, dec, L, store2, t);
   const msgStep = raw.find((s) => s.id === "r-message");
   if (msgStep) msgStep.fields = R.plan ? [[t("f.reason"), R.plan.reason], ...R.plan.fix_plan.map((x, k) => [`${k + 1}`, x]), ...R.plan.reply ? [[t("g.r-reply.t"), R.plan.reply]] : []] : [["rocketlauncher_report_review", "event=rejected \xB7 store=" + store2 + " \xB7 rejection_text"]];
@@ -61226,19 +61366,24 @@ function guide(st, store2, lang2) {
     store: STORE_NAME[store2],
     approved,
     materials: st.generated ? { folder: st.generated.folder, zip: st.generated.zip } : null,
-    note: approved ? msg(L, "guideUnlocked") : msg(L, "guideLocked"),
+    note: (partial2 ? msg(L, "guidePartial", { n: undecided.length, keys: [...new Set(undecided)].join(", ") }) + " " : "") + (approved ? msg(L, "guideUnlocked") : msg(L, "guideLocked")),
+    undecided: partial2 ? [...new Set(undecided)] : void 0,
     steps,
     learned_lessons: rel.length ? rel : void 0
   };
 }
 function approve(st, store2, userWords, lang2) {
   const L = normLang(lang2 || st.lang);
-  requireDecided(st, L);
   storeCheck(st, store2, L);
-  st.approved[store2] = { at: (/* @__PURE__ */ new Date()).toISOString(), user_words: String(userWords || "").slice(0, 300) };
+  const { dec, undecided } = withRecommended(st);
+  if (undecided.length) {
+    st.dec = dec;
+    st.auto = [.../* @__PURE__ */ new Set([...st.auto || [], ...undecided])];
+  }
+  st.approved[store2] = { at: (/* @__PURE__ */ new Date()).toISOString(), user_words: String(userWords || "").slice(0, 300), filled_with_recommended: undecided.length ? undecided : void 0 };
   save(st);
   const g2 = guide(st, store2, L);
-  return { project_id: st.id, store: STORE_NAME[store2], approved: true, message: msg(L, "approved", { store: STORE_NAME[store2] }), final_step: g2.steps[g2.steps.length - 1], auto_submit: false };
+  return { project_id: st.id, store: STORE_NAME[store2], approved: true, message: msg(L, "approved", { store: STORE_NAME[store2] }), filled_with_recommended: undecided.length ? undecided : void 0, final_step: g2.steps[g2.steps.length - 1], auto_submit: false };
 }
 function review(st, { store: store2, event, rejection_text }, lang2) {
   const L = normLang(lang2 || st.lang), t = T(L);
@@ -61517,7 +61662,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.5";
+var VERSION = "0.2.6";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.
@@ -61606,7 +61751,7 @@ function createServer2({ allowPath = true, inlineZip = false } = {}) {
   }));
   server.registerTool("rocketlauncher_generate_store_materials", {
     title: "Make all store materials",
-    description: "After every decision is made, create the full launch kit: store listing text per chosen language (English by default; Korean, Thai, Simplified Chinese or Hindi if picked), privacy policy and account-deletion pages, Data safety CSV and App Privacy answers, content-rating answers, PrivacyInfo.xcprivacy, code-fix diff for the approved fixes, icon, feature graphic and screenshots. Saves a folder and a ZIP and returns the texts so you can show them.",
+    description: "Create the full launch kit. Open decisions are filled with their recommended values for this run and listed in `undecided` (confirm them with the user). What the project already prepared is used as is: store listing text and default language (play/, fastlane, listing drafts, rocketlauncher.json), the store icon, feature graphic and screenshots. Contents: store listing text per chosen language, privacy policy and account-deletion pages, Data safety CSV and App Privacy answers, content-rating answers, PrivacyInfo.xcprivacy, code-fix diff for the approved fixes, icon, feature graphic and screenshots. Saves a folder and a ZIP and returns the texts so you can show them.",
     inputSchema: { project_id: pid, output_dir: external_exports.string().optional().describe("Optional folder to save into (local stdio use only). Default: ~/.rocketlauncher/projects/<id>/store-materials"), lang },
     annotations: { ...W, openWorldHint: true }
   }, wrap(async (a) => {
@@ -61617,7 +61762,7 @@ function createServer2({ allowPath = true, inlineZip = false } = {}) {
   }));
   server.registerTool("rocketlauncher_submission_guide", {
     title: "Step-by-step console guide",
-    description: "Plain-language, step-by-step guide for Google Play Console (store=play) or App Store Connect (store=apple) with the exact value to paste into every field. The guide follows the store stage: first submit, waiting in review (wait, Information Needed reply draft, metadata-only fixes, no new build unless chosen), rejected (fix plan and resubmit) or live (new version, What's new, listing kept). The final submit step stays locked until the user approves with rocketlauncher_approve_submission.",
+    description: "Plain-language, step-by-step guide for Google Play Console (store=play) or App Store Connect (store=apple) with the exact value to paste into every field. The guide follows the store stage: first submit, waiting in review (wait, Information Needed reply draft, metadata-only fixes, no new build unless chosen), rejected (fix plan and resubmit) or live (new version, What's new, listing kept). Works before every decision is made: open ones are shown with their recommended values and listed in `undecided`. The final submit step stays locked until the user approves with rocketlauncher_approve_submission.",
     inputSchema: { project_id: pid, store, lang },
     annotations: { ...RO, openWorldHint: true }
   }, wrap(async (a) => {

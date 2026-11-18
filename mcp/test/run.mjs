@@ -74,7 +74,7 @@ async function stdioFlow() {
   r = await call(c, 'rocketlauncher_decide', { project_id: id, choices: [{ key: 'title', value: 99 }] });
   check(r.isError, 'decide rejects an out-of-range value');
   r = await call(c, 'rocketlauncher_generate_store_materials', { project_id: id });
-  check(r.isError && /decision/i.test(r.content[0].text), 'generate blocked until every decision is made');
+  check(!r.isError && /undecided|still open/i.test(r.content.map(x => x.text || '').join(' ')), '0.2.6: generate runs before every decision is made and lists the open ones (recommended values used)', r.content[0] && String(r.content[0].text).slice(0, 300));
   r = await call(c, 'rocketlauncher_decide', { project_id: id, choices: [{ key: 'langs', value: ['en', 'xx'] }] });
   check(r.isError, 'decide rejects an unknown store-listing language');
   r = await call(c, 'rocketlauncher_decide', { project_id: id, choices: [{ key: 'title', value: 1 }, { key: 'fix:targetSdk', value: 'apply' }, { key: 'langs', value: ['en'] }, { key: 'icon', value: 1 }] });

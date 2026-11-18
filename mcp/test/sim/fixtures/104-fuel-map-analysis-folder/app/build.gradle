@@ -1,0 +1,16 @@
+// Analysis folder for Rocket Launcher (not a buildable project).
+// Java/Kotlin class names remain com.sim.oldfuel.* ; applicationId is com.sim.fuelmate.
+android {
+    namespace "com.sim.fuelmate"
+    compileSdk 36
+    defaultConfig {
+        applicationId "com.sim.fuelmate"
+        minSdk 24
+        targetSdk 36
+        versionCode 13
+        versionName "1.3.0"
+    }
+}
+dependencies {
+    implementation "androidx.car.app:app:1.7.0"
+}

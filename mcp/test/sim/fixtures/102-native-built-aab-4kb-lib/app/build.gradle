@@ -1,0 +1,10 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.sim.nativecam'
+    defaultConfig {
+        applicationId 'com.sim.nativecam'
+        targetSdk libs.versions.targetSdk.get().toInteger()
+        versionCode 7
+        versionName '1.2.0'
+    }
+}
