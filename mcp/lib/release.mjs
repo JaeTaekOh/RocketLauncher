@@ -104,10 +104,16 @@ export function scanProject(project, A) {
   };
   const loc = (Detect && Detect.locationFlow(codeP, F, '')) || { sent: false, confidence: null, kinds: [] };
   X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
-  /* privacy policy content */
-  const pol = textP.filter(p => POLICY_FILE.test(p.split('/').pop()) && /\.(html?|md)$/i.test(p)), polTxt = pol.map(text).join('\n');
-  X.policy = { files: pol.slice(0, 5), location: /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt), ads: /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
-    deletion: /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt), thai: /[\u0E00-\u0E7F]/.test(polTxt) };
+  /* privacy policy content: local files, plus the live page body when connect() was able to read it (0.2.7).
+     If the only policy is a remote URL and that page was not read, content findings stay unverified — never "missing". */
+  const pol = textP.filter(p => POLICY_FILE.test(p.split('/').pop()) && /\.(html?|md)$/i.test(p));
+  const localTxt = pol.map(text).join('\n'), remoteTxt = (A.listing && A.listing.privacyBody) || '';
+  const polTxt = [localTxt, remoteTxt].filter(t => t && t.trim()).join('\n');
+  const read = !!polTxt.trim();
+  X.policy = { files: pol.slice(0, 5), read, unread: !read && !!(A.listing && A.listing.privacyUrl),
+    source: localTxt.trim() ? 'local' : (remoteTxt.trim() ? 'url' : null),
+    location: read && /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt), ads: read && /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
+    deletion: read && /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt), thai: read && /[\u0E00-\u0E7F]/.test(polTxt) };
   /* force update and remote flags */
   X.forceUpdate = { code: codeP.filter(p => FORCE_UPDATE.test(text(p))).slice(0, 5), lib: UPDATE_LIBS.test(depHay + gradleTxt + codeP.map(text).join('\n').slice(0, 300000)) };
   X.remoteFlags = REMOTE_FLAGS.test(depHay + gradleTxt + codeP.slice(0, 60).map(text).join('\n'));
@@ -241,9 +247,16 @@ export function deletionCheck(st, L) {
     url: d.D.url || undefined,
     action: d.web ? undefined : 'rocketlauncher_generate_store_materials makes account-deletion-<lang>.html. Host it (for example on GitHub Pages, free) and paste its URL in Play Console.',
     source: 'https://support.google.com/googleplay/android-developer/answer/13327111' });
-  rows.push({ id: 'retention', severity: X && X.policy.deletion ? 'ok' : 'warn', what: 'The privacy policy says what is deleted, what is kept and for how long.',
-    finding: X && X.policy.deletion ? 'The privacy policy mentions deletion or retention.' : 'Not found in the privacy policy.', action: X && X.policy.deletion ? undefined : 'Add a short "Deleting your account" section (the generated privacy policy has one).',
-    source: 'https://support.google.com/googleplay/android-developer/answer/13327111' });
+  if (X && X.policy && X.policy.unread) {
+    rows.push({ id: 'retention', severity: 'check', what: 'The privacy policy says what is deleted, what is kept and for how long.',
+      finding: 'Could not verify (미확인): the privacy policy page was not read, so no finding is made about its contents. Confirm that it says what is deleted, what is kept and for how long.',
+      action: 'Open the live privacy URL and confirm the retention section, or add a local copy of the policy in the project.',
+      source: 'https://support.google.com/googleplay/android-developer/answer/13327111' });
+  } else {
+    rows.push({ id: 'retention', severity: X && X.policy.deletion ? 'ok' : 'warn', what: 'The privacy policy says what is deleted, what is kept and for how long.',
+      finding: X && X.policy.deletion ? 'The privacy policy mentions deletion or retention.' : 'Not found in the privacy policy.', action: X && X.policy.deletion ? undefined : 'Add a short "Deleting your account" section (the generated privacy policy has one).',
+      source: 'https://support.google.com/googleplay/android-developer/answer/13327111' });
+  }
   if (A.ios && (A.sdk.appleSignIn || (A.ios && A.ios.appleSignIn))) rows.push({ id: 'siwa_revoke', severity: 'warn', what: 'Sign in with Apple: when an account is deleted, revoke the user\'s Apple tokens (REST API).',
     finding: 'Sign in with Apple is enabled.', action: 'Call Apple\'s token revocation endpoint from your server when the account is deleted.', source: 'https://developer.apple.com/support/offering-account-deletion-in-your-app/' });
   /* 0.2.6: the real path and URL when the project names them; placeholders only for what is unknown */
@@ -276,7 +289,8 @@ export function privacyCheck(st, L) {
     if (bg) add('loc.background', 'block', 'ACCESS_BACKGROUND_LOCATION is declared.', 'Remove it unless a core feature needs it; otherwise fill the Play location permissions declaration with a video.', 'https://support.google.com/googleplay/android-developer/answer/9799150');
     if (sent && st.dec.location === 'device') add('loc.datasafety_device', 'block', 'The code sends location to a server, but the Data safety answer says it stays on the device.', 'Answer that location is collected (app functionality) in Data safety and App Privacy.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
     if (sent && fine) add('loc.precise', 'warn', 'ACCESS_FINE_LOCATION is declared and location is sent to the server.', 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
-    if (X && !X.policy.location) add('loc.policy', 'warn', 'The privacy policy does not mention location.', 'Say what location is used for, whether it is sent and how long it is kept.');
+    if (X && X.policy && X.policy.unread) add('loc.policy', 'check', 'Could not verify (미확인): the privacy policy page was not read, so no finding is made about whether it mentions location.', 'Open the live privacy URL and confirm it covers location, or add a local copy of the policy in the project.');
+    else if (X && X.policy && !X.policy.location) add('loc.policy', 'warn', 'The privacy policy does not mention location.', 'Say what location is used for, whether it is sent and how long it is kept.');
     if (sent && locConf === 'uncertain' && !locCorr) {
       add('loc.confirm', 'check', 'Location looks like it may leave the device (coordinates appear near a network call), but this is not certain.', 'Confirm whether coordinates are sent off the device. If they are, declare location as collected in Data safety and App Privacy; if they stay on the device, confirm that.');
     } else if (!rows.some(r => r.id.startsWith('loc.'))) {
@@ -291,7 +305,8 @@ export function privacyCheck(st, L) {
     else if (A.sdk.ads && !R.npa) add('att.npa', 'warn', 'Ads without ATT: ad requests should be non-personalized.', 'Request non-personalized ads (npa=1) and answer "No, we do not track" in App Privacy.');
     else add('att.ok', 'ok', A.sdk.ads ? 'Ads are non-personalized and there is no ATT prompt: consistent.' : 'No tracking.');
   }
-  if (A.sdk.ads && X && !X.policy.ads && X.policy.files.length) add('ads.policy', 'warn', 'The app shows ads but the privacy policy does not mention advertising.', 'Mention the ad provider and the advertising ID in the privacy policy.');
+  if (A.sdk.ads && X && X.policy && X.policy.unread) add('ads.policy', 'check', 'Could not verify (미확인): the privacy policy page was not read, so no finding is made about whether it mentions advertising.', 'Open the live privacy URL and confirm it covers ads, or add a local copy of the policy in the project.');
+  else if (A.sdk.ads && X && X.policy && X.policy.read && !X.policy.ads) add('ads.policy', 'warn', 'The app shows ads but the privacy policy does not mention advertising.', 'Mention the ad provider and the advertising ID in the privacy policy.');
   /* photos */
   if (perms.some(p => /READ_MEDIA_IMAGES|READ_MEDIA_VIDEO/.test(p))) add('photo.play', 'warn', 'READ_MEDIA_IMAGES / READ_MEDIA_VIDEO are declared.', 'Use the Android photo picker unless photo access is the app\'s core purpose, then remove the permissions (or file the Photo and Video Permissions declaration).', 'https://support.google.com/googleplay/android-developer/answer/14115180');
   if (io && A.sdk.photos && !usage.NSPhotoLibraryUsageDescription && !usage.NSPhotoLibraryAddUsageDescription && perms.some(p => /READ_MEDIA_IMAGES|READ_EXTERNAL_STORAGE/.test(p))) add('photo.ios_string', 'warn', 'Android reads photos but Info.plist has no photo library purpose string.', 'Use PHPicker (no permission) or add NSPhotoLibraryUsageDescription.');

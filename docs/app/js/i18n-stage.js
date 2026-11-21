@@ -215,4 +215,11 @@
   add('th', {"icon.existing": "ใช้ไอคอนร้านค้าที่เตรียมไว้", "shots.existing": "ใช้ภาพหน้าจอที่เตรียมไว้ตามเดิม"});
   add('zh', {"icon.existing": "使用已准备好的商店图标", "shots.existing": "直接使用已准备好的截图"});
   add('hi', {"icon.existing": "तैयार स्टोर आइकन इस्तेमाल करें", "shots.existing": "तैयार स्क्रीनशॉट जैसे हैं वैसे इस्तेमाल करें"});
+
+  /* 0.2.7: a privacy URL that this computer could not read (401/403) is unverified, not a dead page */
+  add('en', {"iss.privacyUrlUnverified.t": "Privacy policy URL could not be verified", "iss.privacyUrlUnverified.w": "{url} could not be read here (HTTP {status}). Confirm that the link opens. No finding was made about the policy's contents."});
+  add('ko', {"iss.privacyUrlUnverified.t": "개인정보처리방침 주소를 확인하지 못했어요", "iss.privacyUrlUnverified.w": "{url} 을 여기에서 읽지 못했어요(HTTP {status}). 링크가 열리는지는 직접 확인해 주세요. 방침 내용에 대한 판단은 하지 않았어요."});
+  add('th', {"iss.privacyUrlUnverified.t": "ยืนยัน URL นโยบายความเป็นส่วนตัวไม่ได้", "iss.privacyUrlUnverified.w": "อ่าน {url} จากที่นี่ไม่ได้ (HTTP {status}) โปรดตรวจว่าลิงก์เปิดได้ ไม่ได้สรุปเนื้อหานโยบาย"});
+  add('zh', {"iss.privacyUrlUnverified.t": "无法核实隐私政策网址", "iss.privacyUrlUnverified.w": "这里无法读取 {url}（HTTP {status}）。请确认链接可以打开。未对政策内容作出判断。"});
+  add('hi', {"iss.privacyUrlUnverified.t": "प्राइवेसी पॉलिसी URL की पुष्टि नहीं हो सकी", "iss.privacyUrlUnverified.w": "यहाँ {url} पढ़ा नहीं जा सका (HTTP {status})। पुष्टि करें कि लिंक खुलता है। पॉलिसी की सामग्री पर कोई निष्कर्ष नहीं निकाला गया।"});
 })();

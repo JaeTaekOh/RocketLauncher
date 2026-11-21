@@ -22,8 +22,9 @@
   "data_safety": [
     "email",
     "name",
-    "uid",
-    "ugc"
+    "photos",
+    "ugc",
+    "uid"
   ],
   "privacy_url": null,
   "issues_present": [

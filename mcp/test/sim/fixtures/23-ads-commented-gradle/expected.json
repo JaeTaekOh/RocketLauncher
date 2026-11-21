@@ -9,7 +9,9 @@
   "sdk": {
     "camera": true
   },
-  "data_safety": [],
+  "data_safety": [
+    "photos"
+  ],
   "issues_absent": [
     "adsDeclare"
   ]

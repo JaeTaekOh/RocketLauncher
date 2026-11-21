@@ -621,7 +621,13 @@
     if (!A.tagline.en && rm.summary) A.tagline.en = rm.summary.split(/(?<=\.)\s/)[0].replace(/\.$/, '');
     /* 0.2.4: also locale files of JS / native apps (locales/ko.json, i18n/th.json, ko.lproj/Localizable.strings) */
     const fileLocales = P.map(p => (p.match(/(?:^|\/)(?:locales?|i18n|lang|langs|translations|l10n)\/([a-z]{2})(?:[-_][A-Za-z]{2,4})?\.json$/i) || p.match(/(?:^|\/)([a-z]{2})(?:[-_][A-Za-z]{2,4})?\.lproj\//i) || [])[1]).filter(Boolean).map(l => l.toLowerCase());
-    A.locales = [...new Set(Object.keys(A.strings).map(l => l === 'default' ? 'en' : l).concat(fileLocales))];
+    /* 0.2.7: rocketlauncher.json default_language (and a prepared listing) wins over mapping values/strings.xml "default" to English */
+    const defLang = (A.prepared && A.prepared.defaultLang) || 'en';
+    if (A.strings.default) {
+      const labelVal = A.strings.default[labelKey];
+      if (labelVal && !A.names[defLang]) A.names[defLang] = labelVal;
+    }
+    A.locales = [...new Set([defLang, ...Object.keys(A.strings).map(l => l === 'default' ? defLang : l), ...fileLocales])];
     A.pkg = (A.android && A.android.pkg) || (A.ios && A.ios.bundleId) || null;
     A.version = (A.android && (A.android.builtVersionName || A.android.versionName)) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
 
@@ -931,6 +937,10 @@
     }
     if (A.listing && A.listing.privacyConflict) add('privacyUrlConflict', 'warn', 'both', 'info', { urls: A.listing.privacyCandidates.map(c => c.url + ' (' + c.file + ')').join(', ') });
     if (A.listing && A.listing.privacyDead) add('privacyUrlDead', 'check', 'both', 'info', { url: A.listing.privacyUrl });
+    if (A.listing && A.listing.privacyUnverified) {
+      const ck = ((A.listing.privacyCandidates || []).find(c => c.url === A.listing.privacyUrl) || {}).check || {};
+      add('privacyUrlUnverified', 'check', 'both', 'info', { url: A.listing.privacyUrl, status: ck.status != null ? String(ck.status) : (ck.error || 'unknown') });
+    }
     if (A.listing && A.listing.privacyWeak) add('privacyUrlUnsure', 'check', 'both', 'info', { urls: A.listing.privacyCandidates.map(c => c.url + ' (' + c.file + ')').join(', ') });
     if (!A.screenshots.length) add('noShots', 'warn', 'both', 'info');
     /* 0.2.6: a privacy page (often a copy bundled inside the app) that names another package or operator */

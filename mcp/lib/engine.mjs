@@ -120,19 +120,43 @@ export async function connect({ source, github_url, path: p, lang, store_stage }
   return { st, report: report(st, L) };
 }
 
-/* 0.2.3: does the privacy URL respond? HEAD (GET if HEAD is refused), 4 s timeout, never fatal. Off with ROCKETLAUNCHER_VERIFY_URLS=0. */
+/* 0.2.7: probe a privacy URL. Browser-like headers; HEAD first, then GET if HEAD is not OK
+   (Cloudflare Workers often answer HEAD with 401 while GET returns 200). 4 s timeout, never fatal.
+   404/410/5xx → dead. 401/403 or a network failure → unverified (미확인), not a hard failure.
+   Off with ROCKETLAUNCHER_VERIFY_URLS=0. */
+const URL_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9,ko;q=0.8,th;q=0.7,zh;q=0.6,hi;q=0.5'
+};
+const urlDead = s => s === 404 || s === 410 || (s >= 500 && s <= 599);
+const urlBlocked = s => s === 401 || s === 403;
+async function probeUrl(u) {
+  const go = m => fetch(u, { method: m, redirect: 'follow', signal: AbortSignal.timeout(4000), headers: URL_HEADERS });
+  const readBody = async r => { try { return (await r.text()).slice(0, 500000); } catch { return null; } };
+  try {
+    let head = null;
+    try { head = await go('HEAD'); } catch { head = null; }
+    const needGet = !head || !head.ok;
+    const r = needGet ? await go('GET') : head;
+    let body = null;
+    if (r.ok && needGet) body = await readBody(r);
+    else if (r.ok && !needGet) { try { const g = await go('GET'); if (g.ok) body = await readBody(g); } catch { } }
+    return { status: r.status, ok: r.ok, unverified: !r.ok && (urlBlocked(r.status) || r.status == null), body };
+  } catch (e) {
+    return { status: null, ok: false, unverified: true, error: String(e && (e.cause && e.cause.code || e.name) || e).slice(0, 60) };
+  }
+}
 async function verifyPrivacyUrls(A) {
   const L = A.listing; if (!L || !(L.privacyCandidates || []).length || process.env.ROCKETLAUNCHER_VERIFY_URLS === '0') return;
   const urls = [...new Set(L.privacyCandidates.map(c => c.url))].slice(0, 4), res = {};
-  await Promise.all(urls.map(async u => {
-    const go = m => fetch(u, { method: m, redirect: 'follow', signal: AbortSignal.timeout(4000), headers: { 'User-Agent': 'Rocket-Launcher-link-check' } });
-    try { let r = await go('HEAD'); if (r.status === 405 || r.status === 403 || r.status === 501) r = await go('GET'); res[u] = { status: r.status, ok: r.ok }; }
-    catch (e) { res[u] = { status: null, ok: false, error: String(e && (e.cause && e.cause.code || e.name) || e).slice(0, 60) }; }
-  }));
-  L.privacyCandidates.forEach(c => { c.check = res[c.url]; });
+  await Promise.all(urls.map(async u => { res[u] = await probeUrl(u); }));
+  L.privacyCandidates.forEach(c => { const ckv = res[c.url]; if (!ckv) return; c.check = { status: ckv.status, ok: ckv.ok, unverified: !!ckv.unverified, error: ckv.error, has_body: !!ckv.body }; });
   const chosen = L.privacyUrl && res[L.privacyUrl];
-  /* a definite HTTP error (404, 410, 5xx) is reported; a network failure on this computer is only noted */
-  L.privacyDead = !!(chosen && chosen.status && !chosen.ok);
+  L.privacyDead = !!(chosen && chosen.status && urlDead(chosen.status));
+  L.privacyUnverified = !!(chosen && !L.privacyDead && !chosen.ok);
+  L.privacyBody = (chosen && chosen.body) || null;
+  L.privacyFetched = !!(chosen && chosen.ok && chosen.body);
 }
 /* The same app (same package / bundle id) connected earlier on this computer with a stage the user chose or a review in progress. */
 function earlierStages(A) {
@@ -209,7 +233,7 @@ export function report(st, lang) {
     summary: msg(L, 'connected', { name: appName(st, L), ready: A.readiness }) + ' ' + msg(L, 'counts', c),
     app: { name: appName(st, L), package: A.pkg || null, version: A.version, platforms: Object.keys(A.platforms).filter(k => A.platforms[k]), framework: A.framework,
       targetSdk: (A.android && A.android.targetSdk) || null, categories: A.categories.map(k => Gen.CAT[k] ? `${Gen.CAT[k][L][1]} (${Gen.CAT[k].play})` : k),
-      sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k), languages_in_app: A.locales, icon_found: !!A.icon, screenshots_found: A.screenshots.length,
+      sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k), default_language: (A.prepared && A.prepared.defaultLang) || null, languages_in_app: A.locales, icon_found: !!A.icon, screenshots_found: A.screenshots.length,
       source: st.source, privacy_url_found: (A.developer && A.developer.privacyUrl) || null, ...privacyInfo(A), icon_check: A.iconCheck || undefined,
       ads_hint: A.adsHint ? { note: 'An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.', files: A.adsHint.files } : undefined,
       ...extraInfo(A) },
@@ -249,10 +273,12 @@ function privacyInfo(A) {
   const L = A.listing || {}, C = L.privacyCandidates || [];
   if (!C.length) return {};
   return { privacy_url_source: L.privacySource || undefined,
-    privacy_url_candidates: C.length > 1 || L.privacyConflict || L.privacyWeak || L.privacyDead ? C.map(c => ({ url: c.url, file: c.file, source: c.source, ...(c.check ? { http_status: c.check.status, reachable: c.check.ok } : {}) })) : undefined,
+    privacy_url_candidates: C.length > 1 || L.privacyConflict || L.privacyWeak || L.privacyDead || L.privacyUnverified ? C.map(c => ({ url: c.url, file: c.file, source: c.source, ...(c.check ? { http_status: c.check.status, reachable: c.check.ok, unverified: c.check.unverified || undefined } : {}) })) : undefined,
     privacy_url_warning: L.privacyConflict ? 'Privacy policy URLs in the project disagree; the one from the most authoritative source is shown. Confirm which is current (or set privacy_url in rocketlauncher.json).'
       : L.privacyWeak ? 'A privacy URL was found only in a loose website file, not in the app config, store metadata or README, so it was not adopted. Confirm it is current (or set privacy_url in rocketlauncher.json).'
-      : L.privacyDead ? 'The privacy policy URL did not respond with a page (HTTP ' + ((C.find(c => c.url === L.privacyUrl) || {}).check || {}).status + '). Check it before submitting.' : undefined };
+      : L.privacyDead ? 'The privacy policy URL did not respond with a page (HTTP ' + ((C.find(c => c.url === L.privacyUrl) || {}).check || {}).status + '). Check it before submitting.'
+      : L.privacyUnverified ? 'The privacy policy URL could not be verified (미확인, HTTP ' + (((C.find(c => c.url === L.privacyUrl) || {}).check || {}).status || 'unknown') + '). Confirm that the link opens; no finding was made about the page contents.'
+      : undefined };
 }
 function releaseSafe(st, L) { try { return RL.releaseChecks(st, L); } catch (e) { return { error: 'Release checks could not run: ' + e.message }; } }
 /* Lessons learned on this machine from earlier store reviews (any project). Warnings or reminders only; built-in checks stay the default. */
