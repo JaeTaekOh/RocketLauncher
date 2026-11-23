@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.7
+
+Fixes from a real Capacitor staff-app launch where 0.2.6 reported three false positives, plus one valid gap in the Data safety draft.
+
+- **Privacy URL reachability.** The link check used `HEAD` with a `Rocket-Launcher-link-check` User-Agent and only fell back to `GET` on 405/403/501. Some hosts (Cloudflare Workers among them) answer `HEAD` with 401 while `GET` returns 200, so a live policy page was reported unreachable. The check now sends browser-like headers, falls back to `GET` whenever `HEAD` is not OK, and treats 401/403 (and network failures) as unverified (미확인) — not a hard "does not open" failure. 404/410/5xx are still dead. The response body is kept so policy content can be read.
+- **Policy content.** A "retention section missing" (or "policy does not mention location / ads") finding is never made when the page was not actually read. That case is reported as unverified and needs confirmation.
+- **Default language.** `rocketlauncher.json` `default_language` (and a prepared listing) wins over mapping `values/strings.xml` "default" to English, so a Korean app is not reported as English-only. The report now includes `default_language`.
+- **Data safety.** `CAMERA` and `RECORD_AUDIO` (and the matching iOS usage strings / sdk flags) are added to the Data safety draft as Photos and Voice or sound recordings.
+
+Tests: `test/fixes027.mjs` and extra checks in `test/real-projects.mjs` (including a live fetch of the staff-app privacy URL, skipped if the worker is unreachable).
+
 ## 0.2.6
 
 Fixes from two real Android launches (a Capacitor staff app and a Korean fuel-price app with Android Auto), where the agents did better on their own than with 0.2.5: Rocket Launcher replaced what the projects already had with guesses. The core rule is now **never override what the project already has**. Order of truth: `rocketlauncher.json` and explicit flags, then prepared store files, then the built AAB / APK, then values found elsewhere in the project, and only then guesses, which are listed under `needs_confirmation`.

@@ -59550,13 +59550,19 @@ function scanProject(project, A) {
   };
   const loc = Detect && Detect.locationFlow(codeP, F, "") || { sent: false, confidence: null, kinds: [] };
   X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
-  const pol = textP.filter((p) => POLICY_FILE.test(p.split("/").pop()) && /\.(html?|md)$/i.test(p)), polTxt = pol.map(text).join("\n");
+  const pol = textP.filter((p) => POLICY_FILE.test(p.split("/").pop()) && /\.(html?|md)$/i.test(p));
+  const localTxt = pol.map(text).join("\n"), remoteTxt = A.listing && A.listing.privacyBody || "";
+  const polTxt = [localTxt, remoteTxt].filter((t) => t && t.trim()).join("\n");
+  const read = !!polTxt.trim();
   X.policy = {
     files: pol.slice(0, 5),
-    location: /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt),
-    ads: /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
-    deletion: /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt),
-    thai: /[\u0E00-\u0E7F]/.test(polTxt)
+    read,
+    unread: !read && !!(A.listing && A.listing.privacyUrl),
+    source: localTxt.trim() ? "local" : remoteTxt.trim() ? "url" : null,
+    location: read && /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt),
+    ads: read && /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
+    deletion: read && /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt),
+    thai: read && /[\u0E00-\u0E7F]/.test(polTxt)
   };
   X.forceUpdate = { code: codeP.filter((p) => FORCE_UPDATE.test(text(p))).slice(0, 5), lib: UPDATE_LIBS.test(depHay + gradleTxt + codeP.map(text).join("\n").slice(0, 3e5)) };
   X.remoteFlags = REMOTE_FLAGS.test(depHay + gradleTxt + codeP.slice(0, 60).map(text).join("\n"));
@@ -59728,14 +59734,25 @@ function deletionCheck(st, L) {
     action: d.web ? void 0 : "rocketlauncher_generate_store_materials makes account-deletion-<lang>.html. Host it (for example on GitHub Pages, free) and paste its URL in Play Console.",
     source: "https://support.google.com/googleplay/android-developer/answer/13327111"
   });
-  rows.push({
-    id: "retention",
-    severity: X && X.policy.deletion ? "ok" : "warn",
-    what: "The privacy policy says what is deleted, what is kept and for how long.",
-    finding: X && X.policy.deletion ? "The privacy policy mentions deletion or retention." : "Not found in the privacy policy.",
-    action: X && X.policy.deletion ? void 0 : 'Add a short "Deleting your account" section (the generated privacy policy has one).',
-    source: "https://support.google.com/googleplay/android-developer/answer/13327111"
-  });
+  if (X && X.policy && X.policy.unread) {
+    rows.push({
+      id: "retention",
+      severity: "check",
+      what: "The privacy policy says what is deleted, what is kept and for how long.",
+      finding: "Could not verify (\uBBF8\uD655\uC778): the privacy policy page was not read, so no finding is made about its contents. Confirm that it says what is deleted, what is kept and for how long.",
+      action: "Open the live privacy URL and confirm the retention section, or add a local copy of the policy in the project.",
+      source: "https://support.google.com/googleplay/android-developer/answer/13327111"
+    });
+  } else {
+    rows.push({
+      id: "retention",
+      severity: X && X.policy.deletion ? "ok" : "warn",
+      what: "The privacy policy says what is deleted, what is kept and for how long.",
+      finding: X && X.policy.deletion ? "The privacy policy mentions deletion or retention." : "Not found in the privacy policy.",
+      action: X && X.policy.deletion ? void 0 : 'Add a short "Deleting your account" section (the generated privacy policy has one).',
+      source: "https://support.google.com/googleplay/android-developer/answer/13327111"
+    });
+  }
   if (A.ios && (A.sdk.appleSignIn || A.ios && A.ios.appleSignIn)) rows.push({
     id: "siwa_revoke",
     severity: "warn",
@@ -59789,7 +59806,8 @@ function privacyCheck(st, L) {
     if (bg) add2("loc.background", "block", "ACCESS_BACKGROUND_LOCATION is declared.", "Remove it unless a core feature needs it; otherwise fill the Play location permissions declaration with a video.", "https://support.google.com/googleplay/android-developer/answer/9799150");
     if (sent && st.dec.location === "device") add2("loc.datasafety_device", "block", "The code sends location to a server, but the Data safety answer says it stays on the device.", "Answer that location is collected (app functionality) in Data safety and App Privacy.", "https://support.google.com/googleplay/android-developer/answer/10787469");
     if (sent && fine) add2("loc.precise", "warn", "ACCESS_FINE_LOCATION is declared and location is sent to the server.", 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', "https://support.google.com/googleplay/android-developer/answer/10787469");
-    if (X && !X.policy.location) add2("loc.policy", "warn", "The privacy policy does not mention location.", "Say what location is used for, whether it is sent and how long it is kept.");
+    if (X && X.policy && X.policy.unread) add2("loc.policy", "check", "Could not verify (\uBBF8\uD655\uC778): the privacy policy page was not read, so no finding is made about whether it mentions location.", "Open the live privacy URL and confirm it covers location, or add a local copy of the policy in the project.");
+    else if (X && X.policy && !X.policy.location) add2("loc.policy", "warn", "The privacy policy does not mention location.", "Say what location is used for, whether it is sent and how long it is kept.");
     if (sent && locConf === "uncertain" && !locCorr) {
       add2("loc.confirm", "check", "Location looks like it may leave the device (coordinates appear near a network call), but this is not certain.", "Confirm whether coordinates are sent off the device. If they are, declare location as collected in Data safety and App Privacy; if they stay on the device, confirm that.");
     } else if (!rows.some((r) => r.id.startsWith("loc."))) {
@@ -59803,7 +59821,8 @@ function privacyCheck(st, L) {
     else if (A.sdk.ads && !R.npa) add2("att.npa", "warn", "Ads without ATT: ad requests should be non-personalized.", 'Request non-personalized ads (npa=1) and answer "No, we do not track" in App Privacy.');
     else add2("att.ok", "ok", A.sdk.ads ? "Ads are non-personalized and there is no ATT prompt: consistent." : "No tracking.");
   }
-  if (A.sdk.ads && X && !X.policy.ads && X.policy.files.length) add2("ads.policy", "warn", "The app shows ads but the privacy policy does not mention advertising.", "Mention the ad provider and the advertising ID in the privacy policy.");
+  if (A.sdk.ads && X && X.policy && X.policy.unread) add2("ads.policy", "check", "Could not verify (\uBBF8\uD655\uC778): the privacy policy page was not read, so no finding is made about whether it mentions advertising.", "Open the live privacy URL and confirm it covers ads, or add a local copy of the policy in the project.");
+  else if (A.sdk.ads && X && X.policy && X.policy.read && !X.policy.ads) add2("ads.policy", "warn", "The app shows ads but the privacy policy does not mention advertising.", "Mention the ad provider and the advertising ID in the privacy policy.");
   if (perms.some((p) => /READ_MEDIA_IMAGES|READ_MEDIA_VIDEO/.test(p))) add2("photo.play", "warn", "READ_MEDIA_IMAGES / READ_MEDIA_VIDEO are declared.", "Use the Android photo picker unless photo access is the app's core purpose, then remove the permissions (or file the Photo and Video Permissions declaration).", "https://support.google.com/googleplay/android-developer/answer/14115180");
   if (io && A.sdk.photos && !usage.NSPhotoLibraryUsageDescription && !usage.NSPhotoLibraryAddUsageDescription && perms.some((p) => /READ_MEDIA_IMAGES|READ_EXTERNAL_STORAGE/.test(p))) add2("photo.ios_string", "warn", "Android reads photos but Info.plist has no photo library purpose string.", "Use PHPicker (no permission) or add NSPhotoLibraryUsageDescription.");
   const items = Gen.dataSafety(A, "en", po), declared = JSON.stringify(items.rows).toLowerCase();
@@ -60769,25 +60788,62 @@ async function connect({ source, github_url, path: p, lang: lang2, store_stage }
   save(st);
   return { st, report: report(st, L) };
 }
+var URL_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9,ko;q=0.8,th;q=0.7,zh;q=0.6,hi;q=0.5"
+};
+var urlDead = (s) => s === 404 || s === 410 || s >= 500 && s <= 599;
+var urlBlocked = (s) => s === 401 || s === 403;
+async function probeUrl(u) {
+  const go = (m) => fetch(u, { method: m, redirect: "follow", signal: AbortSignal.timeout(4e3), headers: URL_HEADERS });
+  const readBody = async (r) => {
+    try {
+      return (await r.text()).slice(0, 5e5);
+    } catch {
+      return null;
+    }
+  };
+  try {
+    let head = null;
+    try {
+      head = await go("HEAD");
+    } catch {
+      head = null;
+    }
+    const needGet = !head || !head.ok;
+    const r = needGet ? await go("GET") : head;
+    let body = null;
+    if (r.ok && needGet) body = await readBody(r);
+    else if (r.ok && !needGet) {
+      try {
+        const g2 = await go("GET");
+        if (g2.ok) body = await readBody(g2);
+      } catch {
+      }
+    }
+    return { status: r.status, ok: r.ok, unverified: !r.ok && (urlBlocked(r.status) || r.status == null), body };
+  } catch (e) {
+    return { status: null, ok: false, unverified: true, error: String(e && (e.cause && e.cause.code || e.name) || e).slice(0, 60) };
+  }
+}
 async function verifyPrivacyUrls(A) {
   const L = A.listing;
   if (!L || !(L.privacyCandidates || []).length || process.env.ROCKETLAUNCHER_VERIFY_URLS === "0") return;
   const urls = [...new Set(L.privacyCandidates.map((c) => c.url))].slice(0, 4), res = {};
   await Promise.all(urls.map(async (u) => {
-    const go = (m) => fetch(u, { method: m, redirect: "follow", signal: AbortSignal.timeout(4e3), headers: { "User-Agent": "Rocket-Launcher-link-check" } });
-    try {
-      let r = await go("HEAD");
-      if (r.status === 405 || r.status === 403 || r.status === 501) r = await go("GET");
-      res[u] = { status: r.status, ok: r.ok };
-    } catch (e) {
-      res[u] = { status: null, ok: false, error: String(e && (e.cause && e.cause.code || e.name) || e).slice(0, 60) };
-    }
+    res[u] = await probeUrl(u);
   }));
   L.privacyCandidates.forEach((c) => {
-    c.check = res[c.url];
+    const ckv = res[c.url];
+    if (!ckv) return;
+    c.check = { status: ckv.status, ok: ckv.ok, unverified: !!ckv.unverified, error: ckv.error, has_body: !!ckv.body };
   });
   const chosen = L.privacyUrl && res[L.privacyUrl];
-  L.privacyDead = !!(chosen && chosen.status && !chosen.ok);
+  L.privacyDead = !!(chosen && chosen.status && urlDead(chosen.status));
+  L.privacyUnverified = !!(chosen && !L.privacyDead && !chosen.ok);
+  L.privacyBody = chosen && chosen.body || null;
+  L.privacyFetched = !!(chosen && chosen.ok && chosen.body);
 }
 function earlierStages(A) {
   const out = {};
@@ -60890,6 +60946,7 @@ function report(st, lang2) {
       targetSdk: A.android && A.android.targetSdk || null,
       categories: A.categories.map((k) => Gen.CAT[k] ? `${Gen.CAT[k][L][1]} (${Gen.CAT[k].play})` : k),
       sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k),
+      default_language: A.prepared && A.prepared.defaultLang || null,
       languages_in_app: A.locales,
       icon_found: !!A.icon,
       screenshots_found: A.screenshots.length,
@@ -60946,8 +61003,8 @@ function privacyInfo(A) {
   if (!C.length) return {};
   return {
     privacy_url_source: L.privacySource || void 0,
-    privacy_url_candidates: C.length > 1 || L.privacyConflict || L.privacyWeak || L.privacyDead ? C.map((c) => ({ url: c.url, file: c.file, source: c.source, ...c.check ? { http_status: c.check.status, reachable: c.check.ok } : {} })) : void 0,
-    privacy_url_warning: L.privacyConflict ? "Privacy policy URLs in the project disagree; the one from the most authoritative source is shown. Confirm which is current (or set privacy_url in rocketlauncher.json)." : L.privacyWeak ? "A privacy URL was found only in a loose website file, not in the app config, store metadata or README, so it was not adopted. Confirm it is current (or set privacy_url in rocketlauncher.json)." : L.privacyDead ? "The privacy policy URL did not respond with a page (HTTP " + ((C.find((c) => c.url === L.privacyUrl) || {}).check || {}).status + "). Check it before submitting." : void 0
+    privacy_url_candidates: C.length > 1 || L.privacyConflict || L.privacyWeak || L.privacyDead || L.privacyUnverified ? C.map((c) => ({ url: c.url, file: c.file, source: c.source, ...c.check ? { http_status: c.check.status, reachable: c.check.ok, unverified: c.check.unverified || void 0 } : {} })) : void 0,
+    privacy_url_warning: L.privacyConflict ? "Privacy policy URLs in the project disagree; the one from the most authoritative source is shown. Confirm which is current (or set privacy_url in rocketlauncher.json)." : L.privacyWeak ? "A privacy URL was found only in a loose website file, not in the app config, store metadata or README, so it was not adopted. Confirm it is current (or set privacy_url in rocketlauncher.json)." : L.privacyDead ? "The privacy policy URL did not respond with a page (HTTP " + ((C.find((c) => c.url === L.privacyUrl) || {}).check || {}).status + "). Check it before submitting." : L.privacyUnverified ? "The privacy policy URL could not be verified (\uBBF8\uD655\uC778, HTTP " + (((C.find((c) => c.url === L.privacyUrl) || {}).check || {}).status || "unknown") + "). Confirm that the link opens; no finding was made about the page contents." : void 0
   };
 }
 function releaseSafe(st, L) {
@@ -61662,7 +61719,7 @@ function removeGuide2(store2, lang2) {
 }
 
 // lib/tools.mjs
-var VERSION = "0.2.6";
+var VERSION = "0.2.7";
 var INSTRUCTIONS = `Rocket Launcher helps people who already built an Android and/or iOS app with AI get it published on Google Play and the App Store, and stops at launch. It works at every store stage: a first submit, an app already uploaded and waiting in review, a rejected app, and an update of an app that is already live.
 How to use it:
 1. When the user says their app is finished, is in review, was rejected or needs an update, call rocketlauncher_connect_app ONCE with a public GitHub URL, a local folder/ZIP path, or source=sample for a demo. Never ask the user for tokens, passwords or store metadata forms.

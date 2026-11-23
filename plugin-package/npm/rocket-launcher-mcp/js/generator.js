@@ -137,6 +137,12 @@
     if (s.crash) D.push({ id: 'crash', play: ['App info and performance', 'Crash logs'], apple: ['Diagnostics', 'Crash Data'], purposes: ['analytics'], optional: false, linked: false },
                         { id: 'diag', play: ['App info and performance', 'Diagnostics'], apple: ['Diagnostics', 'Performance Data'], purposes: ['analytics'], optional: false, linked: false });
     if (s.ads) D.push({ id: 'adid', play: ['Device or other IDs', 'Device or other IDs'], apple: ['Identifiers', 'Device ID'], purposes: ['ads', 'analytics'], optional: false, linked: false, shared: true });
+    /* 0.2.7: permissions (and sdk flags) for camera / photo library / microphone must appear in the Data safety draft */
+    const perms = ((A.android && A.android.permissions) || []).join(' ');
+    const hasPhotos = !!(s.camera || s.photos || /permission\.CAMERA\b|READ_MEDIA_IMAGES|READ_MEDIA_VIDEO|READ_EXTERNAL_STORAGE|NSCamera|NSPhotoLibrary/.test(perms + ' ' + JSON.stringify((A.ios && A.ios.usage) || {})));
+    const hasAudio = !!(s.mic || /RECORD_AUDIO|NSMicrophone/.test(perms + ' ' + JSON.stringify((A.ios && A.ios.usage) || {})));
+    if (hasPhotos) D.push({ id: 'photos', play: ['Photos and videos', 'Photos'], apple: ['User Content', 'Photos or Videos'], purposes: ['func'], optional: true, linked: false });
+    if (hasAudio) D.push({ id: 'audio', play: ['Audio files', 'Voice or sound recordings'], apple: ['User Content', 'Audio Data'], purposes: ['func'], optional: true, linked: false });
     return D;
   }
   const PURPOSE = {
@@ -147,7 +153,8 @@
     name: { ko: '이름', en: 'Name', th: 'ชื่อ', zh: '姓名', hi: 'नाम' }, email: { ko: '이메일 주소', en: 'Email address', th: 'อีเมล', zh: '电子邮件地址', hi: 'ईमेल पता' }, uid: { ko: '사용자 ID', en: 'User IDs', th: 'รหัสผู้ใช้', zh: '用户 ID', hi: 'यूज़र ID' },
     fin: { ko: '기타 금융 정보 (지출 기록)', en: 'Other financial info (expense records)', th: 'ข้อมูลทางการเงินอื่น ๆ (บันทึกรายจ่าย)', zh: '其他财务信息（支出记录）', hi: 'अन्य वित्तीय जानकारी (खर्च का रिकॉर्ड)' }, ugc: { ko: '사용자가 만든 콘텐츠', en: 'User-generated content', th: 'เนื้อหาที่ผู้ใช้สร้าง', zh: '用户生成的内容', hi: 'उपयोगकर्ता द्वारा बनाई गई सामग्री' },
     loc: { ko: '대략적인 위치', en: 'Approximate location', th: 'ตำแหน่งโดยประมาณ', zh: '大致位置', hi: 'अनुमानित लोकेशन' }, usage: { ko: '앱 사용 기록', en: 'App interactions', th: 'การโต้ตอบกับแอป', zh: '应用互动', hi: 'ऐप इंटरैक्शन' },
-    crash: { ko: '비정상 종료 기록', en: 'Crash logs', th: 'บันทึกข้อขัดข้อง', zh: '崩溃日志', hi: 'क्रैश लॉग' }, diag: { ko: '진단 정보', en: 'Diagnostics', th: 'ข้อมูลการวินิจฉัย', zh: '诊断信息', hi: 'डायग्नोस्टिक्स' }, adid: { ko: '기기 ID (광고 ID)', en: 'Device or other IDs (advertising ID)', th: 'รหัสอุปกรณ์ (รหัสโฆษณา)', zh: '设备 ID（广告 ID）', hi: 'डिवाइस ID (विज्ञापन ID)' }
+    crash: { ko: '비정상 종료 기록', en: 'Crash logs', th: 'บันทึกข้อขัดข้อง', zh: '崩溃日志', hi: 'क्रैश लॉग' }, diag: { ko: '진단 정보', en: 'Diagnostics', th: 'ข้อมูลการวินิจฉัย', zh: '诊断信息', hi: 'डायग्नोस्टिक्स' }, adid: { ko: '기기 ID (광고 ID)', en: 'Device or other IDs (advertising ID)', th: 'รหัสอุปกรณ์ (รหัสโฆษณา)', zh: '设备 ID（广告 ID）', hi: 'डिवाइस ID (विज्ञापन ID)' },
+    photos: { ko: '사진', en: 'Photos', th: 'รูปภาพ', zh: '照片', hi: 'फ़ोटो' }, audio: { ko: '음성·녹음', en: 'Voice or sound recordings', th: 'เสียงหรือการบันทึก', zh: '语音或录音', hi: 'आवाज़ या साउंड रिकॉर्डिंग' }
   };
   /* opts.tracking: true only on a fully aligned tracking path (visible ATT prompt + tracking domains + App Privacy "Yes, we track").
      Default false: non-personalized ads (npa=1) are not tracking. opts.location: 'device' (never leaves the device → not collected) | 'server'.
