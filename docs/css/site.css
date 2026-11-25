@@ -61,9 +61,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   min-height: 64px;
 }
+.site-header .in { padding: 8px 0 6px; }
+.site-header .mark { margin-right: auto; }
 .mark { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 500; letter-spacing: -.02em; white-space: nowrap; }
 .mark img { width: 32px; height: 32px; border-radius: 9px; object-fit: cover; }
 .nav { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -171,6 +174,44 @@ code.i { background: var(--fill); border: 1px solid var(--hair); border-radius: 
 .site-footer a:hover { color: var(--ink); }
 .foot-links { display: flex; gap: 16px; flex-wrap: wrap; }
 
+
+.lang {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 2px;
+  margin: -2px 0 4px;
+}
+.lang button {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 450;
+  line-height: 1.2;
+  color: var(--ink2);
+  padding: 8px 8px;
+  min-width: 44px;
+  min-height: 40px;
+  border-radius: 8px;
+  transition: color 220ms var(--ease), background-color 220ms var(--ease);
+}
+.lang button:hover { color: var(--ink); }
+.lang button[aria-pressed="true"] { color: var(--ink); background: var(--fill); font-weight: 560; }
+
+html[data-lang="ko"] body, html[data-lang="zh"] body { word-break: keep-all; }
+html[data-lang="th"] body, html[data-lang="hi"] body { line-height: 1.7; }
+html[data-lang]:not([data-lang="en"]) .kicker,
+html[data-lang]:not([data-lang="en"]) .sec h2,
+html[data-lang]:not([data-lang="en"]) .tag {
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
 @media (max-width: 720px) {
   main { padding: 28px 0 64px; }
   .hero { flex-direction: column; align-items: flex-start; gap: 20px; padding-bottom: 28px; }
@@ -180,6 +221,8 @@ code.i { background: var(--fill); border: 1px solid var(--hair); border-radius: 
   .fields { grid-template-columns: 1fr; gap: 2px; }
   .site-header .in { min-height: 56px; gap: 8px; }
   .nav a { padding: 0 10px; min-height: 36px; font-size: 13px; }
+  .lang { justify-content: flex-start; margin-top: 0; }
+  .lang button { min-height: 44px; padding: 8px 8px; font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
