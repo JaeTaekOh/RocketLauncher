@@ -41,7 +41,8 @@ const DELETE_CODE = /\b(deleteAccount|delete_account|deleteUser|accountDeletion|
 const DELETE_TEXT = /delete (my |your )?account|account deletion|계정 ?삭제|회원 ?탈퇴|ลบบัญชี|删除(账号|帐户|账户)|खाता (हटाएं|हटाएँ|डिलीट)/i;
 const FORCE_UPDATE = /\b(min_?version|minimum_?version|min_supported_version|force_?update|forceUpdate|latest_?version|latestVersion|required_?version|minVersion|minimumVersion)\b/i;
 const UPDATE_LIBS = /\bupgrader\b|\bin_app_update\b|react-native-version-check|sp-react-native-in-app-updates|com\.google\.android\.play:app-update|AppUpdateManager|new_version_plus/;
-const REMOTE_FLAGS = /firebase_remote_config|firebase-config|RemoteConfig|remoteConfig|launchdarkly|growthbook|statsig/;
+/* 0.2.8: a remote-config SDK or a filled-in remote config URL; a `remoteConfigUrl: ''` setting that is left empty fetches nothing */
+const REMOTE_FLAGS = /firebase_remote_config|firebase-config|@react-native-firebase\/remote-config|FirebaseRemoteConfig|getRemoteConfig\s*\(|\bRemoteConfig\.|Firebase\.remoteConfig|firebase\.remoteConfig|\bremoteConfig\s*\(\s*\)|fetchAndActivate|launchdarkly|growthbook|statsig|configcat|flagsmith|unleash-proxy|@unleash\/|optimizely|remote_?config\w*\s*[:=]\s*['"`]https?:\/\/[^'"`\s]+|remoteConfig\w*\s*[:=]\s*['"`]https?:\/\/[^'"`\s]+/i;
 const OPTIN_PAGE = /(tester|testing|beta|join|opt-?in)/i;
 const POLICY_FILE = /privacy/i;
 
@@ -52,7 +53,12 @@ const permTag = t => ({ name: (t.match(/android:name\s*=\s*["']([^"']+)["']/) ||
    next to a store or payment context in the same file; real billing APIs (BillingClient, purchaseToken, ...) always count. */
 const STORE_PAY_CTX = /BillingClient|StoreKit|SKPaymentQueue|in_app_purchase|inAppPurchase|in-app[ -]purchase|purchaseToken|react-native-iap|RNIap|RevenueCat|purchases_flutter|verifyReceipt|appStoreReceipt|validateReceipt|receipt[-_]?data|Stripe|PayPal|payment_intent|PaymentSheet/i;
 const ORDER_PAY_CTX = /\b(payment|payments|paid|checkout|billing|stripe|paypal|purchase|purchases)\b|결제/i;
+/* 0.2.8: everyday words in Google's AUDIO list ("record" = a data record, a mic icon name) count only next to real audio code in the same file */
+const AUDIO_WEAK = new Set(['record', 'record_button', 'mic_icon', 'dictation', 'voice_note', 'voice_memo', 'voicemail', 'ambient_sound', 'audio/*']);
+const AUDIO_CTX = /RECORD_AUDIO|MediaRecorder|AudioRecord|AVAudioRecorder|AVAudioSession\.sharedInstance\(\)\.(setCategory|requestRecordPermission)|requestRecordPermission|getUserMedia|NSMicrophoneUsageDescription|SpeechRecognizer|startRecording|stopRecording|recordAudio|audioRecorder|microphone/i;
+const PRECISE_CODE = /enableHighAccuracy\s*:\s*true|kCLLocationAccuracyBest(ForNavigation)?\b|requestTemporaryFullAccuracyAuthorization|LocationAccuracy\.(high|best|bestForNavigation)\b|PRIORITY_HIGH_ACCURACY|Priority\.PRIORITY_HIGH_ACCURACY|GeolocationAccuracy\.(High|Best)\b/;
 function contextOk(id, pat, c) {
+  if (id === 'AUDIO') return !AUDIO_WEAK.has(pat) || AUDIO_CTX.test(c);
   if (id !== 'PURCHASE_HISTORY') return true;
   if (pat === 'receipt' || pat === 'invoice') return STORE_PAY_CTX.test(c);
   if (pat === 'orderId' || pat === 'orderHistory') return ORDER_PAY_CTX.test(c);
@@ -71,7 +77,7 @@ export function scanProject(project, A) {
   const pubspec = text(P.filter(p => /(^|\/)pubspec\.yaml$/.test(p)).sort((a, b) => a.length - b.length)[0]);
   const xcodeHints = [];
   P.filter(p => /(^|\/)\.xcode-version$/.test(p)).forEach(p => { const v = text(p).trim().match(/^(\d+(?:\.\d+)*)/); if (v) xcodeHints.push({ file: p, version: v[1] }); });
-  P.filter(p => /\.github\/workflows\/|codemagic\.ya?ml$/.test(p)).forEach(p => { const t = text(p); for (const re of [/xcode-version:\s*['"]?(\d+(?:\.\d+)*)/g, /Xcode_(\d+(?:\.\d+)*)\.app/g, /\bxcode:\s*['"]?(\d+(?:\.\d+)*)/g]) { let m; while ((m = re.exec(t))) xcodeHints.push({ file: p, version: m[1] }); } });
+  P.filter(p => /\.github\/workflows\/|codemagic\.ya?ml$/.test(p)).forEach(p => { const t = text(p); for (const re of [/xcode-version:\s*['"]?(\d+(?:\.\d+)*)/g, /Xcode_(\d+(?:\.\d+)*)\*?\.app/g, /Xcode_(\d+(?:\.\d+)*)\*/g, /\bname:\s*['"]?(?:Select |Use |Set up )?Xcode[ _-]?(\d+(?:\.\d+)*)\b/gi, /\bxcode:\s*['"]?(\d+(?:\.\d+)*)/g]) { let m; while ((m = re.exec(t))) xcodeHints.push({ file: p, version: m[1] }); } });
   P.filter(p => /(^|\/)eas\.json$/.test(p)).forEach(p => { const m = text(p).match(/xcode-(\d+(?:\.\d+)*)/); if (m) xcodeHints.push({ file: p, version: m[1] }); });
   const pbx = P.find(p => /project\.pbxproj$/.test(p)); const luc = pbx && text(pbx).match(/LastUpgradeCheck\s*=\s*(\d{4})/);
   X.build = { agp: m1 ? m1[1] : null, ndk: ndk ? ndk[1] : null, reactNative: deps['react-native'] || null, expo: deps.expo || null, flutter: !!pubspec,
@@ -95,6 +101,14 @@ export function scanProject(project, A) {
         const k = cat === 'data_sources' ? id : cat; (sig[k] = sig[k] || []).length < 4 && sig[k].push(`${p} (${hit})`);
       }
     }
+  }
+  /* 0.2.8: on Android, location is precise only with ACCESS_FINE_LOCATION. When the merged manifest has only ACCESS_COARSE_LOCATION and no
+     code asks for high accuracy (enableHighAccuracy: true, kCLLocationAccuracyBest, full-accuracy requests), generic location calls
+     (navigator.geolocation, getCurrentPosition, plugins) are approximate location. */
+  const aPerms = (A && A.android && A.android.permissions) || [];
+  if (sig.PRECISE_LOCATION && aPerms.length && !aPerms.some(p => /ACCESS_FINE_LOCATION/.test(p)) && aPerms.some(p => /ACCESS_COARSE_LOCATION/.test(p))
+    && !codeP.some(p => PRECISE_CODE.test(stripComments(text(p))))) {
+    sig.APPROX_LOCATION = [...(sig.APPROX_LOCATION || []), ...sig.PRECISE_LOCATION.map(w => w + ' [approximate: no ACCESS_FINE_LOCATION]')].slice(0, 4); delete sig.PRECISE_LOCATION;
   }
   X.signals = sig; X.urls = [...urls].slice(0, 20);
   /* Apple required-reason APIs */
@@ -201,7 +215,7 @@ export function requirements(st, L, opts = {}) {
     const hints = (X && X.build.xcodeHints) || [], vers = hints.map(h => h.version), maxV = vers.sort(vcmp).pop();
     if (maxV && vcmp(maxV, '26') < 0) add('apple.xcode_26', 'block', `Build config uses Xcode ${maxV} (${hints.map(h => h.file).join(', ')}).`, 'Switch the build machine or CI image to Xcode 26 or later.');
     else if (maxV) add('apple.xcode_26', 'ok', `Build config uses Xcode ${maxV}.`);
-    else add('apple.xcode_26', 'check', `No Xcode version found in the project${X && X.build.lastUpgradeCheck ? ` (project last opened with Xcode ${X.build.lastUpgradeCheck})` : ''}.`, 'Archive with Xcode 26 or later (iOS 26 SDK). For Expo / EAS, use a build image with Xcode 26.');
+    else add('apple.xcode_26', 'check', `No Xcode version found in the build config${X && X.build.lastUpgradeCheck && vcmp(X.build.lastUpgradeCheck, '14') >= 0 ? ` (project last upgraded in Xcode ${X.build.lastUpgradeCheck}; that is not the build Xcode)` : ''}.`, 'Archive with Xcode 26 or later (iOS 26 SDK). For Expo / EAS, use a build image with Xcode 26.');
     const dep = io.deploymentNum;
     if (dep && dep < 13) add('apple.min_target_ios13', 'block', `Deployment target is iOS ${io.deployment}.`, 'Raise IPHONEOS_DEPLOYMENT_TARGET to 13 or later (15 is needed from April 2027).');
     else if (dep) add('apple.min_target_ios13', 'ok', `Deployment target is iOS ${io.deployment}.`);
@@ -304,7 +318,11 @@ export function privacyCheck(st, L) {
   /* location */
   if (A.sdk.location) {
     if (io && !usage.NSLocationWhenInUseUsageDescription && !usage.NSLocationAlwaysAndWhenInUseUsageDescription) add('loc.ios_string', 'block', 'Location is used but Info.plist has no NSLocationWhenInUseUsageDescription.', 'Add a purpose string that says why (for example "Shows fuel stations near you.").', 'https://developer.apple.com/documentation/bundleresources/information-property-list/nslocationwheninuseusagedescription');
-    if (io && usage.NSLocationAlwaysAndWhenInUseUsageDescription && !bg && an) add('loc.always_mismatch', 'warn', 'iOS asks for Always location, Android does not ask for background location.', 'Use When In Use on iOS unless the feature really needs background location.');
+    /* 0.2.8: the Always key alone is not an Always request; warn only when the code asks for Always / background location */
+    if (io && usage.NSLocationAlwaysAndWhenInUseUsageDescription && !bg && an) {
+      if (R.locAlways) add('loc.always_mismatch', 'warn', 'iOS asks for Always location, Android does not ask for background location.', 'Use When In Use on iOS unless the feature really needs background location.');
+      else add('loc.always_key_only', 'info', 'Info.plist has NSLocationAlwaysAndWhenInUseUsageDescription, but the code only asks for When In Use location.', 'Nothing to fix. You may remove the Always key if no feature will ever ask for Always.');
+    }
     if (bg) add('loc.background', 'block', 'ACCESS_BACKGROUND_LOCATION is declared.', 'Remove it unless a core feature needs it; otherwise fill the Play location permissions declaration with a video.', 'https://support.google.com/googleplay/android-developer/answer/9799150');
     if (sent && st.dec.location === 'device') add('loc.datasafety_device', 'block', 'The code sends location to a server, but the Data safety answer says it stays on the device.', 'Answer that location is collected (app functionality) in Data safety and App Privacy.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
     if (sent && fine) add('loc.precise', 'warn', 'ACCESS_FINE_LOCATION is declared and location is sent to the server.', 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', 'https://support.google.com/googleplay/android-developer/answer/10787469');

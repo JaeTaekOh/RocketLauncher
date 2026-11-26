@@ -59462,14 +59462,18 @@ var RR = {
 };
 var FORCE_UPDATE = /\b(min_?version|minimum_?version|min_supported_version|force_?update|forceUpdate|latest_?version|latestVersion|required_?version|minVersion|minimumVersion)\b/i;
 var UPDATE_LIBS = /\bupgrader\b|\bin_app_update\b|react-native-version-check|sp-react-native-in-app-updates|com\.google\.android\.play:app-update|AppUpdateManager|new_version_plus/;
-var REMOTE_FLAGS = /firebase_remote_config|firebase-config|RemoteConfig|remoteConfig|launchdarkly|growthbook|statsig/;
+var REMOTE_FLAGS = /firebase_remote_config|firebase-config|@react-native-firebase\/remote-config|FirebaseRemoteConfig|getRemoteConfig\s*\(|\bRemoteConfig\.|Firebase\.remoteConfig|firebase\.remoteConfig|\bremoteConfig\s*\(\s*\)|fetchAndActivate|launchdarkly|growthbook|statsig|configcat|flagsmith|unleash-proxy|@unleash\/|optimizely|remote_?config\w*\s*[:=]\s*['"`]https?:\/\/[^'"`\s]+|remoteConfig\w*\s*[:=]\s*['"`]https?:\/\/[^'"`\s]+/i;
 var OPTIN_PAGE = /(tester|testing|beta|join|opt-?in)/i;
 var POLICY_FILE = /privacy/i;
 var PERM_TAG = /<uses-permission(?:-sdk-23)?\b[^>]*>/g;
 var permTag = (t) => ({ name: (t.match(/android:name\s*=\s*["']([^"']+)["']/) || [])[1] || null, removed: /tools:node\s*=\s*["'](remove|removeAll)["']/i.test(t) });
 var STORE_PAY_CTX = /BillingClient|StoreKit|SKPaymentQueue|in_app_purchase|inAppPurchase|in-app[ -]purchase|purchaseToken|react-native-iap|RNIap|RevenueCat|purchases_flutter|verifyReceipt|appStoreReceipt|validateReceipt|receipt[-_]?data|Stripe|PayPal|payment_intent|PaymentSheet/i;
 var ORDER_PAY_CTX = /\b(payment|payments|paid|checkout|billing|stripe|paypal|purchase|purchases)\b|결제/i;
+var AUDIO_WEAK = /* @__PURE__ */ new Set(["record", "record_button", "mic_icon", "dictation", "voice_note", "voice_memo", "voicemail", "ambient_sound", "audio/*"]);
+var AUDIO_CTX = /RECORD_AUDIO|MediaRecorder|AudioRecord|AVAudioRecorder|AVAudioSession\.sharedInstance\(\)\.(setCategory|requestRecordPermission)|requestRecordPermission|getUserMedia|NSMicrophoneUsageDescription|SpeechRecognizer|startRecording|stopRecording|recordAudio|audioRecorder|microphone/i;
+var PRECISE_CODE = /enableHighAccuracy\s*:\s*true|kCLLocationAccuracyBest(ForNavigation)?\b|requestTemporaryFullAccuracyAuthorization|LocationAccuracy\.(high|best|bestForNavigation)\b|PRIORITY_HIGH_ACCURACY|Priority\.PRIORITY_HIGH_ACCURACY|GeolocationAccuracy\.(High|Best)\b/;
 function contextOk(id, pat, c) {
+  if (id === "AUDIO") return !AUDIO_WEAK.has(pat) || AUDIO_CTX.test(c);
   if (id !== "PURCHASE_HISTORY") return true;
   if (pat === "receipt" || pat === "invoice") return STORE_PAY_CTX.test(c);
   if (pat === "orderId" || pat === "orderHistory") return ORDER_PAY_CTX.test(c);
@@ -59497,7 +59501,7 @@ function scanProject(project, A) {
   });
   P.filter((p) => /\.github\/workflows\/|codemagic\.ya?ml$/.test(p)).forEach((p) => {
     const t = text(p);
-    for (const re of [/xcode-version:\s*['"]?(\d+(?:\.\d+)*)/g, /Xcode_(\d+(?:\.\d+)*)\.app/g, /\bxcode:\s*['"]?(\d+(?:\.\d+)*)/g]) {
+    for (const re of [/xcode-version:\s*['"]?(\d+(?:\.\d+)*)/g, /Xcode_(\d+(?:\.\d+)*)\*?\.app/g, /Xcode_(\d+(?:\.\d+)*)\*/g, /\bname:\s*['"]?(?:Select |Use |Set up )?Xcode[ _-]?(\d+(?:\.\d+)*)\b/gi, /\bxcode:\s*['"]?(\d+(?:\.\d+)*)/g]) {
       let m;
       while (m = re.exec(t)) xcodeHints.push({ file: p, version: m[1] });
     }
@@ -59541,6 +59545,11 @@ function scanProject(project, A) {
         (sig[k] = sig[k] || []).length < 4 && sig[k].push(`${p} (${hit})`);
       }
     }
+  }
+  const aPerms = A && A.android && A.android.permissions || [];
+  if (sig.PRECISE_LOCATION && aPerms.length && !aPerms.some((p) => /ACCESS_FINE_LOCATION/.test(p)) && aPerms.some((p) => /ACCESS_COARSE_LOCATION/.test(p)) && !codeP.some((p) => PRECISE_CODE.test(stripComments(text(p))))) {
+    sig.APPROX_LOCATION = [...sig.APPROX_LOCATION || [], ...sig.PRECISE_LOCATION.map((w) => w + " [approximate: no ACCESS_FINE_LOCATION]")].slice(0, 4);
+    delete sig.PRECISE_LOCATION;
   }
   X.signals = sig;
   X.urls = [...urls].slice(0, 20);
@@ -59659,7 +59668,7 @@ function requirements(st, L, opts = {}) {
     const hints = X && X.build.xcodeHints || [], vers = hints.map((h) => h.version), maxV = vers.sort(vcmp).pop();
     if (maxV && vcmp(maxV, "26") < 0) add2("apple.xcode_26", "block", `Build config uses Xcode ${maxV} (${hints.map((h) => h.file).join(", ")}).`, "Switch the build machine or CI image to Xcode 26 or later.");
     else if (maxV) add2("apple.xcode_26", "ok", `Build config uses Xcode ${maxV}.`);
-    else add2("apple.xcode_26", "check", `No Xcode version found in the project${X && X.build.lastUpgradeCheck ? ` (project last opened with Xcode ${X.build.lastUpgradeCheck})` : ""}.`, "Archive with Xcode 26 or later (iOS 26 SDK). For Expo / EAS, use a build image with Xcode 26.");
+    else add2("apple.xcode_26", "check", `No Xcode version found in the build config${X && X.build.lastUpgradeCheck && vcmp(X.build.lastUpgradeCheck, "14") >= 0 ? ` (project last upgraded in Xcode ${X.build.lastUpgradeCheck}; that is not the build Xcode)` : ""}.`, "Archive with Xcode 26 or later (iOS 26 SDK). For Expo / EAS, use a build image with Xcode 26.");
     const dep = io.deploymentNum;
     if (dep && dep < 13) add2("apple.min_target_ios13", "block", `Deployment target is iOS ${io.deployment}.`, "Raise IPHONEOS_DEPLOYMENT_TARGET to 13 or later (15 is needed from April 2027).");
     else if (dep) add2("apple.min_target_ios13", "ok", `Deployment target is iOS ${io.deployment}.`);
@@ -59822,7 +59831,10 @@ function privacyCheck(st, L) {
   }
   if (A.sdk.location) {
     if (io && !usage.NSLocationWhenInUseUsageDescription && !usage.NSLocationAlwaysAndWhenInUseUsageDescription) add2("loc.ios_string", "block", "Location is used but Info.plist has no NSLocationWhenInUseUsageDescription.", 'Add a purpose string that says why (for example "Shows fuel stations near you.").', "https://developer.apple.com/documentation/bundleresources/information-property-list/nslocationwheninuseusagedescription");
-    if (io && usage.NSLocationAlwaysAndWhenInUseUsageDescription && !bg && an) add2("loc.always_mismatch", "warn", "iOS asks for Always location, Android does not ask for background location.", "Use When In Use on iOS unless the feature really needs background location.");
+    if (io && usage.NSLocationAlwaysAndWhenInUseUsageDescription && !bg && an) {
+      if (R.locAlways) add2("loc.always_mismatch", "warn", "iOS asks for Always location, Android does not ask for background location.", "Use When In Use on iOS unless the feature really needs background location.");
+      else add2("loc.always_key_only", "info", "Info.plist has NSLocationAlwaysAndWhenInUseUsageDescription, but the code only asks for When In Use location.", "Nothing to fix. You may remove the Always key if no feature will ever ask for Always.");
+    }
     if (bg) add2("loc.background", "block", "ACCESS_BACKGROUND_LOCATION is declared.", "Remove it unless a core feature needs it; otherwise fill the Play location permissions declaration with a video.", "https://support.google.com/googleplay/android-developer/answer/9799150");
     if (sent && st.dec.location === "device") add2("loc.datasafety_device", "block", "The code sends location to a server, but the Data safety answer says it stays on the device.", "Answer that location is collected (app functionality) in Data safety and App Privacy.", "https://support.google.com/googleplay/android-developer/answer/10787469");
     if (sent && fine) add2("loc.precise", "warn", "ACCESS_FINE_LOCATION is declared and location is sent to the server.", 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', "https://support.google.com/googleplay/android-developer/answer/10787469");

@@ -680,10 +680,11 @@
        speechToText = such an API is used; audioCapture = anything that records, keeps or returns audio (MediaRecorder, AudioRecord, recorder plugins, getUserMedia audio, audio blobs).
        speechOnly = speechToText without audioCapture; the owner still has to confirm it (the system recognizer may send audio to the OS vendor). */
     const SPEECH_RE = /\bSpeechRecognizer\b|\bRecognizerIntent\b|\bRecognitionListener\b|\bwebkitSpeechRecognition\b|\bSpeechRecognition\b|\bSFSpeechRecognizer\b|\bspeech_to_text\b|\bSpeechToText\b|react-native-voice|@react-native-voice\/voice|@capacitor-community\/speech-recognition|expo-speech-recognition|cordova-plugin-speechrecognition/;
-    const AUDIO_CAPTURE_RE = /\bMediaRecorder\b|\bAudioRecord\b|\bAVAudioRecorder\b|\bAVAudioEngine\b|\bAudioRecorder\b|\bflutter_sound\b|\bFlutterSoundRecorder\b|(^|\s)record:\s|react-native-audio-recorder-player|react-native-audio-record|expo-av\b|expo-audio\b|cordova-plugin-media-capture|cordova-plugin-media\b|@capacitor-community\/voice-recorder|capacitor-voice-recorder|\bEXTRA_GET_AUDIO\b|\bcaptureAudio\b|getUserMedia\s*\(\s*\{[^}]*\baudio\s*:\s*(?!false)|new\s+Blob\s*\([^)]*type\s*:\s*['"]audio\/|type\s*:\s*['"]audio\/(webm|wav|mp4|mpeg|ogg)/;
+    const AUDIO_CAPTURE_RE = /\bMediaRecorder\b|\bAudioRecord\b|\bAVAudioRecorder\b|\bAVAudioEngine\b|\bAudioRecorder\b|\bflutter_sound\b|\bFlutterSoundRecorder\b|react-native-audio-recorder-player|react-native-audio-record|expo-av\b|expo-audio\b|cordova-plugin-media-capture|cordova-plugin-media\b|@capacitor-community\/voice-recorder|capacitor-voice-recorder|\bEXTRA_GET_AUDIO\b|\bcaptureAudio\b|getUserMedia\s*\(\s*\{[^}]*\baudio\s*:\s*(?!false)|new\s+Blob\s*\([^)]*type\s*:\s*['"]audio\/|type\s*:\s*['"]audio\/(webm|wav|mp4|mpeg|ogg)/;
     const audioHay = declHay + '\n' + codeHay;
     A.sdk.speechToText = SPEECH_RE.test(audioHay);
-    A.sdk.audioCapture = AUDIO_CAPTURE_RE.test(audioHay);
+    /* 0.2.8: the Flutter `record:` package counts only as a pubspec dependency (a `record: false` key in JS is not a recorder) */
+    A.sdk.audioCapture = AUDIO_CAPTURE_RE.test(audioHay) || /(^|\n)\s+record\s*:/.test(pubspecDeps(txt(F, pubspec)));
     A.sdk.speechOnly = !!(A.sdk.mic && A.sdk.speechToText && !A.sdk.audioCapture);
     A.adsHint = adsCodeFiles.length ? { files: adsCodeFiles } : null;
     /* 0.2.6: a leftover ads config block that is explicitly switched off (adsEnabled: false, ads: { enabled: false }) is not even a hint */
@@ -699,14 +700,15 @@
        so an iOS purpose string is only required when the iOS app really asks for that permission. */
     if (A.ios) {
       const iosCode = Object.keys(F).filter(p => F[p].code && !/\.(kt|java)$/i.test(p)).map(p => stripCode(F[p].text)).join('\n').slice(0, 1500000);
+      const iosPub = pubspecDeps(txt(F, pubspec)), pubDep = n => new RegExp('(^|\\n)\\s+' + n + '\\s*:').test(iosPub);
       const iosHay = [deps.join(' '), pubspecDeps(txt(F, pubspec)), stripHashComments(txt(F, shortest(find(F, /Podfile$/)))), txt(F, shortest(find(F, /(^|\/)Package\.swift$/))), pluginHay, declHay, iosCode].join('\n');
       A.iosNeeds = {
-        location: /\bgeolocator\b|(^|\s)location:\s|@capacitor\/geolocation|expo-location|react-native-geolocation|@react-native-community\/geolocation|cordova-plugin-geolocation|CLLocationManager|requestWhenInUseAuthorization|requestAlwaysAuthorization|navigator\s*\.\s*geolocation|getCurrentPosition|watchPosition/.test(iosHay),
-        camera: /\bimage_picker\b|(^|\s)camera:\s|expo-camera|expo-image-picker|react-native-vision-camera|react-native-image-picker|react-native-camera|@capacitor\/camera|cordova-plugin-camera|mobile_scanner|AVCaptureDevice|AVCaptureSession|UIImagePickerController/.test(iosHay),
+        location: pubDep('location') || /\bgeolocator\b|@capacitor\/geolocation|expo-location|react-native-geolocation|@react-native-community\/geolocation|cordova-plugin-geolocation|CLLocationManager|requestWhenInUseAuthorization|requestAlwaysAuthorization|navigator\s*\.\s*geolocation|getCurrentPosition|watchPosition/.test(iosHay),
+        camera: pubDep('camera') || /<input[^>]*\bcapture\s*=|\bcapture\s*=\s*["'](environment|user)["']|getUserMedia\s*\(\s*\{[^}]*\bvideo\s*:\s*(?!false)|\bimage_picker\b|expo-camera|expo-image-picker|react-native-vision-camera|react-native-image-picker|react-native-camera|@capacitor\/camera|cordova-plugin-camera|mobile_scanner|AVCaptureDevice|AVCaptureSession|UIImagePickerController/.test(iosHay),
         contacts: /flutter_contacts|contacts_service|expo-contacts|react-native-contacts|@capacitor-community\/contacts|cordova-plugin-contacts|CNContactStore|import\s+Contacts\b/.test(iosHay),
-        mic: /flutter_sound|speech_to_text|(^|\s)record:\s|react-native-voice|@react-native-voice|AVAudioRecorder|SFSpeechRecognizer|@capacitor-community\/speech-recognition|cordova-plugin-media-capture/.test(iosHay),
+        mic: pubDep('record') || /getUserMedia\s*\(\s*\{[^}]*\baudio\s*:\s*(?!false)|\bMediaRecorder\b|webkitSpeechRecognition|flutter_sound|speech_to_text|react-native-voice|@react-native-voice|AVAudioRecorder|SFSpeechRecognizer|@capacitor-community\/speech-recognition|cordova-plugin-media-capture/.test(iosHay),
         /* 0.2.5: HealthKit needs NSHealthShareUsageDescription (read) / NSHealthUpdateUsageDescription (write) */
-        health: /HKHealthStore|import\s+HealthKit\b|(^|\s)health:\s|react-native-health\b|@kingstinct\/react-native-healthkit|capacitor-health|cordova-plugin-health|@capgo\/capacitor-health/.test(iosHay)
+        health: pubDep('health') || /HKHealthStore|import\s+HealthKit\b|react-native-health\b|@kingstinct\/react-native-healthkit|capacitor-health|cordova-plugin-health|@capgo\/capacitor-health/.test(iosHay)
       };
     }
     A.sdk.appleSignIn = !!(A.ios && A.ios.appleSignIn) || has(hay, /sign_in_with_apple|apple-authentication|AuthenticationServices|ASAuthorizationAppleIDProvider|appleAuth|AppleAuthProvider/i);
@@ -761,9 +763,11 @@
     const fg = imgs.filter(p => FEATURE_RE.test(p) && !OLD_RE.test(p)).sort((a, b) => /(^|\/)(play|store|fastlane)\//i.test(b) - /(^|\/)(play|store|fastlane)\//i.test(a) || a.length - b.length)[0];
     A.featureGraphic = fg ? { path: fg, dataUrl: F[fg].dataUrl } : null;
     const seenShot = new Set(), shotRank = p => /(^|\/)(play|store|fastlane)\//i.test(p) ? 0 : 1;
-    const shotPaths = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p) && !/(^|\/)(tablet|tenInch|sevenInch|wear|tv)[^/]*\//i.test(p))
+    const shotPaths = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p) && !/(^|\/)(tablet|tenInch|sevenInch|wear|tv|ipad)[^/]*\//i.test(p))
       .sort((a, b) => shotRank(a) - shotRank(b) || a.localeCompare(b)).filter(p => { const k = F[p].dataUrl; if (seenShot.has(k)) return false; seenShot.add(k); return true; });
     A.screenshotsTotal = shotPaths.length;
+    /* 0.2.8: iPad screenshots already in the project (screenshots/ipad/…, *ipad*.png, 12.9 / 13-inch names) */
+    A.ipadScreenshots = imgs.filter(p => /(screenshots?|store|fastlane)\//i.test(p) && /(^|\/)ipad[^/]*\/|ipad[^/]*\.(png|jpe?g)$|12[._]9|13[-_ ]?inch|APP_IPAD/i.test(p)).length;
     A.screenshots = shotPaths.slice(0, 8).map(p => ({ path: p, dataUrl: F[p].dataUrl }));
     const colors = txt(F, shortest(find(F, /res\/values\/colors\.xml$/)));
     const cm = colors.match(/name="(?:brand|primary|colorPrimary|purple_500|accent)[^"]*"\s*>\s*#(?:FF)?([0-9a-f]{6})\b/i) || colors.match(/#(?:FF)?([0-9a-f]{6})\b/i);
@@ -821,7 +825,24 @@
     R.deletionKinds = del.kinds || [];
     R.deletionFiles = del.files || [];
     // CarPlay
-    R.carplay = /CPTemplateApplicationScene|CPInterfaceController|import\s+CarPlay|flutter_carplay|react-native-carplay|CPTemplateApplicationSceneSessionRoleApplication/.test(any);
+    /* 0.2.8: CarPlay counts only when the build really ships it: the CarPlay scene role in Info.plist, a CarPlay plugin dependency,
+       or a CarPlay Swift / Objective-C file that the Xcode project compiles (in a Sources build phase). A CarPlaySceneDelegate.swift
+       listed in project.pbxproj but in no Sources build phase is not CarPlay. */
+    {
+      const CP = /CPTemplateApplicationScene|CPInterfaceController|import\s+CarPlay|CPTemplateApplicationSceneSessionRoleApplication/;
+      const pbxs = Object.keys(F).filter(p => /project\.pbxproj$/.test(p) && F[p].text != null), plistCp = Object.keys(F).some(p => /Info\.plist$/.test(p) && F[p].text != null && /CPTemplateApplicationSceneSessionRoleApplication/.test(F[p].text));
+      const cpPlugin = /flutter_carplay|react-native-carplay|@capacitor-community\/carplay|capacitor-carplay/.test(any);
+      const cpFiles = Object.keys(F).filter(p => F[p].code && /\.(swift|m|mm)$/i.test(p) && CP.test(stripCode(F[p].text)));
+      /* listed in the project but not in any Sources build phase = taken out of the build; not listed at all = compiled
+         (Xcode 16 synchronized folders compile every file without listing it) */
+      const compiled = f => { const b = f.split('/').pop(); return !pbxs.some(x => F[x].text.includes(b)) || pbxs.some(x => F[x].text.includes(b + ' in Sources')); };
+      R.carplay = plistCp || cpPlugin || (cpFiles.length ? cpFiles.some(compiled) : CP.test(any));
+      R.carplayFiles = cpFiles.length ? cpFiles : undefined;
+    }
+    /* 0.2.8: iOS asks for Always location only when the code requests it (or keeps updating location in the background);
+       the NSLocationAlwaysAndWhenInUseUsageDescription key alone is only a text. */
+    R.locAlways = /requestAlwaysAuthorization|LocationPermission\.always|Permission\.locationAlways|requestBackgroundPermissionsAsync|allowsBackgroundLocationUpdates\s*=\s*true|startMonitoringSignificantLocationChanges|backgroundGeolocation|react-native-background-geolocation|startLocationUpdatesAsync|enableBackgroundMode\s*\(\s*(enable\s*:\s*)?true/.test(any)
+      || !!(A.ios && A.ios.plist && Array.isArray(A.ios.plist.UIBackgroundModes) && A.ios.plist.UIBackgroundModes.includes('location'));
     // Store metadata in the repo (fastlane): iOS = fastlane/metadata/<locale>/, Android = fastlane/metadata/android/
     const meta = Object.keys(F).filter(p => /fastlane\/metadata\//i.test(p) && F[p].text != null);
     const iosMeta = meta.filter(p => !/fastlane\/metadata\/android\//i.test(p));
@@ -925,7 +946,7 @@
       if (R.androidOnlySecrets && !R.iosKeychain) add('iosSecretStorage', 'block', 'ios', 'info');
       if (R.byok) add('byok', 'warn', 'ios', 'info');
       if (io.encryption === undefined && io.plistPath) add('encryption', 'warn', 'ios', 'patch-plist-encryption');
-      if (io.ipad) add('ipadShots', 'warn', 'ios', 'info');
+      if (io.ipad && !A.ipadScreenshots) add('ipadShots', 'warn', 'ios', 'info');
       if (R.carplay && !io.carplayEntitlement) add('carplay', 'warn', 'ios', 'info');
       if (R.freeInMeta && R.freeInMeta.length) add('freeInMeta', 'warn', 'ios', 'info', { files: R.freeInMeta.join(', ') });
       if (R.androidInIosMeta && R.androidInIosMeta.length) add('androidInIosCopy', 'warn', 'ios', 'info', { files: R.androidInIosMeta.join(', ') });
