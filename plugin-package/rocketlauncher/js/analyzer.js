@@ -162,6 +162,8 @@
         if (kv) { const v = clean(kv[2]); if (v && !refersToFile(v)) put(SCRIPT_LANG(v.replace(/\([^)]*\)/g, '')) || fl, /short|간단/i.test(kv[1]) ? 'short' : 'title', v, p); }
         const dl = !R.defaultLang && line.match(/(default (store )?language|primary language|기본 ?언어)\s*\**\s*[:：]?\s*\**\s*([^\n·|]+)/i);
         if (dl) R.defaultLang = langFromText(dl[3]);
+        const dc = !R.countries && line.match(/(배포 ?국가|distribution countries|countries(?: ?\/ ?regions)?|available (?:in|countries))\s*\**\s*[:：]\s*\**\s*([^·|\n]+)/i);
+        if (dc) { const v = clean(dc[2]).replace(/\*\*/g, '').trim(); if (v && v.length <= 80) { R.countries = v; R.countriesFile = p; } }
         const ct = !R.category && line.match(/(?:^|[\s/])(?:app )?(category|카테고리)\s*\**\s*[:：]\s*(.+)$/i);
         if (ct) { const k = catKey(clean(ct[2]).replace(/\*\*/g, '')); if (k) { R.category = k; R.categoryFile = p; } }
       }
@@ -173,7 +175,7 @@
     if (!R.defaultLang && R.langs.length === 1) R.defaultLang = R.langs[0];
     if (!R.defaultLang && R.langs.length) R.defaultLang = R.langs.slice().sort((a, b) => Object.keys(R.copy[b]).length - Object.keys(R.copy[a]).length)[0];
     if (cfg && Array.isArray(cfg.listing_languages)) { const ls = cfg.listing_languages.map(langFromText).filter(Boolean); if (ls.length) R.listingLangs = [...new Set(ls)]; }
-    return R.langs.length || R.defaultLang || R.category || R.listingLangs ? R : null;
+    return R.langs.length || R.defaultLang || R.category || R.listingLangs || R.countries ? R : null;
   }
   /* 0.2.6: the account-deletion path and web page the developer already wrote down (rocketlauncher.json, README, listing drafts),
      so guidance and review notes use them instead of a generic "Settings > Delete account" and a placeholder URL. */
@@ -629,6 +631,22 @@
       A.preparedForms = { dataSafety: pick(/data[-_ ]?safety/i), contentRating: pick(/content[-_ ]?rating|iarc/i), forms: pick(/play[-_ ]?forms|console[-_ ]?forms/i) };
       if (A.preparedForms.forms && !A.preparedForms.dataSafety && /data ?safety|데이터 ?보안/i.test(F[A.preparedForms.forms].text)) A.preparedForms.dataSafety = A.preparedForms.forms;
       if (A.preparedForms.forms && !A.preparedForms.contentRating && /content ?rating|콘텐츠 ?등급|IARC/i.test(F[A.preparedForms.forms].text)) A.preparedForms.contentRating = A.preparedForms.forms; }
+    /* 0.2.8: the data types a prepared Data safety form (store/play-forms.md table: Category | Type | Collected | …) lists as collected */
+    { const DSK = [[/e-?mail/i, 'email'], [/^name\b|full name/i, 'name'], [/user ?ids?/i, 'uid'], [/phone/i, 'phone'], [/address/i, 'address'], [/photo/i, 'photos'], [/video/i, 'videos'], [/voice|audio|sound/i, 'audio'], [/files?|docs?|documents?/i, 'files'], [/location/i, 'loc'], [/contacts?/i, 'contacts'], [/interaction/i, 'usage'], [/crash/i, 'crash'], [/diagnostic/i, 'diag'], [/device or other/i, 'adid'], [/user-generated|ugc/i, 'ugc'], [/financ|purchase|payment/i, 'fin']];
+      const pf = A.preparedForms && A.preparedForms.dataSafety;
+      if (pf && F[pf] && F[pf].text) {
+        const rows = []; let head = null;
+        for (const ln of F[pf].text.split(/\r?\n/)) {
+          if (!/^\s*\|/.test(ln)) { if (rows.length) break; continue; }
+          const c = ln.trim().replace(/^\||\|$/g, '').split('|').map(x => x.trim());
+          if (/collected|수집/i.test(c[2] || '') && !head) { head = c; continue; }
+          if (!head || /^[-: ]+$/.test(c[0] || '')) continue;
+          if (!/^(yes|y|예|✓|✔|true)/i.test(c[2] || '')) continue;
+          const type = (c[1] || '').replace(/\([^)]*\)/g, '').trim(), hit = DSK.find(([re]) => re.test(type));
+          if (hit) rows.push({ category: c[0], type, key: hit[1] });
+        }
+        if (rows.length) A.preparedDS = { file: pf, rows };
+      } }
     /* 0.2.6: the app is only for invited / approved users (staff apps): sign-in is required for review, not optional */
     { const RESTRICT = /(직원 ?전용|임직원 ?전용|사내 ?전용|승인을 받아야|관리자의? ?승인|employees? only|staff only|for (our |company )?employees|invite[- ]only|invitation only|requires? (an )?(admin|administrator|manager) approval|internal (use|app) only)/i;
       const cfgAcc = A.projectConfig && (A.projectConfig.login_required ?? A.projectConfig.sign_in_required);
@@ -655,6 +673,10 @@
     const jsLocales = P.filter(p => F[p].code && /(^|\/)(i18n|locales?|translations?|strings|lang|messages)\.(js|mjs|ts)$/i.test(p)).flatMap(p => { const keys = [...F[p].text.matchAll(/^\s{0,8}["']?([a-z]{2})(?:[-_][A-Za-z]{2,4})?["']?\s*:\s*\{/gm)].map(m => m[1].toLowerCase()).filter(l => LANG2.test(l)); return new Set(keys).size >= 2 ? keys : []; });
     A.locales = [...new Set([defLang, ...Object.keys(A.strings).map(l => l === 'default' ? defLang : l), ...fileLocales, ...gradleLocales, ...jsLocales])];
     A.pkg = (A.android && A.android.pkg) || (A.ios && A.ios.bundleId) || null;
+    /* 0.2.8: package names inside google-services.json (one client per Firebase Android app) */
+    /* (read in sources.js scanNatives: only the package names leave the file, never the keys) */
+    { const gs = ((project.natives && project.natives.googleServices) || []).filter(g => g.packages.length && !OLD_RE.test(g.path) && !/(^|\/)(build|node_modules|intermediates)\//.test(g.path)).sort((a, b) => a.path.length - b.path.length)[0];
+      if (gs) A.googleServices = { file: gs.path, packages: gs.packages }; }
     A.version = (A.android && (A.android.builtVersionName || A.android.versionName)) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
 
     // ---------- 연락처 ----------

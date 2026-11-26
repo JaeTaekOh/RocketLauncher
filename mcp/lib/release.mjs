@@ -171,7 +171,7 @@ export function scanProject(project, A) {
   const read = !!polTxt.trim();
   X.policy = { files: pol.slice(0, 5), read, unread: !read && !!(A.listing && A.listing.privacyUrl),
     source: localTxt.trim() ? 'local' : (remoteTxt.trim() ? 'url' : null),
-    location: read && /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt), ads: read && /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(polTxt),
+    location: read && /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt), ads: read && polTxt.split(/[.。!?\n]+/).some(s => /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(s) && !/하지 않|않습니다|않아요|안 합니다|금지|\b(not|never|no|without|neither|nor|don't|doesn't|won't)\b|ไม่|不会|不用|不会|没有|नहीं/i.test(s)),
     deletion: read && /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt), thai: read && /[\u0E00-\u0E7F]/.test(polTxt) };
   /* force update and remote flags */
   X.forceUpdate = { code: codeP.filter(p => FORCE_UPDATE.test(text(p))).slice(0, 5), lib: UPDATE_LIBS.test(depHay + gradleTxt + codeP.map(text).join('\n').slice(0, 300000)) };
@@ -201,7 +201,7 @@ export function requirements(st, L, opts = {}) {
     const r = req(id); const days = r.date && isDate(r.date) ? daysBetween(T, r.date) : null;
     rows.push({ id, store: r.store === 'play' ? STORE.play : r.store === 'apple' ? STORE.apple : 'both', severity, rule: r.rule, finding, action: action || undefined,
       status: r.status, date: r.date || undefined, days_left: days !== null && days > 0 ? days : undefined, conservative: r.conservative || undefined,
-      source: r.source, verified_on: r.verified_on, ...extra });
+      source: r.source, verified_on: r.verified_on || (extra.source ? '2026-11-26' : undefined), ...extra });
   };
   const stage = k => Flow.stageOf(st.dec, k);
   if (an) {
@@ -246,6 +246,29 @@ export function requirements(st, L, opts = {}) {
       if (!A.sdk.ads && !an.adId && (adIdRemoved || A.adsDisabled || A.adsHint))
         add('play.ads_declaration', 'check', `${adIdRemoved ? 'AD_ID is removed from the manifest (tools:node="remove")' : 'No AD_ID permission in the build'}; ${A.adsDisabled ? `ad code is switched off (${A.adsDisabled.files.slice(0, 2).join(', ')})` : A.adsHint ? `ad-related code without an ads SDK (${A.adsHint.files.slice(0, 2).join(', ')})` : 'no ads SDK'}.`, A.adsHint && !A.adsDisabled && !adIdRemoved ? 'Check what the uploaded build does. If it shows no ads, answer "Contains ads: No" and "Advertising ID: No" in Play Console > App content; if a release step turns ads on (an ads SDK, AD_ID), answer Yes to both.' : 'Play Console > App content: answer "Contains ads: No" and "Advertising ID: No" so the answers match this build. If you turn ads on later, change both answers in the same release.',
           { store: STORE.play, rule: 'The Contains ads and Advertising ID answers must match what the uploaded build does.', source: 'https://support.google.com/googleplay/android-developer/answer/6048248' }); }
+    /* 0.2.8: closed test testers need the Google account in the tester group, the opt-in, and a country the app is available in */
+    if (stage('play') !== 'live') add('play.closed_test_access', 'info', 'A closed test is reachable only by testers who are in the tester group (or Google Group) and signed in to Play with the same Google account.', 'Tell testers: join the group with the account that is on their phone, open the opt-in link while signed in with it, then install from Play. They must be in a country the test track is available in (Play Console > Test and release > Testing > Countries / regions); otherwise Play shows "app not available".',
+      { store: STORE.play, rule: 'Closed test: invite by email list or Google Group; testers opt in through the test link.', source: 'https://support.google.com/googleplay/android-developer/answer/9845334' });
+    /* 0.2.8: Google sign-in on a Play install uses the Play app signing key; its SHA-1 / SHA-256 must be registered in Firebase / the OAuth client */
+    if (A.sdk.googleSignIn || (A.googleServices && A.sdk.auth && /google/i.test(JSON.stringify(A.googleServices) + (A.sdk.authKinds || ''))))
+      add('play.app_signing_google_login', 'check', 'The app signs in with Google. Play re-signs the app with its own app signing key, so the upload key\'s fingerprints alone are not enough.', 'Play Console > Test and release > App signing: copy the app signing key certificate SHA-1 and SHA-256 and add them to the Firebase Android app (Project settings) or the Google Cloud OAuth Android client. Rocket Launcher cannot read these values; check them in the consoles.',
+        { store: STORE.play, rule: 'Google sign-in on Play installs needs the app signing certificate fingerprints registered.', source: 'https://developer.android.com/studio/publish/app-signing#manage-key' });
+    /* 0.2.8: Play never lets a deleted app's package name be used again; a leftover name in config files is a trap */
+    { const gs = A.googleServices, cand = new Set([an.pkg, ...(an.pkgCandidates || [])].filter(Boolean));
+      const stale = gs ? gs.packages.filter(p => ![...cand].some(c => p === c || p.startsWith(c + '.'))) : [];
+      if (gs && an.pkg && !gs.packages.some(p => [...cand].some(c => p === c || p.startsWith(c + '.'))))
+        add('play.google_services_package', 'warn', `${gs.file} has no client for ${an.pkg} (it lists ${gs.packages.slice(0, 3).join(', ') || 'none'}).`, 'Download google-services.json again for this package from the Firebase console; otherwise Firebase and Google sign-in will not work in this build.',
+          { store: STORE.play, rule: 'google-services.json must contain the app\'s package.', source: 'https://firebase.google.com/docs/android/setup' });
+      else if (stale.length)
+        add('play.old_package_name', 'check', `${gs.file} also lists ${stale.join(', ')}, which is not this app's package (${an.pkg}).`, `If ${stale.length > 1 ? 'those apps were' : 'that app was'} deleted in Play Console, the name can never be used again: do not publish under it. Remove the leftover client from google-services.json when you re-download it for ${an.pkg}.`,
+          { store: STORE.play, rule: 'A package name cannot be reused after the app is deleted from Play Console.', source: 'https://support.google.com/googleplay/android-developer/answer/113469' }); }
+    /* 0.2.8: a debug-signed APK of this app in the project: devices that installed it cannot be updated from Play (different signing key) */
+    { const dbg = (((X && X.natives) || {}).binaries || []).filter(b => b.kind === 'apk' && b.debugSigned && (!b.manifest || !b.manifest.package || !an.pkg || b.manifest.package === an.pkg || String(b.manifest.package).startsWith(an.pkg + '.')));
+      if (dbg.length) add('play.debug_apk_signature', 'check', `${dbg.slice(0, 2).map(b => b.path).join(', ')} ${dbg.length > 1 ? 'are' : 'is'} signed with the Android debug key.`, 'A phone that has this debug build installed cannot be updated to the Play version (the signing key differs): uninstall it first. Never upload a debug-signed build to Play.',
+        { store: STORE.play, rule: 'An update must be signed with the same key as the installed app.', source: 'https://developer.android.com/studio/publish/app-signing' }); }
+    /* 0.2.8: the prepared listing names the countries; Play Console must match */
+    if (A.prepared && A.prepared.countries) add('play.countries', 'info', `The prepared listing says: ${A.prepared.countries} (${A.prepared.countriesFile}).`, 'Play Console > Production (and each test track) > Countries / regions: keep exactly these. Do not add countries when you submit.',
+      { store: STORE.play, rule: 'Availability is set per track in Play Console.', source: 'https://support.google.com/googleplay/android-developer/answer/7550024' });
     if (stage('play') !== 'live') add('play.closed_testing_personal', 'info', 'Applies to new personal developer accounts only.', 'Track it with rocketlauncher_closed_test.');
     if (A.sdk.location || A.sdk.contacts) add('play.contacts_location_policy_2027', 'check', `The app uses ${[A.sdk.location && 'location', A.sdk.contacts && 'contacts'].filter(Boolean).join(' and ')}.`, 'Re-check the permission declarations against the updated policy before 2027-01-27.');
   }
@@ -396,6 +419,14 @@ export function privacyCheck(st, L) {
   /* photos */
   if (perms.some(p => /READ_MEDIA_IMAGES|READ_MEDIA_VIDEO/.test(p))) add('photo.play', 'warn', 'READ_MEDIA_IMAGES / READ_MEDIA_VIDEO are declared.', 'Use the Android photo picker unless photo access is the app\'s core purpose, then remove the permissions (or file the Photo and Video Permissions declaration).', 'https://support.google.com/googleplay/android-developer/answer/14115180');
   if (io && A.sdk.photos && !usage.NSPhotoLibraryUsageDescription && !usage.NSPhotoLibraryAddUsageDescription && perms.some(p => /READ_MEDIA_IMAGES|READ_EXTERNAL_STORAGE/.test(p))) add('photo.ios_string', 'warn', 'Android reads photos but Info.plist has no photo library purpose string.', 'Use PHPicker (no permission) or add NSPhotoLibraryUsageDescription.');
+  /* 0.2.8: a prepared Data safety form in the project is the reference: show what it has that the draft lacks, and the reverse */
+  if (A.preparedDS) {
+    const DRAFT_KEY = { loc: 'loc', name: 'name', email: 'email', uid: 'uid', photos: 'photos', audio: 'audio', usage: 'usage', crash: 'crash', diag: 'diag', adid: 'adid', ugc: 'ugc', fin: 'fin' };
+    const dk = new Set(Gen.dataSafety(A, 'en', po).rows.map(r => r.id)), fk = new Set(A.preparedDS.rows.map(r => r.key));
+    const miss = A.preparedDS.rows.filter(r => !dk.has(DRAFT_KEY[r.key] || r.key)), extra = [...dk].filter(k => !fk.has(k) && !(k === 'ugc' && fk.has('files')));
+    if (miss.length) add('ds.prepared_missing', 'check', `${A.preparedDS.file} lists as collected: ${miss.map(r => r.type).join(', ')}. The generated draft does not have ${miss.length > 1 ? 'them' : 'it'}.`, 'The code cannot show whether staff or users enter this kind of data (phone numbers, addresses, files). If the app stores it, your prepared form is right: keep these rows in Data safety.', A.preparedDS.file);
+    if (extra.length) add('ds.prepared_extra', 'check', `The generated draft lists ${extra.join(', ')}, but ${A.preparedDS.file} does not.`, 'Decide which is right: if the app does collect it, add it to your prepared form; if not, leave it out of Data safety.', A.preparedDS.file);
+  }
   /* Google scanner signals that Data safety does not cover */
   const items = Gen.dataSafety(A, 'en', po), declared = JSON.stringify(items.rows).toLowerCase();
   if (X && X.signals) {

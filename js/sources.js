@@ -135,10 +135,23 @@
           try { const h = elfAlign(await z.read()); out.libs.push({ path: e.rel + '!' + z.path, abi, bits: h && h.bits, align: h && h.align, binary: e.rel }); }
           catch (err) { out.libs.push({ path: e.rel + '!' + z.path, abi, align: null, binary: e.rel }); }
         }
+        /* 0.2.8: the Android debug certificate (CN=Android Debug) in the signing block (last bytes) or in META-INF; the key itself is never read */
+        if (b.kind === 'apk') {
+          const DBG = [65, 110, 100, 114, 111, 105, 100, 32, 68, 101, 98, 117, 103], tail = u8.subarray(Math.max(0, u8.length - 4 * 1024 * 1024));
+          const has = a => { for (let i = 0; i + DBG.length <= a.length; i++) { if (a[i] !== 65) continue; let k = 1; while (k < DBG.length && a[i + k] === DBG[k]) k++; if (k === DBG.length) return true; } return false; };
+          let dbg = has(tail);
+          if (!dbg) for (const z of zip.filter(z => /^META-INF\/[^/]+\.(RSA|DSA|EC)$/i.test(z.path)).slice(0, 2)) { try { if (has(await z.read())) dbg = true; } catch (err) { } }
+          b.debugSigned = dbg;
+        }
         const man = zip.find(z => b.kind === 'aab' ? /^base\/manifest\/AndroidManifest\.xml$/.test(z.path) : z.path === 'AndroidManifest.xml');
         if (man) b.manifest = b.kind === 'aab' ? protoManifest(await man.read()) : axmlManifest(await man.read());
       } catch (err) { b.error = String(err && err.message || err).slice(0, 80); }
       out.binaries.push(b);
+    }
+    /* 0.2.8: package names listed in google-services.json (the file holds API keys: only the names are kept) */
+    out.googleServices = [];
+    for (const e of entries.filter(e => /(^|\/)google-services\.json$/i.test(e.rel) && !/(^|\/)(node_modules|\.git)\//.test(e.rel) && e.size < 512 * 1024).slice(0, 4)) {
+      try { const j = JSON.parse(new TextDecoder().decode(await e.read())); const pk = (j.client || []).map(c => c && c.client_info && c.client_info.android_client_info && c.client_info.android_client_info.package_name).filter(x => typeof x === 'string'); out.googleServices.push({ path: e.rel, packages: [...new Set(pk)] }); } catch (err) { }
     }
     /* 0.2.5: large files (ML models, videos, asset bundles) for the Play download-size check; sizes only, nothing is read */
     out.large = entries.filter(e => e.size >= LARGE_FILE && !SKIP_RE.test(e.rel) && !SO_RE.test(e.rel) && !/(^|\/)\.git\//.test(e.rel)).sort((a, b) => b.size - a.size).slice(0, 20).map(e => ({ path: e.rel, size: e.size }));

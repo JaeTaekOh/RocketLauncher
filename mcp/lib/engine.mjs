@@ -206,7 +206,7 @@ function stageInfo(st, L) {
     o[STORE_NAME[k]] = { key: 'stage:' + k, current: cur, current_label: cur ? t('stage.' + cur) : null, recommended: rec,
       recommended_label: rec === 'unknown' ? 'unknown — please confirm' : t('stage.' + rec),
       recorded: cur && st.stageSource && st.stageSource[k] ? st.stageSource[k] : h.recorded ? `${h.recorded.stage} (${h.recorded.source})` : undefined,
-      evidence: h.evidence.map(e => EV[e] || e), earlier_upload_hint: h.weak || undefined, store_url: h.url || undefined };
+      evidence: h.evidence.map(e => EV[e] || e), earlier_upload_hint: h.weak || undefined, earlier_upload_hint_note: h.weak ? 'Not verified (미확인): this comes from a version number or ID found in the project, not from the store console. It is not proof that an upload happened.' : undefined, store_url: h.url || undefined };
   }
   return o;
 }
@@ -233,6 +233,7 @@ export function report(st, lang) {
     summary: msg(L, 'connected', { name: appName(st, L), ready: A.readiness }) + ' ' + msg(L, 'counts', c),
     app: { name: appName(st, L), package: A.pkg || null, version: A.version, platforms: Object.keys(A.platforms).filter(k => A.platforms[k]), framework: A.framework,
       targetSdk: (A.android && A.android.targetSdk) || null, categories: A.categories.map(k => Gen.CAT[k] ? `${Gen.CAT[k][L][1]} (${Gen.CAT[k].play})` : k),
+      category_source: A.categorySource || undefined, category_note: /^(project config|store listing)/.test(A.categorySource || '') ? 'The first category comes from ' + A.categorySource + '. The others are only suggestions; they are not categories you chose.' : 'All categories are suggestions from the app text; pick one.',
       sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k), default_language: (A.prepared && A.prepared.defaultLang) || null, languages_in_app: A.locales, icon_found: !!A.icon, screenshots_found: A.screenshots.length,
       source: st.source, privacy_url_found: (A.developer && A.developer.privacyUrl) || null, ...privacyInfo(A), icon_check: A.iconCheck || undefined,
       ads_hint: A.adsHint ? { note: 'An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.', files: A.adsHint.files } : undefined,
