@@ -132,7 +132,10 @@
                        { id: 'uid', play: ['Personal info', 'User IDs'], apple: ['Identifiers', 'User ID'], purposes: ['account', 'func'], optional: true, linked: true });
     if (s.cloudDb) D.push(fin ? { id: 'fin', play: ['Financial info', 'Other financial info'], apple: ['Financial Info', 'Other Financial Info'], purposes: ['func'], optional: true, linked: true }
                               : { id: 'ugc', play: ['App activity', 'Other user-generated content'], apple: ['User Content', 'Other User Content'], purposes: ['func'], optional: true, linked: true });
-    if (s.location && o.location !== 'device') D.push({ id: 'loc', play: ['Location', 'Approximate location'], apple: ['Location', 'Coarse Location'], purposes: ['func'], optional: true, linked: false });
+    /* 0.2.8: ACCESS_FINE_LOCATION still in the build (not removed with tools:node) and location leaves the device → Precise location */
+    const fineLoc = !!(A.android && (A.android.permissions || []).some(p => /ACCESS_FINE_LOCATION/.test(p)));
+    if (s.location && o.location !== 'device') D.push(fineLoc ? { id: 'loc', lk: 'locPrecise', play: ['Location', 'Precise location'], apple: ['Location', 'Precise Location'], purposes: ['func'], optional: true, linked: false }
+      : { id: 'loc', play: ['Location', 'Approximate location'], apple: ['Location', 'Coarse Location'], purposes: ['func'], optional: true, linked: false });
     if (s.analytics) D.push({ id: 'usage', play: ['App activity', 'App interactions'], apple: ['Usage Data', 'Product Interaction'], purposes: ['analytics'], optional: false, linked: false });
     if (s.crash) D.push({ id: 'crash', play: ['App info and performance', 'Crash logs'], apple: ['Diagnostics', 'Crash Data'], purposes: ['analytics'], optional: false, linked: false },
                         { id: 'diag', play: ['App info and performance', 'Diagnostics'], apple: ['Diagnostics', 'Performance Data'], purposes: ['analytics'], optional: false, linked: false });
@@ -167,6 +170,7 @@
   const DATA_LABEL = {
     name: { ko: '이름', en: 'Name', th: 'ชื่อ', zh: '姓名', hi: 'नाम' }, email: { ko: '이메일 주소', en: 'Email address', th: 'อีเมล', zh: '电子邮件地址', hi: 'ईमेल पता' }, uid: { ko: '사용자 ID', en: 'User IDs', th: 'รหัสผู้ใช้', zh: '用户 ID', hi: 'यूज़र ID' },
     fin: { ko: '기타 금융 정보 (지출 기록)', en: 'Other financial info (expense records)', th: 'ข้อมูลทางการเงินอื่น ๆ (บันทึกรายจ่าย)', zh: '其他财务信息（支出记录）', hi: 'अन्य वित्तीय जानकारी (खर्च का रिकॉर्ड)' }, ugc: { ko: '사용자가 만든 콘텐츠', en: 'User-generated content', th: 'เนื้อหาที่ผู้ใช้สร้าง', zh: '用户生成的内容', hi: 'उपयोगकर्ता द्वारा बनाई गई सामग्री' },
+    locPrecise: { ko: '정확한 위치', en: 'Precise location', th: 'ตำแหน่งที่แม่นยำ', zh: '精确位置', hi: 'सटीक लोकेशन' },
     loc: { ko: '대략적인 위치', en: 'Approximate location', th: 'ตำแหน่งโดยประมาณ', zh: '大致位置', hi: 'अनुमानित लोकेशन' }, usage: { ko: '앱 사용 기록', en: 'App interactions', th: 'การโต้ตอบกับแอป', zh: '应用互动', hi: 'ऐप इंटरैक्शन' },
     crash: { ko: '비정상 종료 기록', en: 'Crash logs', th: 'บันทึกข้อขัดข้อง', zh: '崩溃日志', hi: 'क्रैश लॉग' }, diag: { ko: '진단 정보', en: 'Diagnostics', th: 'ข้อมูลการวินิจฉัย', zh: '诊断信息', hi: 'डायग्नोस्टिक्स' }, adid: { ko: '기기 ID (광고 ID)', en: 'Device or other IDs (advertising ID)', th: 'รหัสอุปกรณ์ (รหัสโฆษณา)', zh: '设备 ID（广告 ID）', hi: 'डिवाइस ID (विज्ञापन ID)' },
     photos: { ko: '사진', en: 'Photos', th: 'รูปภาพ', zh: '照片', hi: 'फ़ोटो' }, audio: { ko: '음성·녹음', en: 'Voice or sound recordings', th: 'เสียงหรือการบันทึก', zh: '语音或录音', hi: 'आवाज़ या साउंड रिकॉर्डिंग' }
@@ -177,7 +181,7 @@
   function dataSafety(A, lang, opts) {
     const o = opts || {}, D = dataItems(A, o), speechOnly = !!(A.sdk && A.sdk.speechOnly);
     return {
-      rows: D.map(d => ({ id: d.id, label: DATA_LABEL[d.id][lang], playType: d.play.join(' › '), appleType: d.apple.join(' › '), collected: true, shared: !!d.shared, optional: d.optional, linked: d.linked, tracking: d.id === 'adid' && !!o.tracking, purposes: d.purposes.map(p => PURPOSE[p][lang]).join(', ') })),
+      rows: D.map(d => ({ id: d.id, label: DATA_LABEL[d.lk || d.id][lang], playType: d.play.join(' › '), appleType: d.apple.join(' › '), collected: true, shared: !!d.shared, optional: d.optional, linked: d.linked, tracking: d.id === 'adid' && !!o.tracking, purposes: d.purposes.map(p => PURPOSE[p][lang]).join(', ') })),
       notCollected: (A.sdk.location && o.location === 'device' ? [{ id: 'loc', label: DATA_LABEL.loc[lang], appleType: 'Location', note: { ko: '기기 안에서만 사용, 서버로 보내지 않음 → 수집 안 함', en: 'Used on the device only, never sent to a server → Data Not Collected', th: 'ใช้ในเครื่องเท่านั้น ไม่ส่งไปยังเซิร์ฟเวอร์ → ไม่เก็บรวบรวม', zh: '仅在设备上使用，从不发送到服务器 → 未收集', hi: 'सिर्फ़ डिवाइस पर इस्तेमाल, कभी सर्वर पर नहीं भेजा जाता → एकत्र नहीं' }[lang] }] : []).concat(speechOnly ? [{ id: 'audio', label: DATA_LABEL.audio[lang], appleType: 'Audio Data', note: SPEECH_NOTE[lang] }] : []),
       confirm: speechOnly ? SPEECH_CONFIRM[lang] : null,
       encrypted: !(A.android && A.android.cleartext) || true, deletable: !!A.sdk.auth,

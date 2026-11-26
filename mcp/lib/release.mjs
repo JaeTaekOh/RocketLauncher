@@ -57,8 +57,22 @@ const ORDER_PAY_CTX = /\b(payment|payments|paid|checkout|billing|stripe|paypal|p
 const AUDIO_WEAK = new Set(['record', 'record_button', 'mic_icon', 'dictation', 'voice_note', 'voice_memo', 'voicemail', 'ambient_sound', 'audio/*']);
 const AUDIO_CTX = /RECORD_AUDIO|MediaRecorder|AudioRecord|AVAudioRecorder|AVAudioSession\.sharedInstance\(\)\.(setCategory|requestRecordPermission)|requestRecordPermission|getUserMedia|NSMicrophoneUsageDescription|SpeechRecognizer|startRecording|stopRecording|recordAudio|audioRecorder|microphone/i;
 const PRECISE_CODE = /enableHighAccuracy\s*:\s*true|kCLLocationAccuracyBest(ForNavigation)?\b|requestTemporaryFullAccuracyAuthorization|LocationAccuracy\.(high|best|bestForNavigation)\b|PRIORITY_HIGH_ACCURACY|Priority\.PRIORITY_HIGH_ACCURACY|GeolocationAccuracy\.(High|Best)\b/;
+/* 0.2.8: app-private storage (localStorage, SharedPreferences, sqlite, app documents folder) is not the user's files and documents */
+const FILES_PRIVATE = new Set(['localStorage', 'sessionStorage', 'AsyncStorage', 'shared_preferences', 'flutter_secure_storage', 'Hive', 'sqflite', 'path_provider', 'getApplicationDocumentsDirectory', 'getTemporaryDirectory', 'MMKV', 'react-native-mmkv', 'Sembast', 'RxDB', 'Realm']);
+/* 0.2.8: the any-type MIME value and "text/plain" are also HTTP Accept / Content-Type values; they count only next to a file or document picker */
+const FILES_MIME = new Set(['*/*', 'text/plain']);
+const FILES_CTX = /ACTION_GET_CONTENT|ACTION_OPEN_DOCUMENT|OpenDocument|GetContent\b|DocumentPicker|FilePicker|file_picker|type\s*=\s*["']file["']|showOpenFilePicker|UIDocumentPicker|fileImporter|getDocumentAsync|document-picker|setType\s*\(\s*["']\*\/\*/;
+/* 0.2.8: a media player or recorder is not access to the user's videos; these count only next to video picking / capture code in the same file */
+const VIDEO_WEAK = new Set(['ExoPlayer', 'MediaController', 'MediaRecorder', 'CameraRoll', 'expo-image-picker', 'react-native-vision-camera']);
+const VIDEO_CTX = /READ_MEDIA_VIDEO|MediaStore\.Video|video\/\*|VideoOnly|ACTION_VIDEO_CAPTURE|\bVideoCapture\b|pickVideo|captureVideo|recordVideo|startRecording\s*\(\s*\{|MediaTypeOptions\.(Videos|All)|mediaTypes\s*:\s*\[?\s*["']?(videos?|all|mixed)|assetType\s*:\s*["'](Videos|All)|kUTTypeMovie|public\.movie|UTType\.movie|PHAssetMediaType\.video/i;
+/* 0.2.8: looking up one named package (a navigation app listed in <queries>) is not reading the list of installed apps */
+const APPS_WEAK = new Set(['getPackageInfo', 'queryIntentActivities']);
+const APPS_CTX = /QUERY_ALL_PACKAGES|getInstalledPackages|getInstalledApplications/;
 function contextOk(id, pat, c) {
   if (id === 'AUDIO') return !AUDIO_WEAK.has(pat) || AUDIO_CTX.test(c);
+  if (id === 'FILES_AND_DOCS') return !FILES_PRIVATE.has(pat) && (!FILES_MIME.has(pat) || FILES_CTX.test(c));
+  if (id === 'VIDEOS') return !VIDEO_WEAK.has(pat) || VIDEO_CTX.test(c);
+  if (id === 'APPS_ON_DEVICE') return !APPS_WEAK.has(pat) || APPS_CTX.test(c);
   if (id !== 'PURCHASE_HISTORY') return true;
   if (pat === 'receipt' || pat === 'invoice') return STORE_PAY_CTX.test(c);
   if (pat === 'orderId' || pat === 'orderHistory') return ORDER_PAY_CTX.test(c);
@@ -137,6 +151,18 @@ export function scanProject(project, A) {
   };
   const loc = (Detect && Detect.locationFlow(codeP, F, '')) || { sent: false, confidence: null, kinds: [] };
   X.location = { sent: !!loc.sent, confidence: loc.confidence, kinds: loc.kinds || [] };
+  /* 0.2.8: hosts that receive coordinates straight from the app (https://api.met.no/...?lat=…&lon=…). Links that open a map or navigation app
+     with a destination are not counted. */
+  { const NAV = /(^|\.)(maps\.google\.[a-z.]+|google\.[a-z.]+|maps\.apple\.com|waze\.com|map\.kakao\.com|kakaonavi[\w.-]*|map\.naver\.com|m\.map\.naver\.com|naver\.me|tmap[\w.-]*|www\.openstreetmap\.org|openstreetmap\.org|bing\.com|here\.com|citymapper\.com|moovitapp\.com|uber\.com|grab\.com)$/i;
+    const LATQ = /[?&](lat|latitude)=|[?&](lon|lng|longitude)=|\blat(itude)?\s*:\s*[\w.$]+\s*,\s*(lon|lng|longitude)\s*:/i, URLRE = /https?:\/\/([a-z0-9.-]+\.[a-z]{2,})(?::\d+)?[^\s"'`)]*/gi, hosts = new Map();
+    const copyRank = p => /(^|\/)(src\/main\/assets|App\/public|ios-shell\/www|android\/www)\//i.test(p) ? 1 : 0;
+    for (const p of codeP.filter(p => !/(^|\/)(node_modules|vendor|dist|build|tests?|__tests__|spec|Pods)\//i.test(p) && !/\.(test|spec)\.[jt]sx?$/.test(p)).sort((a, b) => copyRank(a) - copyRank(b) || a.length - b.length)) {
+      const lines = text(p).split(/\r?\n/);
+      lines.forEach((ln, i) => { if (!LATQ.test(ln) || /^\s*(\/\/|\*|#)/.test(ln)) return;
+        for (let j = Math.max(0, i - 3); j <= Math.min(lines.length - 1, i + 1); j++) for (const m of lines[j].matchAll(URLRE)) {
+          const h = m[1].toLowerCase(); if (NAV.test(h) || /localhost|example\.|127\.0\.0\.1|schemas\.|w3\.org/.test(h) || /\/(dir|search|place|maps)\b|[?&](daddr|destination|q)=/i.test(m[0])) continue;
+          if (!hosts.has(h)) hosts.set(h, { host: h, file: p, line: j + 1 }); } }); }
+    X.location.hosts = [...hosts.values()].slice(0, 6); }
   /* privacy policy content: local files, plus the live page body when connect() was able to read it (0.2.7).
      If the only policy is a remote URL and that page was not read, content findings stay unverified — never "missing". */
   const pol = textP.filter(p => POLICY_FILE.test(p.split('/').pop()) && /\.(html?|md)$/i.test(p));
@@ -208,6 +234,18 @@ export function requirements(st, L, opts = {}) {
     }
     add('play.app_registration', 'check', 'Rocket Launcher cannot see Play Console.', 'Open the Play Console home page and register any app it lists as unregistered. The developer account must be verified.');
     add('play.trader_status', 'check', 'Every developer account must declare trader / non-trader.', 'Play Console > Manage account > Account details > About you. Not distributing in the EEA/UK: non-trader is allowed.');
+    /* 0.2.8: foreground services on Android 14+ need a Play Console declaration per type, with a video link */
+    { const perms = an.permissions || [], svc = an.services || [];
+      const types = [...new Set([...svc.flatMap(x => String(x.fgsType || '').split('|')).filter(Boolean), ...perms.map(p => (p.match(/FOREGROUND_SERVICE_([A-Z_]+)$/) || [])[1]).filter(Boolean).map(t => t.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase()))])].filter(t => t !== 'shortService');
+      const tsdk = (an.built && an.built.targetSdk) || an.targetSdk;
+      if (types.length && perms.includes('android.permission.FOREGROUND_SERVICE') && (!tsdk || tsdk >= 34))
+        add('play.fgs_declaration', 'check', `Foreground service type${types.length > 1 ? 's' : ''}: ${types.join(', ')}.`, `Play Console > App content > Foreground service permissions: for each type, describe the feature, the user impact if the task is deferred or interrupted, and add a link to a video that shows the feature${types.includes('mediaPlayback') ? ' (mediaPlayback: show the user starting playback)' : ''}.`,
+          { store: STORE.play, rule: 'Apps targeting Android 14+ declare each foreground service type in Play Console, with a video link.', source: 'https://support.google.com/googleplay/android-developer/answer/13392821' }); }
+    /* 0.2.8: Advertising ID / Contains ads answers when the build carries no ads and no AD_ID (removed with tools:node, or ads switched off) */
+    { const adIdRemoved = (an.removedPermissions || []).some(p => /AD_ID$/.test(p || ''));
+      if (!A.sdk.ads && !an.adId && (adIdRemoved || A.adsDisabled || A.adsHint))
+        add('play.ads_declaration', 'check', `${adIdRemoved ? 'AD_ID is removed from the manifest (tools:node="remove")' : 'No AD_ID permission in the build'}; ${A.adsDisabled ? `ad code is switched off (${A.adsDisabled.files.slice(0, 2).join(', ')})` : A.adsHint ? `ad-related code without an ads SDK (${A.adsHint.files.slice(0, 2).join(', ')})` : 'no ads SDK'}.`, A.adsHint && !A.adsDisabled && !adIdRemoved ? 'Check what the uploaded build does. If it shows no ads, answer "Contains ads: No" and "Advertising ID: No" in Play Console > App content; if a release step turns ads on (an ads SDK, AD_ID), answer Yes to both.' : 'Play Console > App content: answer "Contains ads: No" and "Advertising ID: No" so the answers match this build. If you turn ads on later, change both answers in the same release.',
+          { store: STORE.play, rule: 'The Contains ads and Advertising ID answers must match what the uploaded build does.', source: 'https://support.google.com/googleplay/android-developer/answer/6048248' }); }
     if (stage('play') !== 'live') add('play.closed_testing_personal', 'info', 'Applies to new personal developer accounts only.', 'Track it with rocketlauncher_closed_test.');
     if (A.sdk.location || A.sdk.contacts) add('play.contacts_location_policy_2027', 'check', `The app uses ${[A.sdk.location && 'location', A.sdk.contacts && 'contacts'].filter(Boolean).join(' and ')}.`, 'Re-check the permission declarations against the updated policy before 2027-01-27.');
   }
@@ -230,6 +268,12 @@ export function requirements(st, L, opts = {}) {
     else add('apple.export_compliance', 'ok', `ITSAppUsesNonExemptEncryption = ${io.encryption}.`);
     add('apple.age_rating_social_media', 'check', 'Answer the social media capability question in the age rating questionnaire.', 'No public feed or discovery of other users\' posts → answer No.');
     add('apple.age_rating_location_dating', 'check', A.sdk.location ? 'The app uses location. Showing nearby places is not "Shared Location"; sharing a user\'s location with other people is.' : 'Answer the new Shared Location and Dating & Relationships questions.', 'App Store Connect > App Information > Age Rating. Required with the next update; every app by 2027-01-12.');
+    /* 0.2.8: CarPlay needs an entitlement Apple grants to the team, in the App ID and a manual provisioning profile; without it iOS hides the app in CarPlay */
+    if (io.carplayEntitlement || (A.review && A.review.carplay)) {
+      const R0 = A.review || {}, ent = io.carplayEntitlement;
+      if (ent && !R0.carplay) add('apple.carplay', 'warn', 'A CarPlay entitlement is in the .entitlements file, but no CarPlay scene or CarPlay code is in the build.', 'Add the CarPlay scene (CPTemplateApplicationSceneSessionRoleApplication) before submitting, or remove the entitlement.', { store: STORE.apple, rule: 'A CarPlay app needs the entitlement and a CarPlay scene.', source: 'https://developer.apple.com/documentation/carplay/requesting-carplay-entitlements' });
+      else if (ent) add('apple.carplay', 'check', 'CarPlay entitlement and CarPlay scene found.', 'Before uploading: confirm Apple has granted this CarPlay entitlement to your team, that it is on the App ID, and that the build is signed with a manual provisioning profile that includes it; otherwise iOS does not show the app in CarPlay. Describe CarPlay in the review notes.', { store: STORE.apple, rule: 'A CarPlay app needs the entitlement and a CarPlay scene.', source: 'https://developer.apple.com/documentation/carplay/requesting-carplay-entitlements' });
+    }
     if (X && X.remoteFlags) add('apple.hidden_features', 'warn', 'The app uses remote config / feature flags.', 'List every feature that can be turned on remotely in the review notes (Guideline 2.5.19); keep store graphics free of prices and unverifiable claims (2.3.14).');
     else add('apple.hidden_features', 'info', 'No remote feature flags found.', 'Describe every feature in the review notes (Guideline 2.5.19).');
     add('apple.iphone_duo_screenshots', 'info', 'Upcoming screenshot size.', 'When you move to the iOS 27.1 SDK, add iPhone Duo screenshots. Never upload screenshots with an alpha channel.');
@@ -325,6 +369,11 @@ export function privacyCheck(st, L) {
     }
     if (bg) add('loc.background', 'block', 'ACCESS_BACKGROUND_LOCATION is declared.', 'Remove it unless a core feature needs it; otherwise fill the Play location permissions declaration with a video.', 'https://support.google.com/googleplay/android-developer/answer/9799150');
     if (sent && st.dec.location === 'device') add('loc.datasafety_device', 'block', 'The code sends location to a server, but the Data safety answer says it stays on the device.', 'Answer that location is collected (app functionality) in Data safety and App Privacy.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
+    /* 0.2.8: coordinates sent from the app straight to another company's server (not the app's own domain) */
+    { const reg = u => { try { const h = new URL(u).hostname.toLowerCase().split('.'); return h.slice(-(h.length > 2 && /^(co|com|or|ne|go|ac|org|net)$/.test(h[h.length - 2]) ? 3 : 2)).join('.'); } catch { return null; } };
+      const cfg = A.projectConfig || {}, own = new Set([A.listing && A.listing.privacyUrl, A.listing && A.listing.supportUrl, A.deletionInfo && A.deletionInfo.url, A.developer && A.developer.privacyUrl, cfg.privacy_url, cfg.support_url, cfg.website, cfg.api_url].filter(Boolean).map(reg).filter(Boolean));
+      const third = ((X && X.location && X.location.hosts) || []).filter(h => !own.has(reg('https://' + h.host)) && !/(^|\.)(firebaseio\.com|firebasedatabase\.app|googleapis\.com|supabase\.co|workers\.dev|pages\.dev|vercel\.app|netlify\.app|herokuapp\.com|amazonaws\.com|azurewebsites\.net|cloudfunctions\.net|run\.app)$/.test(h.host));
+      if (third.length) add('loc.third_party', 'check', `The app sends coordinates directly to ${third.map(h => `${h.host} (${h.file}:${h.line})`).join(', ')}, not to your own server.`, 'In Data safety, declare Location as collected (the data leaves the device), unless it is only processed in memory for the request (ephemeral processing; Google\'s own example is a weather lookup). Data sent to a service provider that works on your behalf, or as a result of an action the user starts and expects, does not count as "shared"; otherwise mark it shared. Say in the privacy policy which service gets the location.', 'https://support.google.com/googleplay/android-developer/answer/10787469'); }
     if (sent && fine) add('loc.precise', 'warn', 'ACCESS_FINE_LOCATION is declared and location is sent to the server.', 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
     if (X && X.policy && X.policy.unread) add('loc.policy', 'check', 'Could not verify (미확인): the privacy policy page was not read, so no finding is made about whether it mentions location.', 'Open the live privacy URL and confirm it covers location, or add a local copy of the policy in the project.');
     else if (X && X.policy && !X.policy.location) add('loc.policy', 'warn', 'The privacy policy does not mention location.', 'Say what location is used for, whether it is sent and how long it is kept.');

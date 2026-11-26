@@ -133,6 +133,16 @@
       const kind = ['short', 'full', 'title'].find(k => KIND_RE[k].test(p)); if (!kind) continue;
       put(fileLang(p) || SCRIPT_LANG(F[p].text), kind, F[p].text, p);
     }
+    /* 1b. 0.2.8: one text file per language with "title:", "short:", "full:" sections (artifacts/play/listing-ko-KR.txt) */
+    for (const p of P) {
+      if (!/\.txt$/i.test(p) || !LISTING_DIR.test(p) || !/listing|store|description/i.test(p.split('/').pop())) continue;
+      const t = F[p].text.replace(/\r\n/g, '\n'), m = {};
+      const re = /^(title|short(?:[ _-]?description)?|full(?:[ _-]?description)?)\s*:[ \t]*(.*)$/gim; const hits = [...t.matchAll(re)];
+      if (hits.length < 2) continue;
+      hits.forEach((h, i) => { const end = i + 1 < hits.length ? hits[i + 1].index : t.length; const k = /^t/i.test(h[1]) ? 'title' : /^s/i.test(h[1]) ? 'short' : 'full'; m[k] = (h[2] + '\n' + t.slice(h.index + h[0].length, end)).trim(); });
+      const l = fileLang(p) || SCRIPT_LANG(Object.values(m).join(' '));
+      for (const k of ['title', 'short', 'full']) if (m[k]) put(l, k, k === 'full' ? m[k] : m[k].split('\n')[0], p);
+    }
     /* 2. Markdown listing drafts: headed sections, then "Key: value" lines */
     const mds = P.filter(p => LISTING_MD.test(p) || (LISTING_DIR.test(p) && /(listing|store|description)[^/]*\.md$/i.test(p))).sort((a, b) => /listing/i.test(b) - /listing/i.test(a) || a.length - b.length);
     for (const p of mds) {
@@ -174,6 +184,13 @@
     const cu = cfg.account_deletion_url || cfg.deletion_url || cfg.delete_account_url, cp = cfg.account_deletion_path || cfg.deletion_path || cfg.in_app_deletion_path;
     if (/^https?:\/\//.test(cu || '')) { out.url = String(cu); out.urlSource = cfg._file || 'rocketlauncher.json'; }
     if (cp) { out.inAppPath = String(cp).slice(0, 120); out.pathSource = cfg._file || 'rocketlauncher.json'; }
+    /* 0.2.8: an app config in code that names the deletion page (deletionUrl: 'https://…', ACCOUNT_DELETION_URL = "…") */
+    if (!out.url) {
+      const CFG_DEL = /\b(?:account_?deletion_?url|deletion_?url|delete_?account_?url|deleteAccountUrl|accountDeletionUrl|deletionUrl|deleteUrl|ACCOUNT_DELETION_URL|DELETION_URL|DELETE_ACCOUNT_URL)\b["']?\s*[:=]\s*["'`](https?:\/\/[^"'`\s]+)["'`]/i;
+      for (const p of Object.keys(F).filter(p => F[p].code && F[p].text != null && !OLD_RE.test(p) && !/(^|\/)(test|tests|__tests__|spec)\//i.test(p)).sort((a, b) => /config/i.test(b) - /config/i.test(a) || a.length - b.length)) {
+        const m = F[p].text.match(CFG_DEL); if (m && !/<your-site>|example\.|localhost/i.test(m[1])) { out.url = m[1]; out.urlSource = p; break; }
+      }
+    }
     const P = Object.keys(F).filter(p => F[p].text != null && !F[p].code && !OLD_RE.test(p) && /\.(md|txt)$|(^|\/)README[^/]*$/i.test(p));
     const rank = p => /(^|\/)README[^/]*$/i.test(p) ? (p.includes('/') ? 2 : 0) : LISTING_MD.test(p) || LISTING_DIR.test(p) ? 1 : 3;
     P.sort((a, b) => rank(a) - rank(b) || a.length - b.length);
@@ -486,7 +503,12 @@
       an.services = an.services || [];
       if (appGradle) {
         note(appGradle); const g = stripCode(F[appGradle].text), dc = blockOf(g, 'defaultConfig') || '', gv = k => gradleVal(dc, k) || gradleVal(g, k);
-        an.pkg = gv('applicationId'); an.namespace = gradleVal(g, 'namespace');
+        /* 0.2.8: applicationId accountProps.getProperty('key', 'com.x.y') / findProperty('key') ?: 'com.x.y' → the default literal;
+           every applicationId literal (product flavors too) is kept so a built package that matches one of them is not a mismatch */
+        const PROP_ID = /applicationId\s*=?\s*[\w.]+\.(?:getProperty|findProperty|getOrDefault)\s*\(\s*["'][^"']+["']\s*(?:,\s*["']([\w.]+)["'])?\s*\)(?:\s*\?:\s*["']([\w.]+)["'])?/g;
+        an.pkgCandidates = [...new Set([...g.matchAll(/applicationId\s*=?\s*["']([\w.]+)["']/g)].map(m => m[1]).concat([...g.matchAll(PROP_ID)].map(m => m[1] || m[2]).filter(Boolean)))];
+        an.pkg = gv('applicationId'); if (an.pkg && !/^[A-Za-z]\w*(\.[A-Za-z]\w*)+$/.test(an.pkg) || /\.(getProperty|findProperty)$/.test(an.pkg || '')) an.pkg = (dc.match(PROP_ID) ? [...dc.matchAll(PROP_ID)][0] : [...g.matchAll(PROP_ID)][0] || [])[1] || null;
+        an.namespace = gradleVal(g, 'namespace');
         an.targetSdkRaw = gv('targetSdk');
         an.minSdk = resolveSdk(gv('minSdk'), F, gradles); an.targetSdk = resolveSdk(an.targetSdkRaw, F, gradles); an.compileSdk = resolveSdk(gradleVal(g, 'compileSdk'), F, gradles);
         an.versionCode = gv('versionCode'); an.versionName = gv('versionName'); an.deps = gradleDeps(g); an.gradlePath = appGradle;
@@ -522,7 +544,7 @@
         const m = bin.manifest; an.built = { file: bin.path, kind: bin.kind, targetSdk: m.targetSdk || null, minSdk: m.minSdk || null, package: m.package || null, versionCode: m.versionCode || null, versionName: m.versionName || null };
         /* order of truth: the built file wins over values read (or guessed) from source; a difference is reported, not hidden */
         const src = 'built ' + bin.kind.toUpperCase() + ' (' + bin.path + ')'; an.builtMismatch = [];
-        const take = (k, v, raw) => { if (v == null || v === '') return; if (an[k] != null && an[k] !== '' && String(an[k]) !== String(v)) an.builtMismatch.push({ field: k, source: an[k], built: v }); an[k] = v; if (raw) an[raw] = src; };
+        const take = (k, v, raw) => { if (v == null || v === '') return; if (an[k] != null && an[k] !== '' && String(an[k]) !== String(v) && !(k === 'pkg' && (an.pkgCandidates || []).includes(String(v)))) an.builtMismatch.push({ field: k, source: an[k], built: v }); an[k] = v; if (raw) an[raw] = src; };
         take('targetSdk', m.targetSdk, 'targetSdkRaw'); take('pkg', m.package); take('versionCode', m.versionCode);
         if (m.versionName) { if (an.versionName && an.versionName !== m.versionName) an.builtMismatch.push({ field: 'versionName', source: an.versionName, built: m.versionName }); an.builtVersionName = m.versionName; }
       }
@@ -627,7 +649,11 @@
       const labelVal = A.strings.default[labelKey];
       if (labelVal && !A.names[defLang]) A.names[defLang] = labelVal;
     }
-    A.locales = [...new Set([defLang, ...Object.keys(A.strings).map(l => l === 'default' ? defLang : l), ...fileLocales])];
+    /* 0.2.8: languages the build keeps (Gradle localeFilters / resConfigs) and the language keys of a JS i18n dictionary (i18n.js: { en: {…}, ko: {…} }) */
+    const LANG2 = /^(en|ko|th|zh|hi|ja|es|fr|de|pt|vi|id|it|ru|ar|tr|ms|nl|pl|sv|uk)$/;
+    const gradleLocales = gradles.flatMap(gp => [...stripCode(F[gp].text).matchAll(/(?:localeFilters|resConfigs?|resourceConfigurations)\s*(?:\+?=|\()?\s*\[?([^\]\n)]*)/g)].flatMap(m => (m[1].match(/["']([a-z]{2})(?:[-_][A-Za-z]{2,4})?["']/g) || []).map(x => x.replace(/["']/g, '').slice(0, 2).toLowerCase()))).filter(l => LANG2.test(l));
+    const jsLocales = P.filter(p => F[p].code && /(^|\/)(i18n|locales?|translations?|strings|lang|messages)\.(js|mjs|ts)$/i.test(p)).flatMap(p => { const keys = [...F[p].text.matchAll(/^\s{0,8}["']?([a-z]{2})(?:[-_][A-Za-z]{2,4})?["']?\s*:\s*\{/gm)].map(m => m[1].toLowerCase()).filter(l => LANG2.test(l)); return new Set(keys).size >= 2 ? keys : []; });
+    A.locales = [...new Set([defLang, ...Object.keys(A.strings).map(l => l === 'default' ? defLang : l), ...fileLocales, ...gradleLocales, ...jsLocales])];
     A.pkg = (A.android && A.android.pkg) || (A.ios && A.ios.bundleId) || null;
     A.version = (A.android && (A.android.builtVersionName || A.android.versionName)) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
 
@@ -765,6 +791,11 @@
     const seenShot = new Set(), shotRank = p => /(^|\/)(play|store|fastlane)\//i.test(p) ? 0 : 1;
     const shotPaths = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p) && !/(^|\/)(tablet|tenInch|sevenInch|wear|tv|ipad)[^/]*\//i.test(p))
       .sort((a, b) => shotRank(a) - shotRank(b) || a.localeCompare(b)).filter(p => { const k = F[p].dataUrl; if (seenShot.has(k)) return false; seenShot.add(k); return true; });
+    /* 0.2.8: phone-sized pictures in a store / listing folder (artifacts/play/01-home-1080x1920.png) are the store screenshots; when they exist,
+       other screenshot folders (often debug captures) are not used */
+    const STORE_SHOT = p => LISTING_DIR.test(p) && /(^|\/)[^/]*(\d{3,4}\s*[x×]\s*\d{3,4}|^\d{1,2}[-_ ]|screen|shot)[^/]*\.(png|jpe?g)$/i.test(p.split('/').pop()) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/1024\s*[x×]\s*500|512\s*[x×]\s*512/i.test(p) && !/(^|\/)(ipad|tablet|tenInch|sevenInch|wear|tv)[^/]*\//i.test(p);
+    const storeShots = imgs.filter(p => STORE_SHOT(p) && !shotPaths.includes(p)).sort();
+    if (storeShots.length >= 2) { const seen2 = new Set(); shotPaths.splice(0, shotPaths.length, ...storeShots.concat(shotPaths.filter(p => shotRank(p) === 0)).filter(p => { const k = F[p].dataUrl; if (seen2.has(k)) return false; seen2.add(k); return true; })); }
     A.screenshotsTotal = shotPaths.length;
     /* 0.2.8: iPad screenshots already in the project (screenshots/ipad/…, *ipad*.png, 12.9 / 13-inch names) */
     A.ipadScreenshots = imgs.filter(p => /(screenshots?|store|fastlane)\//i.test(p) && /(^|\/)ipad[^/]*\/|ipad[^/]*\.(png|jpe?g)$|12[._]9|13[-_ ]?inch|APP_IPAD/i.test(p)).length;
