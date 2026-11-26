@@ -144,6 +144,192 @@ console.log('\n[029] Korean locale still receives the FSI row');
   check(row && row.severity === 'check' && /USE_FULL_SCREEN_INTENT/.test(row.finding || ''), 'ko finding is localized or still names the permission', row);
 }
 
+
+/* 64-bit ELF with one PT_LOAD aligned to `align` bytes */
+function elf(align) {
+  const b = Buffer.alloc(64 + 56);
+  b.write('\x7fELF', 0, 'latin1'); b[4] = 2; b[5] = 1; b[6] = 1;
+  b.writeUInt16LE(3, 16); b.writeUInt16LE(183, 18); b.writeUInt32LE(1, 20);
+  b.writeBigUInt64LE(64n, 32); b.writeUInt16LE(64, 52); b.writeUInt16LE(56, 54); b.writeUInt16LE(1, 56);
+  b.writeUInt32LE(1, 64); b.writeBigUInt64LE(BigInt(align), 64 + 48);
+  return b;
+}
+
+console.log('\n[029] 16 KB block message names the official 2027-02-01 date');
+{
+  const r = await requirementsOf({
+    ...app(36),
+    'app/src/main/jniLibs/arm64-v8a/libold.so': elf(4096)
+  });
+  const row = r.row('play.16kb_page_size');
+  check(row?.severity === 'block', 'misaligned .so is still a block', row);
+  check(/2027-02-01/.test(row?.action || row?.finding || ''), 'block message mentions official enforcement date 2027-02-01', row);
+  check(row?.conservative === true, '16 KB stays conservative');
+}
+
+console.log('\n[029] FGS specialUse / geofence / BOOT_COMPLETED / mediaProcessing');
+{
+  const svc = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+  <application android:label="Demo">
+    <activity android:name=".MainActivity" android:exported="true"/>
+    <service android:name=".OddService" android:foregroundServiceType="specialUse" android:exported="false"/>
+  </application>
+</manifest>`;
+  const r = await requirementsOf({ ...app(36), 'app/src/main/AndroidManifest.xml': svc });
+  const row = r.row('play.fgs_special_use');
+  check(row?.severity === 'block', 'specialUse without property → block', row);
+}
+{
+  const man = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+  <application android:label="Demo">
+    <activity android:name=".MainActivity" android:exported="true"/>
+    <service android:name=".OddService" android:foregroundServiceType="specialUse" android:exported="false">
+      <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="demo"/>
+    </service>
+  </application>
+</manifest>`;
+  const r = await requirementsOf({ ...app(36), 'app/src/main/AndroidManifest.xml': man });
+  check(!r.row('play.fgs_special_use') || r.row('play.fgs_special_use').severity === 'ok', 'specialUse with property is not a block', r.row('play.fgs_special_use'));
+}
+{
+  const man = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <application android:label="Demo">
+    <activity android:name=".MainActivity" android:exported="true"/>
+    <service android:name=".GeoService" android:foregroundServiceType="location" android:exported="false"/>
+  </application>
+</manifest>`;
+  const r = await requirementsOf({
+    ...app(36),
+    'app/src/main/AndroidManifest.xml': man,
+    'app/src/main/java/com/example/demo/Geo.java': 'import com.google.android.gms.location.GeofencingClient;\nclass Geo { GeofencingClient c; void add() { c.addGeofences(null, null); } }\n'
+  });
+  const row = r.row('play.fgs_geofencing');
+  check(row?.severity === 'warn', 'location FGS + GeofencingClient → warn (date conflict, not a block)', row);
+  check(/2026-08-26|2027-01-27/.test(row?.action || ''), 'geofence warning mentions the two official dates', row);
+}
+{
+  const man = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+  <application android:label="Demo">
+    <activity android:name=".MainActivity" android:exported="true"/>
+    <service android:name=".PlayerService" android:foregroundServiceType="mediaPlayback" android:exported="false"/>
+    <receiver android:name=".BootReceiver" android:exported="true">
+      <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter>
+    </receiver>
+  </application>
+</manifest>`;
+  const r = await requirementsOf({ ...app(36), 'app/src/main/AndroidManifest.xml': man });
+  const row = r.row('play.fgs_boot_completed');
+  check(row?.severity === 'warn', 'BOOT_COMPLETED + mediaPlayback FGS → warn, not a block', row);
+}
+{
+  const man = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING"/>
+  <application android:label="Demo">
+    <activity android:name=".MainActivity" android:exported="true"/>
+    <service android:name=".Transcode" android:foregroundServiceType="mediaProcessing" android:exported="false"/>
+  </application>
+</manifest>`;
+  const r = await requirementsOf({ ...app(36), 'app/src/main/AndroidManifest.xml': man });
+  const row = r.row('play.fgs_media_processing');
+  check(row?.severity === 'warn', 'mediaProcessing without onTimeout → warn', row);
+  check(/onTimeout/.test(row?.finding || row?.action || ''), 'mentions onTimeout', row);
+}
+
+console.log('\n[029] store AI assets and age rating are checks, not blocks');
+{
+  const r = await requirementsOf(app(36));
+  check(r.row('play.store_ai_assets')?.severity === 'check', 'store AI asset declaration is a check', r.row('play.store_ai_assets'));
+  check(!r.row('play.fgs_special_use'), 'plain app has no specialUse block');
+  check(!r.row('play.fgs_geofencing'), 'plain app has no geofence warning');
+}
+
+console.log('\n[029] country gaps: KR warn, CN/IN only when listed, no wrong law dates');
+{
+  const { parseListedCountries, countryPolicyGaps } = await import('../lib/release.mjs');
+  check(parseListedCountries('대한민국만').includes('KR') && !parseListedCountries('대한민국만').includes('CN'), 'parse Korea-only');
+  check(parseListedCountries('Korea, China, India').join(',') === 'KR,CN,IN', 'parse KR/CN/IN', parseListedCountries('Korea, China, India'));
+}
+{
+  const r = await requirementsOf(app(36));
+  const kr = r.row('kr.privacy_in_app');
+  // default country list includes KR; a plain app may or may not be "personal data"
+  check(!r.row('cn.icp'), 'China ICP is not shown when CN is not listed');
+  check(!r.row('in.dpdp'), 'India DPDP is not shown when IN is not listed');
+  check(!/2026-09-11|제30조|제22조의2/.test(JSON.stringify(r.req.rows || [])), 'requirement rows do not use the wrong Korean amendment dates');
+}
+{
+  const files = {
+    ...app(36),
+    'store/listing-ko.md': '# 등록정보\n\n배포 국가: 대한민국, 중국, 인도, 태국\n',
+    'README.md': '# Demo loan\n\nApply for a personal loan. Instant cash loans.\n',
+    'app/build.gradle': GRADLE(36) + "\ndependencies { implementation 'com.google.firebase:firebase-analytics:22.0.0' }\n",
+    'app/src/main/java/com/example/demo/Ai.java': 'import com.google.ai.generativelanguage.v1beta; class Ai { void m() { GenerativeModel g; } }\n',
+    'app/src/main/res/values/strings.xml': '<resources><string name="app_name">Demo</string></resources>\n'
+  };
+  const { st } = await E.connect({ source: 'path', path: project(files), lang: 'en' }, { allowPath: true });
+  const req = await E.release('requirements', st.id, {}, 'en');
+  const row = id => (req.rows || []).find(x => x.id === id);
+  check(row('kr.privacy_in_app') && row('kr.privacy_in_app').severity === 'warn', 'KR in-app privacy is a warning (not a block)', row('kr.privacy_in_app'));
+  check(!/2026-09-11|제30조|제22조의2/.test((row('kr.privacy_in_app')?.finding || '') + (row('kr.privacy_in_app')?.action || '')), 'KR privacy text avoids the wrong article dates', row('kr.privacy_in_app'));
+  check(row('cn.icp')?.severity === 'warn', 'CN listed and no ICP → warn, not a block', row('cn.icp'));
+  check(row('in.dpdp')?.severity === 'warn', 'IN listed + personal/loan app → DPDP warning (full duties 2027-05-14)', row('in.dpdp'));
+  const cc = await E.release('countries', st.id, { countries: ['KR', 'CN', 'IN', 'TH'] }, 'en');
+  const cr = id => (cc.rows || []).find(x => x.id === id);
+  check(cr('cn.icp')?.severity === 'warn', 'country_check also reports CN ICP', cr('cn.icp'));
+  check(cr('in.dpdp')?.severity === 'warn', 'country_check also reports IN DPDP', cr('in.dpdp'));
+  check(cr('kr.privacy_in_app')?.severity === 'warn' || cr('kr.privacy_in_app')?.severity === 'check', 'country_check reports KR in-app privacy', cr('kr.privacy_in_app'));
+}
+{
+  const files = {
+    ...app(36),
+    'store/listing.md': 'Distribution countries: China\n',
+    'app/src/main/res/values/strings.xml': '<resources><string name="icp">京ICP备12345678号</string><string name="beian">https://beian.miit.gov.cn/</string></resources>\n'
+  };
+  const r = await requirementsOf(files);
+  check(r.row('cn.icp')?.severity === 'ok', 'ICP number in strings → ok', r.row('cn.icp'));
+}
+{
+  const files = {
+    ...app(36),
+    'README.md': '# Casino\n\nReal-money sports betting and casino games.\n',
+    'store/listing.md': 'Distribution countries: India only\n'
+  };
+  const r = await requirementsOf(files);
+  check(r.row('in.money_games')?.severity === 'warn', 'India + gambling keywords → warn, not a block', r.row('in.money_games'));
+}
+{
+  const r = await requirementsOf({
+    ...app(36),
+    'ios/App/App/Info.plist': '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>CFBundleDisplayName</key><string>Demo</string></dict></plist>\n',
+    'ios/App/App.xcodeproj/project.pbxproj': 'IPHONEOS_DEPLOYMENT_TARGET = 15.0;\nPRODUCT_BUNDLE_IDENTIFIER = com.example.demo;\nMARKETING_VERSION = 1.0;\nCURRENT_PROJECT_VERSION = 1;\nTARGETED_DEVICE_FAMILY = "1,2";\n',
+    '.xcode-version': '27.0\n'
+  });
+  const row = r.row('apple.ios27_launch_screen');
+  check(row?.severity === 'warn', 'Xcode 27 without launch screen key → warn', row);
+  check(r.row('apple.age_rating_questionnaire')?.severity === 'check', 'updated age rating questionnaire is a check', r.row('apple.age_rating_questionnaire'));
+}
+
 const total = pass + failN;
 console.log(`\n${pass}/${total} checks passed, ${failN} failed`);
 if (failN) process.exit(1);

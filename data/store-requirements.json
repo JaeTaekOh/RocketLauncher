@@ -217,6 +217,82 @@
    "rule": "Guideline 2.5.19: no hidden, dormant or undocumented features; explain every feature (including remotely enabled ones) in the review notes. Guideline 2.3.14: creative assets must not show prices, discounts or unverifiable claims.",
    "source": "https://developer.apple.com/news/?id=92th7e5i",
    "verified_on": "2026-11-17"
+  },
+  {
+   "id": "play.fgs_special_use",
+   "store": "play",
+   "kind": "policy",
+   "status": "in_force",
+   "rule": "A foreground service declared as specialUse must include the PROPERTY_SPECIAL_USE_FGS_SUBTYPE property and be declared in Play Console.",
+   "source": "https://developer.android.com/about/versions/14/changes/fgs-types-required",
+   "also": [
+    "https://support.google.com/googleplay/android-developer/answer/13392821"
+   ],
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "play.fgs_geofencing",
+   "store": "play",
+   "kind": "policy",
+   "date": "2026-08-26",
+   "status": "in_force",
+   "conservative": true,
+   "rule": "Geofencing is no longer an approved use of a location foreground service; use the Geofence API. Official pages disagree on the date (Play help 2026-08-26 vs play-policies 2027-01-27). Rocket Launcher warns and does not block.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/16965181",
+   "also": [
+    "https://developer.android.com/distribute/play-policies"
+   ],
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "play.fgs_boot_completed",
+   "store": "play",
+   "kind": "policy",
+   "date": "2025-08-31",
+   "status": "in_force",
+   "rule": "Apps targeting Android 15 must not start most foreground service types (camera, dataSync, mediaPlayback, mediaProjection, phoneCall, microphone) from a BOOT_COMPLETED receiver.",
+   "source": "https://developer.android.com/about/versions/15/changes/foreground-service-types",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "play.fgs_media_processing",
+   "store": "play",
+   "kind": "policy",
+   "date": "2025-08-31",
+   "status": "in_force",
+   "rule": "The mediaProcessing foreground service type is limited to 6 hours in a 24-hour window. Implement Service.onTimeout() and call stopSelf().",
+   "source": "https://developer.android.com/about/versions/15/changes/foreground-service-types",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "play.store_ai_assets",
+   "store": "play",
+   "kind": "policy",
+   "status": "in_force",
+   "rule": "If store listing or promo images, videos, or text were generated or edited with AI, declare each asset in Play Console. No official start date is published.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/17262077",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "apple.age_rating_questionnaire",
+   "store": "apple",
+   "kind": "age_rating",
+   "date": "2026-01-31",
+   "status": "in_force",
+   "rule": "Age ratings use the updated questionnaire, including 13+, 16+ and 18+. Answers are required to submit app updates.",
+   "source": "https://developer.apple.com/news/upcoming-requirements/",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "apple.ios27_launch_screen",
+   "store": "apple",
+   "kind": "launch_screen",
+   "date": "2027-04-01",
+   "date_precision": "month",
+   "status": "upcoming",
+   "rule": "Apps built with the iOS 27 SDK must include a launch screen in Info.plist (UILaunchStoryboardName, UILaunchStoryboards, UILaunchScreen, or UILaunchScreens) or the upload is rejected (ITMS-90870). Required for all uploads from April 2027.",
+   "source": "https://developer.apple.com/documentation/technotes/tn3208-preparing-your-apps-launch-screen-to-meet-app-store-requirements",
+   "verified_on": "2026-11-26"
   }
  ],
  "countries": [
@@ -285,6 +361,101 @@
    "rule": "Thailand is one of the first regions where Android developer verification install checks apply (from 2026-09-30). Make sure the Play developer account is verified and every app is registered.",
    "source": "https://developer.android.com/developer-verification/guides/faq",
    "verified_on": "2026-11-17"
+  },
+  {
+   "id": "kr.privacy_in_app",
+   "country": "KR",
+   "store": "both",
+   "applies": "manual",
+   "rule": "When distributing in Korea, a Korean privacy policy should be reachable in the app from the first screen or menu without a login, required and optional permissions should be separate, and generative-AI training (if any) should be disclosed with an opt-out. This follows PIPC mobile-app guidance. It does not rely on the 2026 amendment dates that were wrongly tied to Article 30 or Article 22-2.",
+   "source": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%20%EB%B3%B4%ED%98%B8%EB%B2%95",
+   "also": [
+    "https://pipc.go.kr/"
+   ],
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "kr.ai_training_optout",
+   "country": "KR",
+   "store": "both",
+   "applies": "manual",
+   "rule": "If a Korea-distributed app uses generative AI, say whether prompts or outputs are used for training and how to opt out. The 2026-03-04 PIPC note was only partly verified, so this is a warning.",
+   "source": "https://pipc.go.kr/",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "kr.third_party_payment",
+   "country": "KR",
+   "store": "both",
+   "applies": "manual",
+   "rule": "Third-party (non-store) payments in Korea need a store-specific entitlement or Play alternative billing, 24-hour transaction reporting, and business / GRAC information where required.",
+   "source": "https://developer.apple.com/support/storekit-external-entitlement-kr/",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "cn.icp",
+   "country": "CN",
+   "store": "both",
+   "applies": "manual",
+   "rule": "Apps distributed in mainland China must show an ICP filing number and a lookup link. Games also need an ISBN / 版号.",
+   "source": "https://developer.apple.com/help/app-store-connect/manage-compliance-information/view-china-mainland-compliance-information/",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "cn.ai_label",
+   "country": "CN",
+   "store": "both",
+   "applies": "manual",
+   "rule": "Generative AI content distributed in mainland China needs explicit and implicit labels. App Store Connect may also require a CAC filing / security assessment (existing apps: 2027-01-31).",
+   "source": "https://developer.apple.com/help/app-store-connect/manage-compliance-information/view-china-mainland-compliance-information/",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "in.dpdp",
+   "country": "IN",
+   "store": "both",
+   "applies": "manual",
+   "date": "2027-05-14",
+   "rule": "India DPDP Rules are phased in. Full app duties (plain-language notices, consent and withdrawal, DPO contact, children’s data, breach notice) apply from 2027-05-14.",
+   "source": "https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025-gDOxUjMtQWa",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "in.rbi_lending",
+   "country": "IN",
+   "store": "both",
+   "applies": "manual",
+   "rule": "Digital lending apps distributed in India must be on the RBI-authorised DLA list and follow Play financial-feature declarations.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/16604194",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "in.money_games",
+   "country": "IN",
+   "store": "both",
+   "applies": "manual",
+   "date": "2026-05-01",
+   "rule": "Real-money online games have been banned in India since 2026-05-01.",
+   "source": "https://www.meity.gov.in/documents/act-and-policies/promotion-and-regulation-of-online-gaming-act-2025-and-its-corrigenda-kTMxQjMtQWa",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "th.ai_guidelines",
+   "country": "TH",
+   "store": "both",
+   "applies": "manual",
+   "rule": "PDPC generative-AI guidance (estimated) asks Thailand-distributed apps to tell users they are interacting with AI and how personal data is used.",
+   "source": "https://www.pdpc.or.th/",
+   "verified_on": "2026-11-26"
+  },
+  {
+   "id": "th.loan_rates",
+   "country": "TH",
+   "store": "both",
+   "applies": "manual",
+   "rule": "Consumer loan apps in Thailand must be authorised and must show interest and fees in the store listing.",
+   "source": "https://www.bot.or.th/",
+   "verified_on": "2026-11-26"
   }
  ]
 }

@@ -173,7 +173,8 @@ export function scanProject(project, A) {
   X.policy = { files: pol.slice(0, 5), read, unread: !read && !!(A.listing && A.listing.privacyUrl),
     source: localTxt.trim() ? 'local' : (remoteTxt.trim() ? 'url' : null),
     location: read && /location|위치|ตำแหน่ง|位置|स्थान/i.test(polTxt), ads: read && polTxt.split(/[.。!?\n]+/).some(s => /advert|ads\b|admob|광고|โฆษณา|广告|विज्ञापन/i.test(s) && !/하지 않|않습니다|않아요|안 합니다|금지|\b(not|never|no|without|neither|nor|don't|doesn't|won't)\b|ไม่|不会|不用|不会|没有|नहीं/i.test(s)),
-    deletion: read && /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt), thai: read && /[\u0E00-\u0E7F]/.test(polTxt) };
+    deletion: read && /delet|retention|retain|삭제|보관|ลบ|删除|保留|हटा/i.test(polTxt), thai: read && /[\u0E00-\u0E7F]/.test(polTxt),
+    korean: read && /[\uAC00-\uD7A3]/.test(polTxt), chinese: read && /[\u4E00-\u9FFF]/.test(polTxt) };
   /* force update and remote flags */
   X.forceUpdate = { code: codeP.filter(p => FORCE_UPDATE.test(text(p))).slice(0, 5), lib: UPDATE_LIBS.test(depHay + gradleTxt + codeP.map(text).join('\n').slice(0, 300000)) };
   X.remoteFlags = REMOTE_FLAGS.test(depHay + gradleTxt + codeP.slice(0, 60).map(text).join('\n'));
@@ -181,6 +182,31 @@ export function scanProject(project, A) {
   if (X.remoteFlags) X.remoteFlagsWhere = REMOTE_FLAGS.test(depHay) ? 'dependencies' : REMOTE_FLAGS.test(gradleTxt) ? 'Gradle files' : (codeP.slice(0, 60).find(p => REMOTE_FLAGS.test(text(p))) || 'code');
   /* tester opt-in pages in the repo */
   X.optinPages = textP.filter(p => /\.(html?|md)$/i.test(p) && OPTIN_PAGE.test(p.split('/').pop() + ' ' + p)).slice(0, 5).map(p => ({ path: p, ...optinCheck(text(p)) }));
+
+  /* policy-review signals (rules-029): FGS / geofence / launch screen / in-app privacy / ICP */
+  {
+    const mans = P.filter(p => F[p].text != null && /(^|\/)AndroidManifest\.xml$/.test(p));
+    const manTxt = mans.map(text).join('\n');
+    const skip = p => /(^|\/)(node_modules|vendor|dist|build|tests?|__tests__|spec|Pods)\//i.test(p) || /\.(test|spec)\.[jt]sx?$/.test(p);
+    const hay = codeP.filter(p => !skip(p)).map(text).join('\n').slice(0, 400000) + '\n' + depHay;
+    const uiHay = [hay, JSON.stringify((A && A.strings) || {}), mans.map(text).join('\n')].join('\n');
+    const types = ((A && A.android && A.android.services) || []).flatMap(x => String(x.fgsType || '').split('|')).map(s => s.trim()).filter(Boolean);
+    const BOOT_FGS = new Set(['camera', 'dataSync', 'mediaPlayback', 'mediaProjection', 'phoneCall', 'microphone']);
+    X.fgs = {
+      types,
+      specialUse: types.includes('specialUse') || /foregroundServiceType\s*=\s*"[^"]*specialUse/.test(manTxt),
+      specialUseProperty: /PROPERTY_SPECIAL_USE_FGS_SUBTYPE|android\.app\.PROPERTY_SPECIAL_USE/.test(manTxt),
+      location: types.includes('location') || /foregroundServiceType\s*=\s*"[^"]*location/.test(manTxt),
+      bootCompleted: /RECEIVE_BOOT_COMPLETED|android\.intent\.action\.BOOT_COMPLETED/.test(manTxt),
+      mediaProcessing: types.includes('mediaProcessing') || /foregroundServiceType\s*=\s*"[^"]*mediaProcessing/.test(manTxt),
+      onTimeout: /\bonTimeout\s*\(/.test(hay)
+    };
+    X.geofence = /\b(GeofencingClient|GeofencingRequest|Geofence(?:Event|Status)?|addGeofences|removeGeofences|startGeofencingAsync|com\.google\.android\.gms\.location\.Geofence|flutter_geofence|react-native-expo-geofence)\b/.test(hay);
+    X.icp = /ICP\s*备|ICP备案|京ICP|沪ICP|粤ICP|浙ICP|苏ICP|川ICP|beian\.miit\.gov\.cn|beian\.gov\.cn/i.test(uiHay);
+    X.inAppPrivacy = /개인정보\s*처리방침|privacy\s*policy|นโยบายความเป็นส่วนตัว|隐私政策|गोपनीयता नीति/i.test(uiHay);
+    const plists = P.filter(p => /(^|\/)Info\.plist$/.test(p));
+    X.launchScreen = plists.some(p => /UILaunchStoryboardName|UILaunchStoryboards|UILaunchScreen|UILaunchScreens/.test(text(p)));
+  }
   X.scannedAt = new Date().toISOString();
   return X;
 }
@@ -220,6 +246,26 @@ export function playTargetRequirement(formFactors) {
 }
 const PLAY_FF_LABEL = { mobile: 'phones and tablets', wear_os: 'Wear OS', automotive: 'Android Automotive OS', tv: 'Android TV', mixed: 'this form factor mix' };
 
+
+export function parseListedCountries(s) {
+  const t = String(s || '');
+  if (!t.trim()) return [];
+  const out = [];
+  if (/한국|대한민국|south\s*korea|\bkorea\b|\bKR\b/i.test(t)) out.push('KR');
+  if (/태국|thailand|ไทย|\bTH\b/i.test(t)) out.push('TH');
+  if (/중국|china|中華人民|中华人民|\bCN\b|mainland china/i.test(t)) out.push('CN');
+  if (/(^|[^a-z])india([^a-z]|$)|인도(?!\s*네시아)|\bIN\b/i.test(t)) out.push('IN');
+  if (/\bEU\b|유럽|europe|EEA|european union/i.test(t)) out.push('EU');
+  if (/\bUK\b|united kingdom|britain|영국/i.test(t)) out.push('EU');
+  return [...new Set(out)];
+}
+
+function countryWant(st, countries) {
+  const prepared = parseListedCountries(st.A && st.A.prepared && st.A.prepared.countries);
+  const base = (countries && countries.length ? countries : ['KR', 'EU', 'TH']).map(c => String(c).toUpperCase());
+  return [...new Set([...base, ...prepared])];
+}
+
 /* ---------- H1: store requirements and deadlines ---------- */
 export function requirements(st, L, opts = {}) {
   const A = st.A, X = st.X, an = A.android, io = A.ios, T = opts.today || today(), rows = [];
@@ -252,7 +298,7 @@ export function requirements(st, L, opts = {}) {
       const binNote = bins.length ? ` Checked inside the built ${bins.map(b => `${b.kind.toUpperCase()} ${b.path} (${b.libs} native librar${b.libs === 1 ? 'y' : 'ies'}${b.abis.length ? ': ' + b.abis.join(', ') : ''})`).join('; ')}.` : '';
       const hybrid = !bins.length && (['react-native', 'expo', 'flutter', 'unity', 'godot', 'maui', 'nativescript'].includes(A.framework) || X.build.reactNative || X.build.flutter);
       const agpOld = X.build.agp && vcmp(X.build.agp, '8.5.1') < 0 && !(bins.length && !N.libs.length);
-      if (bad.length) add('play.16kb_page_size', 'block', `${bad.length} 64-bit native librar${bad.length > 1 ? 'ies are' : 'y is'} aligned to ${Math.min(...bad.map(l => l.align))} bytes: ${bad.slice(0, 4).map(l => l.path).join(', ')}.${binNote}`, 'Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console.', { files: bad.map(l => l.path) });
+      if (bad.length) add('play.16kb_page_size', 'block', `${bad.length} 64-bit native librar${bad.length > 1 ? 'ies are' : 'y is'} aligned to ${Math.min(...bad.map(l => l.align))} bytes: ${bad.slice(0, 4).map(l => l.path).join(', ')}.${binNote}`, 'Rebuild or update these libraries with 16 KB ELF alignment (NDK r28+, AGP 8.5.1+), then check the App bundle explorer in Play Console. Google Play will reject updates that do not support 16 KB page sizes from 2027-02-01; this is flagged now so the app is ready before that date.', { files: bad.map(l => l.path) });
       else if (N.nativeSrc || unread.length || hybrid || agpOld) add('play.16kb_page_size', 'warn',
         [N.nativeSrc ? 'The project builds native code (CMake / ndk-build).' : '', hybrid ? `${A.framework} apps ship native libraries at build time.` : '', unread.length ? `${unread.length} native librar${unread.length > 1 ? 'ies' : 'y'} could not be read.` : '', agpOld ? `Android Gradle Plugin ${X.build.agp} is older than 8.5.1.` : ''].filter(Boolean).join(' '),
         'Use AGP 8.5.1+ and NDK r28+, update React Native / Flutter / game engines and native SDKs to 16 KB-ready versions, then confirm "Supports 16 KB" in Play Console > App bundle explorer.');
@@ -274,6 +320,24 @@ export function requirements(st, L, opts = {}) {
     if ((an.permissions || []).some(p => /USE_FULL_SCREEN_INTENT$/.test(p)) && (!t || t >= 34))
       add('play.full_screen_intent', 'check', 'The app declares USE_FULL_SCREEN_INTENT.', 'Play Console > App content: declare whether the core function is setting alarms or receiving phone or video calls (auto-granted). Other apps must ask the user and keep working if the permission is denied.',
         { _v: {}, store: STORE.play, rule: 'API 34+ apps get USE_FULL_SCREEN_INTENT by default only for alarms or calls.', source: 'https://support.google.com/googleplay/android-developer/answer/13392821' });
+    /* rules-029: remaining policy gaps. Official + reliable signal = block; date conflict, weak static proof, or 추정/미확인 = warn/check. */
+    {
+      const FGS = (X && X.fgs) || {}, BOOT_FGS = new Set(['camera', 'dataSync', 'mediaPlayback', 'mediaProjection', 'phoneCall', 'microphone']);
+      if (FGS.specialUse && !FGS.specialUseProperty)
+        add('play.fgs_special_use', 'block', 'A foreground service is declared as specialUse, but the required special-use property is not in the manifest.', 'Add a <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="…"> inside that <service>, and declare the use in Play Console.',
+          { store: STORE.play, source: 'https://developer.android.com/about/versions/14/changes/fgs-types-required' });
+      if (FGS.location && X && X.geofence)
+        add('play.fgs_geofencing', 'warn', 'The app has a location foreground service and geofencing APIs.', 'If the location FGS is only used for geofencing, switch to the Geofence API. Navigation or user-started live sharing may still use a location FGS. Official pages disagree on the date (2026-08-26 vs 2027-01-27), so this is a warning, not a must-fix.',
+          { conservative: true, store: STORE.play, source: 'https://support.google.com/googleplay/android-developer/answer/16965181' });
+      if (FGS.bootCompleted && (FGS.types || []).some(tp => BOOT_FGS.has(tp)))
+        add('play.fgs_boot_completed', 'warn', `The app listens for BOOT_COMPLETED and declares foreground service type(s): ${(FGS.types || []).filter(tp => BOOT_FGS.has(tp)).join(', ')}.`, 'Android 15 does not allow starting most foreground service types from a BOOT_COMPLETED receiver (camera, dataSync, mediaPlayback, mediaProjection, phoneCall, microphone). This is a warning because the manifest alone does not prove the receiver starts the service.',
+          { store: STORE.play, source: 'https://developer.android.com/about/versions/15/changes/foreground-service-types' });
+      if (FGS.mediaProcessing)
+        add('play.fgs_media_processing', 'warn', FGS.onTimeout ? 'A mediaProcessing foreground service is declared.' : 'A mediaProcessing foreground service is declared, and no onTimeout() method was found in the project code.', 'mediaProcessing has a 6-hour limit in a 24-hour window. Implement Service.onTimeout() and call stopSelf(). Confirm the timeout handler if it lives in a library.',
+          { store: STORE.play, source: 'https://developer.android.com/about/versions/15/changes/foreground-service-types' });
+    }
+    add('play.store_ai_assets', 'check', 'Rocket Launcher cannot see whether store listing or promo assets were made with AI.', 'If any Play listing or promo image, video, or text was generated or edited with AI, declare each asset in Play Console (Grow users > Store presence / Asset library). There is no published start date; the workflow applies when new assets are added.',
+      { _v: {}, store: STORE.play, source: 'https://support.google.com/googleplay/android-developer/answer/17262077' });
     /* 0.2.8: Advertising ID / Contains ads answers when the build carries no ads and no AD_ID (removed with tools:node, or ads switched off) */
     { const adIdRemoved = (an.removedPermissions || []).some(p => /AD_ID$/.test(p || ''));
       if (!A.sdk.ads && !an.adId && (adIdRemoved || A.adsDisabled || A.adsHint))
@@ -323,6 +387,8 @@ export function requirements(st, L, opts = {}) {
     } else add('apple.privacy_manifest_reasons', 'warn', rx(L, 'req.rescan'));
     if (io.encryption === undefined) add('apple.export_compliance', 'warn', 'ITSAppUsesNonExemptEncryption is not set.', 'Set it to NO (false) if the app only uses HTTPS and OS encryption; otherwise answer the export questions in App Store Connect.');
     else add('apple.export_compliance', 'ok', `ITSAppUsesNonExemptEncryption = ${io.encryption}.`);
+    add('apple.age_rating_questionnaire', 'check', 'The age rating questionnaire must include the 13+, 16+ and 18+ answers.', 'App Store Connect > App Information > Age Rating. Required since 2026-01-31 to submit updates. Rocket Launcher cannot see the answers already saved in App Store Connect.',
+      { store: STORE.apple, source: 'https://developer.apple.com/news/upcoming-requirements/' });
     add('apple.age_rating_social_media', 'check', 'Answer the social media capability question in the age rating questionnaire.', 'No public feed or discovery of other users\' posts → answer No.');
     add('apple.age_rating_location_dating', 'check', A.sdk.location ? 'The app uses location. Showing nearby places is not "Shared Location"; sharing a user\'s location with other people is.' : 'Answer the new Shared Location and Dating & Relationships questions.', 'App Store Connect > App Information > Age Rating. Required with the next update; every app by 2027-01-12.');
     /* 0.2.8: CarPlay needs an entitlement Apple grants to the team, in the App ID and a manual provisioning profile; without it iOS hides the app in CarPlay */
@@ -334,6 +400,19 @@ export function requirements(st, L, opts = {}) {
     if (X && X.remoteFlags) add('apple.hidden_features', 'warn', `The app uses remote config / feature flags (${X.remoteFlagsWhere || 'code'}). An empty remote config URL is not counted.`, 'List every feature that can be turned on remotely in the review notes (Guideline 2.5.19); keep store graphics free of prices and unverifiable claims (2.3.14).', { _v: { where: X.remoteFlagsWhere || 'code' }, _k: 'apple.hidden_features#warn' });
     else add('apple.hidden_features', 'info', 'No remote feature flags found.', 'Describe every feature in the review notes (Guideline 2.5.19).', { _v: {} });
     add('apple.iphone_duo_screenshots', 'info', 'Upcoming screenshot size.', 'When you move to the iOS 27.1 SDK, add iPhone Duo screenshots. Never upload screenshots with an alpha channel.');
+    {
+      const hints = (X && X.build && X.build.xcodeHints) || [];
+      const maxV = hints.reduce((m, h) => (!m || vcmp(h.version, m) > 0 ? h.version : m), null);
+      const uses27 = maxV && vcmp(maxV, '27') >= 0;
+      if (uses27 && X && X.launchScreen === false)
+        add('apple.ios27_launch_screen', 'warn', 'The project looks to be using Xcode 27, but Info.plist has no launch screen key (UILaunchStoryboardName, UILaunchStoryboards, UILaunchScreen, or UILaunchScreens).', 'Apps built with the iOS 27 SDK are rejected on upload without a launch screen (ITMS-90870). Add one of those keys. Required for all uploads from April 2027.',
+          { store: STORE.apple, source: 'https://developer.apple.com/documentation/technotes/tn3208-preparing-your-apps-launch-screen-to-meet-app-store-requirements' });
+      else if (uses27 && X && X.launchScreen)
+        add('apple.ios27_launch_screen', 'ok', 'A launch screen key is present in Info.plist (needed for the iOS 27 SDK).');
+      else
+        add('apple.ios27_launch_screen', 'info', 'From April 2027, uploads must use the iOS 27 SDK and include a launch screen in Info.plist.', 'No action until you build with Xcode 27. Then keep UILaunchScreen or a launch storyboard in Info.plist.',
+          { store: STORE.apple, source: 'https://developer.apple.com/documentation/technotes/tn3208-preparing-your-apps-launch-screen-to-meet-app-store-requirements' });
+    }
   }
   if (A.sdk.auth) {
     const d = deletionStatus(st);
@@ -341,6 +420,8 @@ export function requirements(st, L, opts = {}) {
     if (an) add('play.account_deletion', sev, d.summary, sev === 'ok' ? undefined : 'Run rocketlauncher_account_deletion_check.');
     if (io) add('apple.account_deletion', d.inApp ? 'ok' : 'block', d.summary, d.inApp ? undefined : 'Run rocketlauncher_account_deletion_check.');
   }
+  for (const r of countryPolicyGaps(st, countryWant(st, opts.countries)))
+    add(r.id, r.severity, r.finding, r.action, { store: r.store, source: r.source, country: r.country });
   sortRows(rows);
   const c = counts(rows);
   return { title: rx(L, 'req.title'), summary: rx(L, 'req.summary', { ...c, date: REQ.verified_on }), counts: c, rules_verified_on: REQ.verified_on, today: T,
@@ -784,14 +865,82 @@ export async function versionSync(st, L, args = {}, others = []) {
 }
 
 /* ---------- M5: country rules ---------- */
+
+function hasPersonalData(st) {
+  const A = st.A || {}, S = A.sdk || {}, R = A.review || {}, an = A.android || {};
+  const po = Flow.privacyOpts(A, st.dec), sent = R.locationSent || po.location === 'server';
+  const perms = (an.permissions || []).join(' ');
+  const sensitive = /ACCESS_(FINE|COARSE|BACKGROUND)_LOCATION|CAMERA|RECORD_AUDIO|READ_CONTACTS|READ_PHONE_STATE|READ_MEDIA|READ_EXTERNAL|BODY_SENSORS|ACTIVITY_RECOGNITION|READ_CALENDAR|READ_SMS|READ_CALL_LOG|GET_ACCOUNTS|BLUETOOTH|READ_HEALTH/i.test(perms);
+  const iosUsage = !!(A.ios && A.ios.usage && Object.keys(A.ios.usage).length);
+  const iap = !!(A.iap || S.iap || S.billing || S.purchases);
+  return !!(S.auth || S.analytics || S.crash || S.ads || S.location || S.cloudDb || (S.location && sent) || sensitive || iosUsage || iap || (A.policy && A.policy.loans) || R.aiApi);
+}
+
+/* New country rows (rules-029). Korean 제30조 / 제22조의2 amendment dates are never used. */
+export function countryPolicyGaps(st, want) {
+  const A = st.A || {}, X = st.X || {}, S = A.sdk || {}, rows = [];
+  const push = (id, severity, finding, action) => {
+    const r = req(id);
+    rows.push({ id, severity, finding, action, source: r.source, verified_on: r.verified_on, rule: r.rule, country: r.country,
+      store: r.store === 'both' ? 'both' : (STORE[r.store] || r.store) });
+  };
+  const W = (want || []).map(c => String(c).toUpperCase());
+  const personal = hasPersonalData(st);
+  const ai = !!(A.review && A.review.aiApi);
+  const loans = !!(A.policy && A.policy.loans);
+  const gambling = !!(A.policy && A.policy.gambling);
+  const iap = !!(A.iap || (A.sdk && (A.sdk.iap || A.sdk.billing || A.sdk.purchases)));
+  if (W.includes('KR') && personal) {
+    const bits = [];
+    if (X.inAppPrivacy) bits.push('an in-app privacy-policy string was found');
+    else bits.push('no in-app privacy-policy screen or link was found in the project');
+    if (X.policy && X.policy.korean) bits.push('a Korean privacy policy file or page is in the project');
+    else if (X.policy && X.policy.read) bits.push('a privacy policy was found, but it is not in Korean');
+    const sev = X.inAppPrivacy && X.policy && X.policy.korean ? 'check' : 'warn';
+    push('kr.privacy_in_app', sev, `The app handles personal data and Korea is in the distribution list: ${bits.join('; ')}.`,
+      'Show a Korean privacy policy from the first screen or menu without requiring a login. Keep required and optional permissions separate. If the app uses generative AI, say whether prompts are used for training and how to opt out. This follows PIPC mobile-app guidance; it does not use the 2026 amendment dates that were wrongly tied to Article 30 or Article 22-2.');
+    if (ai)
+      push('kr.ai_training_optout', 'warn', 'The app calls a generative AI API and is distributed in Korea.',
+        'In the Korean privacy policy and in the app, say whether prompts or outputs are used for training, and offer an opt-out. This is a warning because the 2026-03-04 PIPC note was only partly verified.');
+  }
+  if (W.includes('KR') && iap)
+    push('kr.third_party_payment', 'check', 'The app has in-app purchases and is distributed in Korea.',
+      'If you also offer a third-party (non-store) payment method in Korea, you need the store-specific entitlement or Play alternative billing, must report those transactions within 24 hours, and must show business and GRAC information where required. Ordinary store billing does not need a change.');
+  if (W.includes('CN')) {
+    if (X.icp) push('cn.icp', 'ok', 'An ICP filing number or MIIT beian link was found in the project.');
+    else push('cn.icp', 'warn', 'No ICP filing number (备案) or beian.miit.gov.cn link was found in the project.',
+      'Apps distributed in mainland China must show an ICP number and a lookup link in the app. Games also need an ISBN / 版号. This is a warning, not a must-fix, because the number may be loaded from a server at runtime.');
+    if (ai)
+      push('cn.ai_label', 'warn', 'The app calls a generative AI API and is distributed in mainland China.',
+        'Label AI-generated content both explicitly in the UI and in implicit metadata. App Store Connect also asks for a CAC filing / security assessment for generative AI (existing apps have a 2027-01-31 deadline).');
+  }
+  if (W.includes('IN') && personal)
+    push('in.dpdp', 'warn', 'The app handles personal data and India is in the distribution list.',
+      'India DPDP Rules are being phased in. Full app duties (plain-language purpose notices, consent and withdrawal, DPO contact, children’s data rules, breach notice) apply from 2027-05-14. Prepare now; this is a warning until that date.');
+  if (W.includes('IN') && loans)
+    push('in.rbi_lending', 'warn', 'The app looks like a lending product and is distributed in India.',
+      'Digital lending apps must be on the RBI-authorised list and follow Play’s financial features declaration. Sensitive permissions such as contacts or photos are restricted. Confirm against the official DLA list; keyword detection can be wrong.');
+  if (W.includes('IN') && gambling)
+    push('in.money_games', 'warn', 'The store text looks like real-money gaming, and India is in the distribution list.',
+      'Real-money online games (skill or chance) have been banned in India since 2026-05-01. Turn off India availability, or betting/cash-out features, if this applies. This is a warning because the keyword match can be a false positive.');
+  if (W.includes('TH') && ai)
+    push('th.ai_guidelines', 'warn', 'The app calls a generative AI API and is distributed in Thailand.',
+      'PDPC generative-AI guidance (estimated, not a confirmed legal deadline) asks you to tell users they are interacting with AI and how personal data is used. This row is a warning only.');
+  if (W.includes('TH') && loans)
+    push('th.loan_rates', 'warn', 'The app looks like a lending product and is distributed in Thailand.',
+      'Consumer loan apps must be authorised and must show interest and fees in the store listing. Confirm against Bank of Thailand rules; keyword detection can be wrong.');
+  return rows;
+}
+
 export function countryCheck(st, L, { countries, developer_country } = {}) {
   const A = st.A, X = st.X || {}, S = A.sdk || {}, R = A.review || {}, rows = [];
-  const want = (countries && countries.length ? countries : ['KR', 'EU', 'TH']).map(c => String(c).toUpperCase());
+  const want = countryWant(st, countries);
   const po = Flow.privacyOpts(A, st.dec), sent = R.locationSent || po.location === 'server';
   const storesHere = Flow.storesOf(A);
   const dev = developer_country ? String(developer_country).toUpperCase() : null;
   const personal = S.auth || S.analytics || S.crash || S.ads || (S.location && sent) || S.cloudDb;
   for (const r of REQ.countries.filter(r => want.includes(r.country))) {
+    if (r.applies === 'manual') continue;
     if (r.store !== 'both' && !storesHere.includes(r.store)) continue;
     let sev, finding;
     switch (r.applies) {
@@ -819,6 +968,8 @@ export function countryCheck(st, L, { countries, developer_country } = {}) {
     }
     rows.push({ id: r.id, country: r.country, store: r.store === 'both' ? 'both' : STORE[r.store], severity: sev, finding, rule: r.rule, source: r.source, also: r.also, verified_on: r.verified_on });
   }
+  const seen = new Set(rows.map(r => r.id));
+  for (const r of countryPolicyGaps(st, want)) if (!seen.has(r.id)) rows.push(r);
   sortRows(rows); const c = counts(rows);
   return { title: rx(L, 'cc.title'), summary: rx(L, 'cc.summary', { n: rows.filter(r => !['ok', 'info'].includes(r.severity)).length }), countries: want, counts: c, rows: label(L, rows),
     note: 'Legal summaries, not legal advice. Check the source before acting.' };
