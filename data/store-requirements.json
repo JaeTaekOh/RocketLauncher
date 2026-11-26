@@ -1,6 +1,6 @@
 {
- "_about": "Store technical requirements and policy deadlines used by rocketlauncher_check_requirements. One row per rule. Update 'date', 'status' and 'verified_on' when a store changes a rule; keep the official source URL. status: in_force | upcoming | ongoing. 'conservative' marks rules where sources disagree and Rocket Launcher applies the earliest date.",
- "verified_on": "2026-11-17",
+ "_about": "Store technical requirements and policy deadlines used by rocketlauncher_check_requirements. One row per rule. Update 'date', 'status' and 'verified_on' when a store changes a rule; keep the official source URL. status: in_force | upcoming | ongoing. 'conservative' marks rules where sources disagree and Rocket Launcher applies the earliest date. Per-row verified_on is authoritative. 2026-11-26: official pages re-checked for target API, 16 KB, Xcode 26 / iOS 13, Xcode 27, and full-screen intent.",
+ "verified_on": "2026-11-26",
  "requirements": [
   {
    "id": "play.target_api_36",
@@ -12,7 +12,7 @@
    "status": "in_force",
    "rule": "New apps and app updates must target Android 16 (API 36) or higher. Wear OS and Android Automotive OS: API 35; Android TV and XR: API 34. The extension window (to 2026-11-01) has ended.",
    "source": "https://support.google.com/googleplay/android-developer/answer/11926878",
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26"
   },
   {
    "id": "play.existing_api_35",
@@ -23,7 +23,7 @@
    "status": "in_force",
    "rule": "Existing apps must target API 35 or higher to stay available to new users on devices running a newer Android version.",
    "source": "https://support.google.com/googleplay/android-developer/answer/11926878",
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26"
   },
   {
    "id": "play.16kb_page_size",
@@ -33,12 +33,12 @@
    "official_update_block_date": "2027-02-01",
    "status": "in_force",
    "conservative": true,
-   "rule": "Apps targeting Android 15+ that ship native code (.so) must support 16 KB memory pages on 64-bit devices (LOAD segments aligned to 16 KB; AGP 8.5.1+, NDK r28+). Sources disagree on the update deadline: the official Android page says updates without 16 KB support are blocked from 2027-02-01, while the Play announcement applied it to new apps and updates targeting Android 15+ from 2025-11-01 and third-party reports say update enforcement started in May 2026. Rocket Launcher treats it as required now.",
+   "rule": "Apps targeting Android 15+ that ship native code (.so) must support 16 KB memory pages on 64-bit devices (LOAD segments aligned to 16 KB; AGP 8.5.1+, NDK r28+). The official Android page (updated 2026-11-04 UTC), re-checked 2026-11-26, says updates without 16 KB support are blocked from 2027-02-01. Earlier Play announcements applied the requirement to new apps and updates targeting Android 15+ from 2025-11-01, and third-party reports say update enforcement started in May 2026. Rocket Launcher still treats a misaligned 64-bit library as required now (conservative). Whether to downgrade that block to a warning until 2027-02-01 is a product decision.",
    "source": "https://developer.android.com/guide/practices/page-sizes",
    "also": [
     "https://android-developers.googleblog.com/2025/05/prepare-play-apps-for-devices-with-16kb-page-size.html"
    ],
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26"
   },
   {
    "id": "play.app_registration",
@@ -93,6 +93,19 @@
    "verified_on": "2026-11-17"
   },
   {
+   "id": "play.full_screen_intent",
+   "store": "play",
+   "kind": "policy",
+   "date": "2025-01-22",
+   "status": "in_force",
+   "rule": "For apps targeting Android 14 (API 34)+, USE_FULL_SCREEN_INTENT is auto-granted only when the app's core function is setting alarms or receiving phone or video calls. Other apps must declare it in Play Console, request the permission from the user, and keep working if it is denied.",
+   "source": "https://support.google.com/googleplay/android-developer/answer/13392821",
+   "also": [
+    "https://support.google.com/googleplay/android-developer/answer/16558241"
+   ],
+   "verified_on": "2026-11-26"
+  },
+  {
    "id": "apple.xcode_26",
    "store": "apple",
    "kind": "xcode",
@@ -101,7 +114,7 @@
    "status": "in_force",
    "rule": "Uploads must be built with Xcode 26 or later and an iOS/iPadOS 26 SDK.",
    "source": "https://developer.apple.com/news/upcoming-requirements/",
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26"
   },
   {
    "id": "apple.min_target_ios13",
@@ -112,7 +125,7 @@
    "status": "in_force",
    "rule": "iOS and iPadOS uploads must target iOS 13 or later.",
    "source": "https://developer.apple.com/news/upcoming-requirements/",
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26"
   },
   {
    "id": "apple.ios27_sdk",
@@ -125,7 +138,10 @@
    "status": "upcoming",
    "rule": "From April 2027 uploads must be built with the iOS & iPadOS 27 SDK (Xcode 27) or later and target iOS 15 or later.",
    "source": "https://developer.apple.com/app-store/submitting/",
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26",
+   "also": [
+    "https://developer.apple.com/news/?id=k1mtkt1k"
+   ]
   },
   {
    "id": "apple.privacy_manifest_reasons",
@@ -139,7 +155,7 @@
     "https://developer.apple.com/news/upcoming-requirements/",
     "https://developer.apple.com/support/third-party-SDK-requirements/"
    ],
-   "verified_on": "2026-11-17"
+   "verified_on": "2026-11-26"
   },
   {
    "id": "apple.export_compliance",

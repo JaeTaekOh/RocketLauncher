@@ -2,7 +2,20 @@
    네트워크·API 키 없이 브라우저 안에서만 동작한다. */
 (function () {
   'use strict';
-  const PLAY_TARGET = 36;          // 2026-08-31부터 신규 앱·업데이트 targetSdk 36 이상 (Play Console 도움말)
+  const PLAY_TARGET = 36;          // mobile default (2026-08-31); Wear/Auto/TV floors are lower — see playTargetRequirement
+  /* Official help, re-checked 2026-11-26. Lower floors apply only when every detected form factor is Wear, Automotive, or TV. */
+  function playTargetRequirement(formFactors) {
+    const ff = Array.isArray(formFactors) ? formFactors.filter(Boolean) : [];
+    const special = new Set(['wear_os', 'android_automotive', 'tv']);
+    const exclusive = ff.length > 0 && ff.every(x => special.has(x));
+    if (!exclusive) return { update: 36, existing: 35, kind: 'mobile' };
+    if (ff.every(x => x === 'tv')) return { update: 34, existing: 33, kind: 'tv' };
+    if (ff.every(x => x === 'android_automotive')) return { update: 35, existing: 32, kind: 'automotive' };
+    if (ff.every(x => x === 'wear_os')) return { update: 35, existing: 34, kind: 'wear_os' };
+    const update = Math.max(...ff.map(x => x === 'tv' ? 34 : 35));
+    const existing = Math.max(...ff.map(x => x === 'tv' ? 33 : x === 'android_automotive' ? 32 : 34));
+    return { update, existing, kind: 'mixed' };
+  }
   const IOS_SDK_NOTE = 26;         // 2026-04부터 iOS 26 SDK(Xcode 26)로 빌드해야 업로드 가능
 
   const find = (files, re) => Object.keys(files).filter(p => re.test(p) && files[p].text != null);
@@ -920,11 +933,13 @@
     const an = A.android, io = A.ios, s = A.sdk;
     if (an) {
       /* Only a value that was actually read can block. An unread value ("—") is a warning to check, never a must-fix. */
-      if (an.targetSdk && an.targetSdk < PLAY_TARGET) add('targetSdk', 'block', 'android', 'patch-gradle', { cur: an.targetSdk, need: PLAY_TARGET });
-      else if (!an.targetSdk) add('targetSdkUnread', 'warn', 'android', 'info', { raw: an.targetSdkRaw || '—', need: PLAY_TARGET });
+      const playApi = playTargetRequirement(an.formFactors);
+      if (an.targetSdk && an.targetSdk < playApi.update) add('targetSdk', 'block', 'android', 'patch-gradle', { cur: an.targetSdk, need: playApi.update });
+      else if (!an.targetSdk) add('targetSdkUnread', 'warn', 'android', 'info', { raw: an.targetSdkRaw || '—', need: playApi.update });
       if (an.debuggable) add('debuggable', 'block', 'android', 'patch-manifest-debug');
       if (an.cleartext) add('cleartext', 'warn', 'android', 'patch-manifest-cleartext');
       if (an.permissions.some(p => /READ_MEDIA_IMAGES|READ_MEDIA_VIDEO/.test(p))) add('photoPerm', 'warn', 'android', 'patch-manifest-photo');
+      if (an.permissions.some(p => /USE_FULL_SCREEN_INTENT$/.test(p)) && (!an.targetSdk || an.targetSdk >= 34)) add('fullScreenIntent', 'check', 'android', 'declare');
       if (an.permissions.some(p => /ACCESS_BACKGROUND_LOCATION/.test(p))) add('bgLocation', 'block', 'android', 'declare');
       if (an.permissions.some(p => /READ_SMS|RECEIVE_SMS|READ_CALL_LOG|PROCESS_OUTGOING_CALLS/.test(p))) add('smsCall', 'block', 'android', 'declare');
       if (an.permissions.some(p => /QUERY_ALL_PACKAGES|MANAGE_EXTERNAL_STORAGE|REQUEST_INSTALL_PACKAGES/.test(p))) add('specialPerm', 'block', 'android', 'declare');
@@ -1052,6 +1067,6 @@
   }
   function refreshIssues(A) { A.issues = checks(A); score(A); return A; }
 
-  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET, score, refreshIssues, catKey };
+  window.RLAnalyzer = { analyze, tracking, PLAY_TARGET, playTargetRequirement, score, refreshIssues, catKey };
 
 })();

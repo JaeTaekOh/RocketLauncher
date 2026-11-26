@@ -197,6 +197,29 @@ export function optinCheck(html) {
   };
 }
 
+
+/* Play target API floors by form factor. Official help, re-checked 2026-11-26
+   (https://support.google.com/googleplay/android-developer/answer/11926878):
+   new apps and updates from 2026-08-31 (extension ended 2026-11-01): mobile API 36;
+   Wear OS and Android Automotive OS API 35; Android TV and XR API 34.
+   Existing apps stay available to new users on newer OS if they meet: mobile 35, Wear 34,
+   TV 33, Automotive 32, XR 34. Android Auto is a phone companion (mobile floors).
+   XR is not detected here, so a phone-like app keeps the mobile floors.
+   Lower floors apply only when every detected form factor is Wear, Automotive, or TV. */
+export function playTargetRequirement(formFactors) {
+  const ff = Array.isArray(formFactors) ? formFactors.filter(Boolean) : [];
+  const special = new Set(['wear_os', 'android_automotive', 'tv']);
+  const exclusive = ff.length > 0 && ff.every(x => special.has(x));
+  if (!exclusive) return { update: 36, existing: 35, kind: 'mobile' };
+  if (ff.every(x => x === 'tv')) return { update: 34, existing: 33, kind: 'tv' };
+  if (ff.every(x => x === 'android_automotive')) return { update: 35, existing: 32, kind: 'automotive' };
+  if (ff.every(x => x === 'wear_os')) return { update: 35, existing: 34, kind: 'wear_os' };
+  const update = Math.max(...ff.map(x => x === 'tv' ? 34 : 35));
+  const existing = Math.max(...ff.map(x => x === 'tv' ? 33 : x === 'android_automotive' ? 32 : 34));
+  return { update, existing, kind: 'mixed' };
+}
+const PLAY_FF_LABEL = { mobile: 'phones and tablets', wear_os: 'Wear OS', automotive: 'Android Automotive OS', tv: 'Android TV', mixed: 'this form factor mix' };
+
 /* ---------- H1: store requirements and deadlines ---------- */
 export function requirements(st, L, opts = {}) {
   const A = st.A, X = st.X, an = A.android, io = A.ios, T = opts.today || today(), rows = [];
@@ -212,10 +235,12 @@ export function requirements(st, L, opts = {}) {
     /* 0.2.6: the built AAB / APK is what Play checks; when it disagrees with the source, the built value is reported */
     const t = B && an.targetSdk && B.targetSdk !== an.targetSdk ? B.targetSdk : an.targetSdk;
     const bt = B ? (B.targetSdk === an.targetSdk ? ` (the built ${B.kind.toUpperCase()} ${B.file} says the same)` : ` in the built ${B.kind.toUpperCase()} ${B.file}${an.targetSdk ? `; the source says ${an.targetSdk}, rebuild before uploading` : ''}`) : '';
-    if (t && t < 36) add('play.target_api_36', 'block', `targetSdk is ${t}${bt}.`, 'Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.');
-    else if (t) add('play.target_api_36', 'ok', `targetSdk is ${t}${bt}.`);
-    else add('play.target_api_36', 'warn', `targetSdk could not be read (${an.targetSdkRaw || 'not set'}).`, 'Check the targetSdk your build actually uses; it must be 36 or higher.');
-    if (stage('play') === 'live' && t && t < 35) add('play.existing_api_35', 'block', `The live app targets ${t}.`, 'Ship an update that targets 36; until then new users on newer Android cannot install it.');
+    const api = playTargetRequirement(an.formFactors);
+    const ffName = PLAY_FF_LABEL[api.kind] || api.kind;
+    if (t && t < api.update) add('play.target_api_36', 'block', `targetSdk is ${t}${bt}.`, api.kind === 'mobile' ? 'Raise targetSdk (and compileSdk) to 36 and test the app on Android 16.' : `Raise targetSdk (and compileSdk) to ${api.update} and test the app. ${ffName} updates must target API ${api.update} or higher.`);
+    else if (t) add('play.target_api_36', 'ok', `targetSdk is ${t}${bt}${api.kind === 'mobile' ? '' : ` (${ffName} updates must target API ${api.update} or higher)`}.`);
+    else add('play.target_api_36', 'warn', `targetSdk could not be read (${an.targetSdkRaw || 'not set'}).`, `Check the targetSdk your build actually uses; it must be ${api.update} or higher${api.kind === 'mobile' ? '' : ` for ${ffName}`}.`);
+    if (stage('play') === 'live' && t && t < api.existing) add('play.existing_api_35', 'block', `The live app targets ${t}.`, `Ship an update that targets ${api.update}; until then new users on newer Android cannot install it (${ffName} existing apps need API ${api.existing}+ to stay visible on newer devices).`);
     /* 16 KB */
     if (!X) add('play.16kb_page_size', 'warn', rx(L, 'req.rescan'), 'Connect the app again.');
     else {
@@ -244,6 +269,11 @@ export function requirements(st, L, opts = {}) {
       if (types.length && perms.includes('android.permission.FOREGROUND_SERVICE') && (!tsdk || tsdk >= 34))
         add('play.fgs_declaration', 'check', `Foreground service type${types.length > 1 ? 's' : ''}: ${types.join(', ')}.`, `Play Console > App content > Foreground service permissions: for each type, describe the feature, the user impact if the task is deferred or interrupted, and add a link to a video that shows the feature${types.includes('mediaPlayback') ? ' (mediaPlayback: show the user starting playback)' : ''}.`,
           { _v: { types: types.join(', '), mp: types.includes('mediaPlayback') }, store: STORE.play, rule: 'Apps targeting Android 14+ declare each foreground service type in Play Console, with a video link.', source: 'https://support.google.com/googleplay/android-developer/answer/13392821' }); }
+
+    /* 0.2.9 policy review: USE_FULL_SCREEN_INTENT is auto-granted only for alarm or calling apps (in force 2025-01-22). Check, not block: other apps may still use it after a user grant. */
+    if ((an.permissions || []).some(p => /USE_FULL_SCREEN_INTENT$/.test(p)) && (!t || t >= 34))
+      add('play.full_screen_intent', 'check', 'The app declares USE_FULL_SCREEN_INTENT.', 'Play Console > App content: declare whether the core function is setting alarms or receiving phone or video calls (auto-granted). Other apps must ask the user and keep working if the permission is denied.',
+        { _v: {}, store: STORE.play, rule: 'API 34+ apps get USE_FULL_SCREEN_INTENT by default only for alarms or calls.', source: 'https://support.google.com/googleplay/android-developer/answer/13392821' });
     /* 0.2.8: Advertising ID / Contains ads answers when the build carries no ads and no AD_ID (removed with tools:node, or ads switched off) */
     { const adIdRemoved = (an.removedPermissions || []).some(p => /AD_ID$/.test(p || ''));
       if (!A.sdk.ads && !an.adId && (adIdRemoved || A.adsDisabled || A.adsHint))
