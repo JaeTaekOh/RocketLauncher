@@ -35,7 +35,9 @@
   const IMG_RE = [
     /ic_launcher(_round|_foreground)?\.(png|webp)$/i, /ic_launcher-playstore\.png$/i, /playstore[^/]*\.png$/i,
     /AppIcon\.appiconset\/.*\.png$/i, /(^|\/)(icon|app-icon|appicon|logo)\.png$/i,
-    /(^|\/)(screenshots?|fastlane\/metadata\/android\/[^/]+\/images\/phoneScreenshots|store)\/[^/]*\.(png|jpe?g|webp)$/i, /(^|\/)fastlane\/screenshots\/[^/]+\/[^/]*\.(png|jpe?g)$/i,
+    /(^|\/)(screenshots?|fastlane\/metadata\/android\/[^/]+\/images\/phoneScreenshots|store)\/[^/]*\.(png|jpe?g|webp)$/i,
+    /* 0.2.8: screenshots sorted into device / locale sub-folders (metadata/screenshots/iphone/en/01.png, screenshots/ipad/ko/…) */
+    /(^|\/)screenshots?\/(?:[^/]+\/){1,3}[^/]*\.(png|jpe?g|webp)$/i, /(^|\/)fastlane\/screenshots\/[^/]+\/[^/]*\.(png|jpe?g)$/i,
     /* 0.2.6: an existing feature graphic and 512 store icon (play/feature-graphic-1024x500.png, play/icon-512.png, fastlane images/featureGraphic.png) */
     /(^|\/)[^/]*(feature[-_ ]?graphic|featureGraphic|1024[x×]500)[^/]*\.(png|jpe?g)$/i, /(^|\/)(play|store|listing|google[-_]?play|playstore|marketing)\/[^/]*\.(png|jpe?g)$/i
   ];
@@ -133,10 +135,23 @@
           try { const h = elfAlign(await z.read()); out.libs.push({ path: e.rel + '!' + z.path, abi, bits: h && h.bits, align: h && h.align, binary: e.rel }); }
           catch (err) { out.libs.push({ path: e.rel + '!' + z.path, abi, align: null, binary: e.rel }); }
         }
+        /* 0.2.8: the Android debug certificate (CN=Android Debug) in the signing block (last bytes) or in META-INF; the key itself is never read */
+        if (b.kind === 'apk') {
+          const DBG = [65, 110, 100, 114, 111, 105, 100, 32, 68, 101, 98, 117, 103], tail = u8.subarray(Math.max(0, u8.length - 4 * 1024 * 1024));
+          const has = a => { for (let i = 0; i + DBG.length <= a.length; i++) { if (a[i] !== 65) continue; let k = 1; while (k < DBG.length && a[i + k] === DBG[k]) k++; if (k === DBG.length) return true; } return false; };
+          let dbg = has(tail);
+          if (!dbg) for (const z of zip.filter(z => /^META-INF\/[^/]+\.(RSA|DSA|EC)$/i.test(z.path)).slice(0, 2)) { try { if (has(await z.read())) dbg = true; } catch (err) { } }
+          b.debugSigned = dbg;
+        }
         const man = zip.find(z => b.kind === 'aab' ? /^base\/manifest\/AndroidManifest\.xml$/.test(z.path) : z.path === 'AndroidManifest.xml');
         if (man) b.manifest = b.kind === 'aab' ? protoManifest(await man.read()) : axmlManifest(await man.read());
       } catch (err) { b.error = String(err && err.message || err).slice(0, 80); }
       out.binaries.push(b);
+    }
+    /* 0.2.8: package names listed in google-services.json (the file holds API keys: only the names are kept) */
+    out.googleServices = [];
+    for (const e of entries.filter(e => /(^|\/)google-services\.json$/i.test(e.rel) && !/(^|\/)(node_modules|\.git)\//.test(e.rel) && e.size < 512 * 1024).slice(0, 4)) {
+      try { const j = JSON.parse(new TextDecoder().decode(await e.read())); const pk = (j.client || []).map(c => c && c.client_info && c.client_info.android_client_info && c.client_info.android_client_info.package_name).filter(x => typeof x === 'string'); out.googleServices.push({ path: e.rel, packages: [...new Set(pk)] }); } catch (err) { }
     }
     /* 0.2.5: large files (ML models, videos, asset bundles) for the Play download-size check; sizes only, nothing is read */
     out.large = entries.filter(e => e.size >= LARGE_FILE && !SKIP_RE.test(e.rel) && !SO_RE.test(e.rel) && !/(^|\/)\.git\//.test(e.rel)).sort((a, b) => b.size - a.size).slice(0, 20).map(e => ({ path: e.rel, size: e.size }));
@@ -175,6 +190,15 @@
     const launchers = picked.filter(e => /mipmap-[^/]+\/ic_launcher(_round)?\.(png|webp)$/i.test(e.rel)).sort((a, b) => rank(b.rel) - rank(a.rel));
     const keepLaunch = new Set(launchers.slice(0, 2).map(e => e.rel));
     picked = picked.filter(e => !/mipmap-[^/]+\/ic_launcher/i.test(e.rel) || keepLaunch.has(e.rel));
+    /* 0.2.8: nested screenshot folders can hold dozens of pictures (devices × locales): keep a few per device kind, English first,
+       so they never crowd out the text files that the checks need. */
+    const NESTED_SHOT = /(^|\/)screenshots?\/(?:[^/]+\/){1,3}[^/]*\.(png|jpe?g|webp)$/i, TAB_SHOT = /(^|\/)(ipad|tablet|tenInch|sevenInch)[^/]*\//i;
+    const nested = picked.filter(e => e.kind === 'img' && NESTED_SHOT.test(e.rel) && !/(^|\/)screenshots?\/[^/]*$/i.test(e.rel));
+    if (nested.length) {
+      const enFirst = (a, b) => (/\/en([-_][A-Z]{2})?\//.test(b.rel) - /\/en([-_][A-Z]{2})?\//.test(a.rel)) || a.rel.localeCompare(b.rel);
+      const keep = new Set([...nested.filter(e => !TAB_SHOT.test(e.rel)).sort(enFirst).slice(0, 8), ...nested.filter(e => TAB_SHOT.test(e.rel)).sort(enFirst).slice(0, 4)].map(e => e.rel));
+      picked = picked.filter(e => !nested.includes(e) || keep.has(e.rel));
+    }
     const code = picked.filter(e => e.kind === 'code' && e.size <= MAX_CODE_SIZE)
       .sort((a, b) => (CODE_HINT_RE.test(b.rel.split('/').pop()) - CODE_HINT_RE.test(a.rel.split('/').pop())) || (a.rel.split('/').length - b.rel.split('/').length) || a.rel.localeCompare(b.rel))
       .slice(0, MAX_CODE);

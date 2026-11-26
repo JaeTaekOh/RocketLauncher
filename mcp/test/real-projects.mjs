@@ -53,6 +53,14 @@ async function run(label, dir, exp) {
     const pv = await E.release('privacy', st.id, {}, 'en');
     const idsDs = ((pv.drafts && pv.drafts.data_safety && pv.drafts.data_safety.rows) || []).map(r => r.id);
     for (const id of exp.dataSafety) check(idsDs.includes(id), 'Data safety draft includes ' + id + ' (from CAMERA / RECORD_AUDIO)', idsDs);
+    if (exp.speechOnly) {
+      /* 0.2.8: the microphone only feeds SpeechRecognizer / Web Speech API → no audio row, a confirm-with-user note instead */
+      const dsd = pv.drafts.data_safety;
+      check(!idsDs.includes('audio') && /confirm/i.test(dsd.confirm_with_user || ''), 'speech-to-text only: no audio row, confirm-with-user note', [idsDs, dsd.confirm_with_user]);
+      const pa = await E.release('policy', st.id, {}, 'en'), sg = Object.values(pa.quick_scan).flatMap(d => d.signals.map(x => x.signal));
+      check(!['PRECISE_LOCATION', 'APPROX_LOCATION', 'PURCHASE_HISTORY'].some(x => sg.includes(x)), 'policy quick scan: no location (removed by tools:node) and no PURCHASE_HISTORY (goods receipt)', sg);
+      check(!sg.includes('FILES_AND_DOCS') || !(pa.quick_scan.permissions_and_apis.signals.find(x => x.signal === 'FILES_AND_DOCS') || { where: [] }).where.some(w => /AndroidManifest/.test(w)), 'READ_EXTERNAL_STORAGE removed by tools:node is not cited from the manifest');
+    }
   }
   if (exp.preciseLocation) { const pv = (await E.release('privacy', st.id, {}, 'en')).rows || []; check(pv.some(r => /precise|loc\./i.test(r.id)), 'precise-location guidance present', pv.map(r => r.id)); }
   const gen = await E.generate(E.load(st.id), { lang: 'en' }, { allowPath: false });
@@ -66,7 +74,7 @@ await run('T-FLOW', process.env.ROCKETLAUNCHER_REAL_TFLOW || '/workspace/tflow-a
   pkg: 'com.prezentree.tflow', version: '1.0.1', versionCode: '2', category: 'business', location: false,
   privacy: 'https://tflow-api.prezentree.workers.dev/privacy', deletionUrl: 'https://tflow-api.prezentree.workers.dev/delete-account', deletionPath: '설정 > 내 계정 > 계정 삭제 요청',
   title: 'T-FLOW', feature: 'store/feature-graphic-1024x500.png', shots: 8, formFactors: ['phone'], signInRequired: true,
-  defaultLang: 'ko', dataSafety: ['photos', 'audio'] });
+  defaultLang: 'ko', dataSafety: ['photos'], speechOnly: true });
 await run('Gaddy', process.env.ROCKETLAUNCHER_REAL_GADDY || '/workspace/gaddy-android-rl-vc13', {
   pkg: 'com.gaddy.kr', version: '1.3.0', versionCode: '13', category: 'navigation', location: true,
   privacy: 'https://prezentree.com/gaddy/privacy', deletionUrl: 'https://prezentree.com/gaddy/delete-account', deletionPath: 'Menu > 내 계정 > 내 계정 삭제',

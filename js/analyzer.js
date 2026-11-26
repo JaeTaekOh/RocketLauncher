@@ -133,6 +133,16 @@
       const kind = ['short', 'full', 'title'].find(k => KIND_RE[k].test(p)); if (!kind) continue;
       put(fileLang(p) || SCRIPT_LANG(F[p].text), kind, F[p].text, p);
     }
+    /* 1b. 0.2.8: one text file per language with "title:", "short:", "full:" sections (artifacts/play/listing-ko-KR.txt) */
+    for (const p of P) {
+      if (!/\.txt$/i.test(p) || !LISTING_DIR.test(p) || !/listing|store|description/i.test(p.split('/').pop())) continue;
+      const t = F[p].text.replace(/\r\n/g, '\n'), m = {};
+      const re = /^(title|short(?:[ _-]?description)?|full(?:[ _-]?description)?)\s*:[ \t]*(.*)$/gim; const hits = [...t.matchAll(re)];
+      if (hits.length < 2) continue;
+      hits.forEach((h, i) => { const end = i + 1 < hits.length ? hits[i + 1].index : t.length; const k = /^t/i.test(h[1]) ? 'title' : /^s/i.test(h[1]) ? 'short' : 'full'; m[k] = (h[2] + '\n' + t.slice(h.index + h[0].length, end)).trim(); });
+      const l = fileLang(p) || SCRIPT_LANG(Object.values(m).join(' '));
+      for (const k of ['title', 'short', 'full']) if (m[k]) put(l, k, k === 'full' ? m[k] : m[k].split('\n')[0], p);
+    }
     /* 2. Markdown listing drafts: headed sections, then "Key: value" lines */
     const mds = P.filter(p => LISTING_MD.test(p) || (LISTING_DIR.test(p) && /(listing|store|description)[^/]*\.md$/i.test(p))).sort((a, b) => /listing/i.test(b) - /listing/i.test(a) || a.length - b.length);
     for (const p of mds) {
@@ -152,6 +162,8 @@
         if (kv) { const v = clean(kv[2]); if (v && !refersToFile(v)) put(SCRIPT_LANG(v.replace(/\([^)]*\)/g, '')) || fl, /short|간단/i.test(kv[1]) ? 'short' : 'title', v, p); }
         const dl = !R.defaultLang && line.match(/(default (store )?language|primary language|기본 ?언어)\s*\**\s*[:：]?\s*\**\s*([^\n·|]+)/i);
         if (dl) R.defaultLang = langFromText(dl[3]);
+        const dc = !R.countries && line.match(/(배포 ?국가|distribution countries|countries(?: ?\/ ?regions)?|available (?:in|countries))\s*\**\s*[:：]\s*\**\s*([^·|\n]+)/i);
+        if (dc) { const v = clean(dc[2]).replace(/\*\*/g, '').trim(); if (v && v.length <= 80) { R.countries = v; R.countriesFile = p; } }
         const ct = !R.category && line.match(/(?:^|[\s/])(?:app )?(category|카테고리)\s*\**\s*[:：]\s*(.+)$/i);
         if (ct) { const k = catKey(clean(ct[2]).replace(/\*\*/g, '')); if (k) { R.category = k; R.categoryFile = p; } }
       }
@@ -163,7 +175,7 @@
     if (!R.defaultLang && R.langs.length === 1) R.defaultLang = R.langs[0];
     if (!R.defaultLang && R.langs.length) R.defaultLang = R.langs.slice().sort((a, b) => Object.keys(R.copy[b]).length - Object.keys(R.copy[a]).length)[0];
     if (cfg && Array.isArray(cfg.listing_languages)) { const ls = cfg.listing_languages.map(langFromText).filter(Boolean); if (ls.length) R.listingLangs = [...new Set(ls)]; }
-    return R.langs.length || R.defaultLang || R.category || R.listingLangs ? R : null;
+    return R.langs.length || R.defaultLang || R.category || R.listingLangs || R.countries ? R : null;
   }
   /* 0.2.6: the account-deletion path and web page the developer already wrote down (rocketlauncher.json, README, listing drafts),
      so guidance and review notes use them instead of a generic "Settings > Delete account" and a placeholder URL. */
@@ -174,6 +186,13 @@
     const cu = cfg.account_deletion_url || cfg.deletion_url || cfg.delete_account_url, cp = cfg.account_deletion_path || cfg.deletion_path || cfg.in_app_deletion_path;
     if (/^https?:\/\//.test(cu || '')) { out.url = String(cu); out.urlSource = cfg._file || 'rocketlauncher.json'; }
     if (cp) { out.inAppPath = String(cp).slice(0, 120); out.pathSource = cfg._file || 'rocketlauncher.json'; }
+    /* 0.2.8: an app config in code that names the deletion page (deletionUrl: 'https://…', ACCOUNT_DELETION_URL = "…") */
+    if (!out.url) {
+      const CFG_DEL = /\b(?:account_?deletion_?url|deletion_?url|delete_?account_?url|deleteAccountUrl|accountDeletionUrl|deletionUrl|deleteUrl|ACCOUNT_DELETION_URL|DELETION_URL|DELETE_ACCOUNT_URL)\b["']?\s*[:=]\s*["'`](https?:\/\/[^"'`\s]+)["'`]/i;
+      for (const p of Object.keys(F).filter(p => F[p].code && F[p].text != null && !OLD_RE.test(p) && !/(^|\/)(test|tests|__tests__|spec)\//i.test(p)).sort((a, b) => /config/i.test(b) - /config/i.test(a) || a.length - b.length)) {
+        const m = F[p].text.match(CFG_DEL); if (m && !/<your-site>|example\.|localhost/i.test(m[1])) { out.url = m[1]; out.urlSource = p; break; }
+      }
+    }
     const P = Object.keys(F).filter(p => F[p].text != null && !F[p].code && !OLD_RE.test(p) && /\.(md|txt)$|(^|\/)README[^/]*$/i.test(p));
     const rank = p => /(^|\/)README[^/]*$/i.test(p) ? (p.includes('/') ? 2 : 0) : LISTING_MD.test(p) || LISTING_DIR.test(p) ? 1 : 3;
     P.sort((a, b) => rank(a) - rank(b) || a.length - b.length);
@@ -486,7 +505,12 @@
       an.services = an.services || [];
       if (appGradle) {
         note(appGradle); const g = stripCode(F[appGradle].text), dc = blockOf(g, 'defaultConfig') || '', gv = k => gradleVal(dc, k) || gradleVal(g, k);
-        an.pkg = gv('applicationId'); an.namespace = gradleVal(g, 'namespace');
+        /* 0.2.8: applicationId accountProps.getProperty('key', 'com.x.y') / findProperty('key') ?: 'com.x.y' → the default literal;
+           every applicationId literal (product flavors too) is kept so a built package that matches one of them is not a mismatch */
+        const PROP_ID = /applicationId\s*=?\s*[\w.]+\.(?:getProperty|findProperty|getOrDefault)\s*\(\s*["'][^"']+["']\s*(?:,\s*["']([\w.]+)["'])?\s*\)(?:\s*\?:\s*["']([\w.]+)["'])?/g;
+        an.pkgCandidates = [...new Set([...g.matchAll(/applicationId\s*=?\s*["']([\w.]+)["']/g)].map(m => m[1]).concat([...g.matchAll(PROP_ID)].map(m => m[1] || m[2]).filter(Boolean)))];
+        an.pkg = gv('applicationId'); if (an.pkg && !/^[A-Za-z]\w*(\.[A-Za-z]\w*)+$/.test(an.pkg) || /\.(getProperty|findProperty)$/.test(an.pkg || '')) an.pkg = (dc.match(PROP_ID) ? [...dc.matchAll(PROP_ID)][0] : [...g.matchAll(PROP_ID)][0] || [])[1] || null;
+        an.namespace = gradleVal(g, 'namespace');
         an.targetSdkRaw = gv('targetSdk');
         an.minSdk = resolveSdk(gv('minSdk'), F, gradles); an.targetSdk = resolveSdk(an.targetSdkRaw, F, gradles); an.compileSdk = resolveSdk(gradleVal(g, 'compileSdk'), F, gradles);
         an.versionCode = gv('versionCode'); an.versionName = gv('versionName'); an.deps = gradleDeps(g); an.gradlePath = appGradle;
@@ -522,7 +546,7 @@
         const m = bin.manifest; an.built = { file: bin.path, kind: bin.kind, targetSdk: m.targetSdk || null, minSdk: m.minSdk || null, package: m.package || null, versionCode: m.versionCode || null, versionName: m.versionName || null };
         /* order of truth: the built file wins over values read (or guessed) from source; a difference is reported, not hidden */
         const src = 'built ' + bin.kind.toUpperCase() + ' (' + bin.path + ')'; an.builtMismatch = [];
-        const take = (k, v, raw) => { if (v == null || v === '') return; if (an[k] != null && an[k] !== '' && String(an[k]) !== String(v)) an.builtMismatch.push({ field: k, source: an[k], built: v }); an[k] = v; if (raw) an[raw] = src; };
+        const take = (k, v, raw) => { if (v == null || v === '') return; if (an[k] != null && an[k] !== '' && String(an[k]) !== String(v) && !(k === 'pkg' && (an.pkgCandidates || []).includes(String(v)))) an.builtMismatch.push({ field: k, source: an[k], built: v }); an[k] = v; if (raw) an[raw] = src; };
         take('targetSdk', m.targetSdk, 'targetSdkRaw'); take('pkg', m.package); take('versionCode', m.versionCode);
         if (m.versionName) { if (an.versionName && an.versionName !== m.versionName) an.builtMismatch.push({ field: 'versionName', source: an.versionName, built: m.versionName }); an.builtVersionName = m.versionName; }
       }
@@ -607,6 +631,22 @@
       A.preparedForms = { dataSafety: pick(/data[-_ ]?safety/i), contentRating: pick(/content[-_ ]?rating|iarc/i), forms: pick(/play[-_ ]?forms|console[-_ ]?forms/i) };
       if (A.preparedForms.forms && !A.preparedForms.dataSafety && /data ?safety|데이터 ?보안/i.test(F[A.preparedForms.forms].text)) A.preparedForms.dataSafety = A.preparedForms.forms;
       if (A.preparedForms.forms && !A.preparedForms.contentRating && /content ?rating|콘텐츠 ?등급|IARC/i.test(F[A.preparedForms.forms].text)) A.preparedForms.contentRating = A.preparedForms.forms; }
+    /* 0.2.8: the data types a prepared Data safety form (store/play-forms.md table: Category | Type | Collected | …) lists as collected */
+    { const DSK = [[/e-?mail/i, 'email'], [/^name\b|full name/i, 'name'], [/user ?ids?/i, 'uid'], [/phone/i, 'phone'], [/address/i, 'address'], [/photo/i, 'photos'], [/video/i, 'videos'], [/voice|audio|sound/i, 'audio'], [/files?|docs?|documents?/i, 'files'], [/location/i, 'loc'], [/contacts?/i, 'contacts'], [/interaction/i, 'usage'], [/crash/i, 'crash'], [/diagnostic/i, 'diag'], [/device or other/i, 'adid'], [/user-generated|ugc/i, 'ugc'], [/financ|purchase|payment/i, 'fin']];
+      const pf = A.preparedForms && A.preparedForms.dataSafety;
+      if (pf && F[pf] && F[pf].text) {
+        const rows = []; let head = null;
+        for (const ln of F[pf].text.split(/\r?\n/)) {
+          if (!/^\s*\|/.test(ln)) { if (rows.length) break; continue; }
+          const c = ln.trim().replace(/^\||\|$/g, '').split('|').map(x => x.trim());
+          if (/collected|수집/i.test(c[2] || '') && !head) { head = c; continue; }
+          if (!head || /^[-: ]+$/.test(c[0] || '')) continue;
+          if (!/^(yes|y|예|✓|✔|true)/i.test(c[2] || '')) continue;
+          const type = (c[1] || '').replace(/\([^)]*\)/g, '').trim(), hit = DSK.find(([re]) => re.test(type));
+          if (hit) rows.push({ category: c[0], type, key: hit[1] });
+        }
+        if (rows.length) A.preparedDS = { file: pf, rows };
+      } }
     /* 0.2.6: the app is only for invited / approved users (staff apps): sign-in is required for review, not optional */
     { const RESTRICT = /(직원 ?전용|임직원 ?전용|사내 ?전용|승인을 받아야|관리자의? ?승인|employees? only|staff only|for (our |company )?employees|invite[- ]only|invitation only|requires? (an )?(admin|administrator|manager) approval|internal (use|app) only)/i;
       const cfgAcc = A.projectConfig && (A.projectConfig.login_required ?? A.projectConfig.sign_in_required);
@@ -627,8 +667,16 @@
       const labelVal = A.strings.default[labelKey];
       if (labelVal && !A.names[defLang]) A.names[defLang] = labelVal;
     }
-    A.locales = [...new Set([defLang, ...Object.keys(A.strings).map(l => l === 'default' ? defLang : l), ...fileLocales])];
+    /* 0.2.8: languages the build keeps (Gradle localeFilters / resConfigs) and the language keys of a JS i18n dictionary (i18n.js: { en: {…}, ko: {…} }) */
+    const LANG2 = /^(en|ko|th|zh|hi|ja|es|fr|de|pt|vi|id|it|ru|ar|tr|ms|nl|pl|sv|uk)$/;
+    const gradleLocales = gradles.flatMap(gp => [...stripCode(F[gp].text).matchAll(/(?:localeFilters|resConfigs?|resourceConfigurations)\s*(?:\+?=|\()?\s*\[?([^\]\n)]*)/g)].flatMap(m => (m[1].match(/["']([a-z]{2})(?:[-_][A-Za-z]{2,4})?["']/g) || []).map(x => x.replace(/["']/g, '').slice(0, 2).toLowerCase()))).filter(l => LANG2.test(l));
+    const jsLocales = P.filter(p => F[p].code && /(^|\/)(i18n|locales?|translations?|strings|lang|messages)\.(js|mjs|ts)$/i.test(p)).flatMap(p => { const keys = [...F[p].text.matchAll(/^\s{0,8}["']?([a-z]{2})(?:[-_][A-Za-z]{2,4})?["']?\s*:\s*\{/gm)].map(m => m[1].toLowerCase()).filter(l => LANG2.test(l)); return new Set(keys).size >= 2 ? keys : []; });
+    A.locales = [...new Set([defLang, ...Object.keys(A.strings).map(l => l === 'default' ? defLang : l), ...fileLocales, ...gradleLocales, ...jsLocales])];
     A.pkg = (A.android && A.android.pkg) || (A.ios && A.ios.bundleId) || null;
+    /* 0.2.8: package names inside google-services.json (one client per Firebase Android app) */
+    /* (read in sources.js scanNatives: only the package names leave the file, never the keys) */
+    { const gs = ((project.natives && project.natives.googleServices) || []).filter(g => g.packages.length && !OLD_RE.test(g.path) && !/(^|\/)(build|node_modules|intermediates)\//.test(g.path)).sort((a, b) => a.path.length - b.path.length)[0];
+      if (gs) A.googleServices = { file: gs.path, packages: gs.packages }; }
     A.version = (A.android && (A.android.builtVersionName || A.android.versionName)) || (A.ios && A.ios.version) || (expo && expo.version) || (pubVer && pubVer[1]) || (cdv && cdv.version) || (pkg && pkg.version) || '1.0.0';
 
     // ---------- 연락처 ----------
@@ -676,6 +724,16 @@
       contacts: has(hay, /READ_CONTACTS|NSContacts/i),
       mic: has(hay, /RECORD_AUDIO|NSMicrophone/i)
     };
+    /* 0.2.8: a microphone permission that only feeds the system speech recognizer / Web Speech API (speech-to-text) is not "audio collected".
+       speechToText = such an API is used; audioCapture = anything that records, keeps or returns audio (MediaRecorder, AudioRecord, recorder plugins, getUserMedia audio, audio blobs).
+       speechOnly = speechToText without audioCapture; the owner still has to confirm it (the system recognizer may send audio to the OS vendor). */
+    const SPEECH_RE = /\bSpeechRecognizer\b|\bRecognizerIntent\b|\bRecognitionListener\b|\bwebkitSpeechRecognition\b|\bSpeechRecognition\b|\bSFSpeechRecognizer\b|\bspeech_to_text\b|\bSpeechToText\b|react-native-voice|@react-native-voice\/voice|@capacitor-community\/speech-recognition|expo-speech-recognition|cordova-plugin-speechrecognition/;
+    const AUDIO_CAPTURE_RE = /\bMediaRecorder\b|\bAudioRecord\b|\bAVAudioRecorder\b|\bAVAudioEngine\b|\bAudioRecorder\b|\bflutter_sound\b|\bFlutterSoundRecorder\b|react-native-audio-recorder-player|react-native-audio-record|expo-av\b|expo-audio\b|cordova-plugin-media-capture|cordova-plugin-media\b|@capacitor-community\/voice-recorder|capacitor-voice-recorder|\bEXTRA_GET_AUDIO\b|\bcaptureAudio\b|getUserMedia\s*\(\s*\{[^}]*\baudio\s*:\s*(?!false)|new\s+Blob\s*\([^)]*type\s*:\s*['"]audio\/|type\s*:\s*['"]audio\/(webm|wav|mp4|mpeg|ogg)/;
+    const audioHay = declHay + '\n' + codeHay;
+    A.sdk.speechToText = SPEECH_RE.test(audioHay);
+    /* 0.2.8: the Flutter `record:` package counts only as a pubspec dependency (a `record: false` key in JS is not a recorder) */
+    A.sdk.audioCapture = AUDIO_CAPTURE_RE.test(audioHay) || /(^|\n)\s+record\s*:/.test(pubspecDeps(txt(F, pubspec)));
+    A.sdk.speechOnly = !!(A.sdk.mic && A.sdk.speechToText && !A.sdk.audioCapture);
     A.adsHint = adsCodeFiles.length ? { files: adsCodeFiles } : null;
     /* 0.2.6: a leftover ads config block that is explicitly switched off (adsEnabled: false, ads: { enabled: false }) is not even a hint */
     const ADS_OFF = /\b(ads_?enabled|enable_?ads|show_?ads|ads_?on|use_?ads)\s*[:=]\s*(false|0|['"]false['"])\b|\bads\s*[:=]\s*\{[^{}]*\benabled\s*:\s*false\b|\bADS_ENABLED\s*=\s*false\b/i;
@@ -690,14 +748,15 @@
        so an iOS purpose string is only required when the iOS app really asks for that permission. */
     if (A.ios) {
       const iosCode = Object.keys(F).filter(p => F[p].code && !/\.(kt|java)$/i.test(p)).map(p => stripCode(F[p].text)).join('\n').slice(0, 1500000);
+      const iosPub = pubspecDeps(txt(F, pubspec)), pubDep = n => new RegExp('(^|\\n)\\s+' + n + '\\s*:').test(iosPub);
       const iosHay = [deps.join(' '), pubspecDeps(txt(F, pubspec)), stripHashComments(txt(F, shortest(find(F, /Podfile$/)))), txt(F, shortest(find(F, /(^|\/)Package\.swift$/))), pluginHay, declHay, iosCode].join('\n');
       A.iosNeeds = {
-        location: /\bgeolocator\b|(^|\s)location:\s|@capacitor\/geolocation|expo-location|react-native-geolocation|@react-native-community\/geolocation|cordova-plugin-geolocation|CLLocationManager|requestWhenInUseAuthorization|requestAlwaysAuthorization|navigator\s*\.\s*geolocation|getCurrentPosition|watchPosition/.test(iosHay),
-        camera: /\bimage_picker\b|(^|\s)camera:\s|expo-camera|expo-image-picker|react-native-vision-camera|react-native-image-picker|react-native-camera|@capacitor\/camera|cordova-plugin-camera|mobile_scanner|AVCaptureDevice|AVCaptureSession|UIImagePickerController/.test(iosHay),
+        location: pubDep('location') || /\bgeolocator\b|@capacitor\/geolocation|expo-location|react-native-geolocation|@react-native-community\/geolocation|cordova-plugin-geolocation|CLLocationManager|requestWhenInUseAuthorization|requestAlwaysAuthorization|navigator\s*\.\s*geolocation|getCurrentPosition|watchPosition/.test(iosHay),
+        camera: pubDep('camera') || /<input[^>]*\bcapture\s*=|\bcapture\s*=\s*["'](environment|user)["']|getUserMedia\s*\(\s*\{[^}]*\bvideo\s*:\s*(?!false)|\bimage_picker\b|expo-camera|expo-image-picker|react-native-vision-camera|react-native-image-picker|react-native-camera|@capacitor\/camera|cordova-plugin-camera|mobile_scanner|AVCaptureDevice|AVCaptureSession|UIImagePickerController/.test(iosHay),
         contacts: /flutter_contacts|contacts_service|expo-contacts|react-native-contacts|@capacitor-community\/contacts|cordova-plugin-contacts|CNContactStore|import\s+Contacts\b/.test(iosHay),
-        mic: /flutter_sound|speech_to_text|(^|\s)record:\s|react-native-voice|@react-native-voice|AVAudioRecorder|SFSpeechRecognizer|@capacitor-community\/speech-recognition|cordova-plugin-media-capture/.test(iosHay),
+        mic: pubDep('record') || /getUserMedia\s*\(\s*\{[^}]*\baudio\s*:\s*(?!false)|\bMediaRecorder\b|webkitSpeechRecognition|flutter_sound|speech_to_text|react-native-voice|@react-native-voice|AVAudioRecorder|SFSpeechRecognizer|@capacitor-community\/speech-recognition|cordova-plugin-media-capture/.test(iosHay),
         /* 0.2.5: HealthKit needs NSHealthShareUsageDescription (read) / NSHealthUpdateUsageDescription (write) */
-        health: /HKHealthStore|import\s+HealthKit\b|(^|\s)health:\s|react-native-health\b|@kingstinct\/react-native-healthkit|capacitor-health|cordova-plugin-health|@capgo\/capacitor-health/.test(iosHay)
+        health: pubDep('health') || /HKHealthStore|import\s+HealthKit\b|react-native-health\b|@kingstinct\/react-native-healthkit|capacitor-health|cordova-plugin-health|@capgo\/capacitor-health/.test(iosHay)
       };
     }
     A.sdk.appleSignIn = !!(A.ios && A.ios.appleSignIn) || has(hay, /sign_in_with_apple|apple-authentication|AuthenticationServices|ASAuthorizationAppleIDProvider|appleAuth|AppleAuthProvider/i);
@@ -752,9 +811,16 @@
     const fg = imgs.filter(p => FEATURE_RE.test(p) && !OLD_RE.test(p)).sort((a, b) => /(^|\/)(play|store|fastlane)\//i.test(b) - /(^|\/)(play|store|fastlane)\//i.test(a) || a.length - b.length)[0];
     A.featureGraphic = fg ? { path: fg, dataUrl: F[fg].dataUrl } : null;
     const seenShot = new Set(), shotRank = p => /(^|\/)(play|store|fastlane)\//i.test(p) ? 0 : 1;
-    const shotPaths = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p) && !/(^|\/)(tablet|tenInch|sevenInch|wear|tv)[^/]*\//i.test(p))
+    const shotPaths = imgs.filter(p => /(screenshots?|phoneScreenshots|store)\//i.test(p) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/(^|\/)(icon|app-icon|appicon|logo)\.png$/i.test(p) && !/(^|\/)(tablet|tenInch|sevenInch|wear|tv|ipad)[^/]*\//i.test(p))
       .sort((a, b) => shotRank(a) - shotRank(b) || a.localeCompare(b)).filter(p => { const k = F[p].dataUrl; if (seenShot.has(k)) return false; seenShot.add(k); return true; });
+    /* 0.2.8: phone-sized pictures in a store / listing folder (artifacts/play/01-home-1080x1920.png) are the store screenshots; when they exist,
+       other screenshot folders (often debug captures) are not used */
+    const STORE_SHOT = p => LISTING_DIR.test(p) && /(^|\/)[^/]*(\d{3,4}\s*[x×]\s*\d{3,4}|^\d{1,2}[-_ ]|screen|shot)[^/]*\.(png|jpe?g)$/i.test(p.split('/').pop()) && !FEATURE_RE.test(p) && !STORE_ICON_RE.test(p) && !/1024\s*[x×]\s*500|512\s*[x×]\s*512/i.test(p) && !/(^|\/)(ipad|tablet|tenInch|sevenInch|wear|tv)[^/]*\//i.test(p);
+    const storeShots = imgs.filter(p => STORE_SHOT(p) && !shotPaths.includes(p)).sort();
+    if (storeShots.length >= 2) { const seen2 = new Set(); shotPaths.splice(0, shotPaths.length, ...storeShots.concat(shotPaths.filter(p => shotRank(p) === 0)).filter(p => { const k = F[p].dataUrl; if (seen2.has(k)) return false; seen2.add(k); return true; })); }
     A.screenshotsTotal = shotPaths.length;
+    /* 0.2.8: iPad screenshots already in the project (screenshots/ipad/…, *ipad*.png, 12.9 / 13-inch names) */
+    A.ipadScreenshots = imgs.filter(p => /(screenshots?|store|fastlane)\//i.test(p) && /(^|\/)ipad[^/]*\/|ipad[^/]*\.(png|jpe?g)$|12[._]9|13[-_ ]?inch|APP_IPAD/i.test(p)).length;
     A.screenshots = shotPaths.slice(0, 8).map(p => ({ path: p, dataUrl: F[p].dataUrl }));
     const colors = txt(F, shortest(find(F, /res\/values\/colors\.xml$/)));
     const cm = colors.match(/name="(?:brand|primary|colorPrimary|purple_500|accent)[^"]*"\s*>\s*#(?:FF)?([0-9a-f]{6})\b/i) || colors.match(/#(?:FF)?([0-9a-f]{6})\b/i);
@@ -812,7 +878,24 @@
     R.deletionKinds = del.kinds || [];
     R.deletionFiles = del.files || [];
     // CarPlay
-    R.carplay = /CPTemplateApplicationScene|CPInterfaceController|import\s+CarPlay|flutter_carplay|react-native-carplay|CPTemplateApplicationSceneSessionRoleApplication/.test(any);
+    /* 0.2.8: CarPlay counts only when the build really ships it: the CarPlay scene role in Info.plist, a CarPlay plugin dependency,
+       or a CarPlay Swift / Objective-C file that the Xcode project compiles (in a Sources build phase). A CarPlaySceneDelegate.swift
+       listed in project.pbxproj but in no Sources build phase is not CarPlay. */
+    {
+      const CP = /CPTemplateApplicationScene|CPInterfaceController|import\s+CarPlay|CPTemplateApplicationSceneSessionRoleApplication/;
+      const pbxs = Object.keys(F).filter(p => /project\.pbxproj$/.test(p) && F[p].text != null), plistCp = Object.keys(F).some(p => /Info\.plist$/.test(p) && F[p].text != null && /CPTemplateApplicationSceneSessionRoleApplication/.test(F[p].text));
+      const cpPlugin = /flutter_carplay|react-native-carplay|@capacitor-community\/carplay|capacitor-carplay/.test(any);
+      const cpFiles = Object.keys(F).filter(p => F[p].code && /\.(swift|m|mm)$/i.test(p) && CP.test(stripCode(F[p].text)));
+      /* listed in the project but not in any Sources build phase = taken out of the build; not listed at all = compiled
+         (Xcode 16 synchronized folders compile every file without listing it) */
+      const compiled = f => { const b = f.split('/').pop(); return !pbxs.some(x => F[x].text.includes(b)) || pbxs.some(x => F[x].text.includes(b + ' in Sources')); };
+      R.carplay = plistCp || cpPlugin || (cpFiles.length ? cpFiles.some(compiled) : CP.test(any));
+      R.carplayFiles = cpFiles.length ? cpFiles : undefined;
+    }
+    /* 0.2.8: iOS asks for Always location only when the code requests it (or keeps updating location in the background);
+       the NSLocationAlwaysAndWhenInUseUsageDescription key alone is only a text. */
+    R.locAlways = /requestAlwaysAuthorization|LocationPermission\.always|Permission\.locationAlways|requestBackgroundPermissionsAsync|allowsBackgroundLocationUpdates\s*=\s*true|startMonitoringSignificantLocationChanges|backgroundGeolocation|react-native-background-geolocation|startLocationUpdatesAsync|enableBackgroundMode\s*\(\s*(enable\s*:\s*)?true/.test(any)
+      || !!(A.ios && A.ios.plist && Array.isArray(A.ios.plist.UIBackgroundModes) && A.ios.plist.UIBackgroundModes.includes('location'));
     // Store metadata in the repo (fastlane): iOS = fastlane/metadata/<locale>/, Android = fastlane/metadata/android/
     const meta = Object.keys(F).filter(p => /fastlane\/metadata\//i.test(p) && F[p].text != null);
     const iosMeta = meta.filter(p => !/fastlane\/metadata\/android\//i.test(p));
@@ -916,7 +999,7 @@
       if (R.androidOnlySecrets && !R.iosKeychain) add('iosSecretStorage', 'block', 'ios', 'info');
       if (R.byok) add('byok', 'warn', 'ios', 'info');
       if (io.encryption === undefined && io.plistPath) add('encryption', 'warn', 'ios', 'patch-plist-encryption');
-      if (io.ipad) add('ipadShots', 'warn', 'ios', 'info');
+      if (io.ipad && !A.ipadScreenshots) add('ipadShots', 'warn', 'ios', 'info');
       if (R.carplay && !io.carplayEntitlement) add('carplay', 'warn', 'ios', 'info');
       if (R.freeInMeta && R.freeInMeta.length) add('freeInMeta', 'warn', 'ios', 'info', { files: R.freeInMeta.join(', ') });
       if (R.androidInIosMeta && R.androidInIosMeta.length) add('androidInIosCopy', 'warn', 'ios', 'info', { files: R.androidInIosMeta.join(', ') });
