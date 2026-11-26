@@ -137,7 +137,7 @@
   }
   function render(dir) {
     document.documentElement.lang = S.lang;
-    document.title = 'Rocket Launcher — ' + t('title.' + S.step);
+    document.title = 'Rocket Launcher: ' + t('title.' + S.step);
     header(); footer();
     const main = $('#main');
     const fn = { home: vHome, analyze: vAnalyze, decide: vDecide, assets: vAssets, submit: vSubmit, review: vReview, done: vDone }[S.step] || vHome;
@@ -532,7 +532,7 @@
     if (S.dec.feature !== 'keep') files.push({ path: 'graphics/feature-graphic-1024x500.png', data: dataU8(featSrc()) });
     if (S.dec.shots === 'existing') S.A.screenshots.forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}.png`, data: dataU8(s.dataUrl) }));
     else if (S.dec.shots !== 'keep') (GEN.shots || []).forEach((s, k) => files.push({ path: `graphics/screenshot-${k + 1}-1080x1920-${S.lang}.png`, data: dataU8(s) }));
-    files.push({ path: 'README.txt', data: `Rocket Launcher — ${A.appName} (${A.pkg || ''})\n${new Date().toISOString().slice(0, 10)}\n\n${t('zip.readme')}\n` });
+    files.push({ path: 'README.txt', data: `Rocket Launcher: ${A.appName} (${A.pkg || ''})\n${new Date().toISOString().slice(0, 10)}\n\n${t('zip.readme')}\n` });
     return { slug, files };
   }
   const dataU8 = u => { const b = atob(u.split(',')[1]); const a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; };
@@ -593,7 +593,7 @@
     $$('[data-stab]').forEach(b => b.onclick = () => { subTab = b.dataset.stab; render('none'); });
     $$('[data-gdone]').forEach(b => b.onclick = () => { const id = b.dataset.gdone; S.done[id] = !S.done[id]; save(); const y = window.scrollY; render('none'); window.scrollTo(0, y); });
     const ap = $('#approveBtn'); if (ap) ap.onclick = () => modal({
-      icon: 'thumb', title: t('sub.modal.t'), body: `<p>${esc(t('sub.modal.d'))}</p><ul class="mlist">${[stores().play && 'Google Play', stores().apple && 'App Store'].filter(Boolean).map(s => `<li>${ic('check')}${esc(s)} — ${esc(appName())} v${esc(S.A.version)}</li>`).join('')}</ul><p class="small muted">${ic('info')} ${esc(t('sub.modal.note'))}</p>`,
+      icon: 'thumb', title: t('sub.modal.t'), body: `<p>${esc(t('sub.modal.d'))}</p><ul class="mlist">${[stores().play && 'Google Play', stores().apple && 'App Store'].filter(Boolean).map(s => `<li>${ic('check')}${esc(s)} · ${esc(appName())} v${esc(S.A.version)}</li>`).join('')}</ul><p class="small muted">${ic('info')} ${esc(t('sub.modal.note'))}</p>`,
       ok: t('sub.modal.ok'), cancel: t('cancel'), onOk: () => { S.approved = true; save(); render('none'); toast(t('sub.approvedToast')); const f = $('.gstep:last-child'); f && f.scrollIntoView({ behavior: Motion.reduced() ? 'auto' : 'smooth', block: 'center' }); }
     });
     const sb = $('#submitted'); if (sb) sb.onclick = () => { S.review = { status: 'inReview', round: 1, at: Date.now() }; save(); go('review'); };
