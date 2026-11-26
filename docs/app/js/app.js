@@ -439,7 +439,7 @@
   function safetyTable(ds) {
     return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>${esc(t('ds.type'))}</th><th>${esc(t('ds.purpose'))}</th><th>${esc(t('ds.shared'))}</th><th>${esc(t('ds.optional'))}</th></tr></thead><tbody>
       ${ds.rows.map(r => `<tr><td><b>${esc(r.label)}</b><small>${esc(r.playType)}</small></td><td>${esc(r.purposes)}</td><td>${r.shared ? esc(t('yes')) : esc(t('no'))}</td><td>${r.optional ? esc(t('yes')) : esc(t('no'))}</td></tr>`).join('')}
-      </tbody></table></div><p class="small muted">${ic('lock')} ${esc(t('ds.enc'))} · ${ds.deletable ? esc(t('ds.del')) : ''}${ds.onDevice ? '<br>' + ic('info') + ' ' + esc(ds.onDevice) : ''}</p>`;
+      </tbody></table></div><p class="small muted">${ic('lock')} ${esc(t('ds.enc'))} · ${ds.deletable ? esc(t('ds.del')) : ''}${ds.onDevice ? '<br>' + ic('info') + ' ' + esc(ds.onDevice) : ''}${(ds.notCollected || []).filter(r => r.id === 'audio').map(r => '<br>' + ic('info') + ' ' + esc(r.label + ': ' + r.note)).join('')}${ds.confirm ? '<br>' + ic('info') + ' <b>' + esc(ds.confirm) + '</b>' : ''}</p>`;
   }
   after.decide = async () => {
     bindDecide();

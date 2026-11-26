@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.8
+
+Fixes from three real launches checked with 0.2.7 (a Capacitor music app, a Capacitor staff app and a Flutter app), plus plainer wording in the web tool.
+
+- **False positives fixed.** Removed permissions (`tools:node="remove"`), receipt wording, speech-to-text audio, private storage, media players and package lookups are no longer read as user data. Nested and store-folder screenshots are found. `LastUpgradeCheck` is no longer treated as the build Xcode. An empty remote config URL is not counted as a feature flag. A privacy policy sentence that rules out ads is not counted as ads.
+- **Project values first.** A prepared Data safety form, a stated category, `default_language`, `localeFilters` languages and `getProperty` application IDs are used before any guess. A suggested category or an earlier-upload hint is labeled as a suggestion or as unverified (미확인).
+- **New checks.** Foreground service declaration and video, Contains ads and Advertising ID answers, third-party location hosts, CarPlay entitlement and scene, closed-test access, a debug-signed APK next to the Play build, Play app signing with Google sign-in, a leftover package name in `google-services.json` (only package names are read, never keys), the distribution countries in a prepared listing, and an Info.plist purpose-text reminder.
+- **Languages.** The release rows and notes added in 0.2.8 are shown in Korean, Thai, Chinese and Hindi as well as English. Console menu names stay in English so they match the console.
+- **Wording.** Scanner matches are described as pattern matches, not proof. Policy areas are described as places to look, not violations. A privacy URL that could not be opened is no longer described as missing. The connect summary explains that 96% is the highest score.
+- **Web tool.** Copy no longer describes the rule-based analysis as AI work; em dashes and cheer lines removed.
+
+Tests: `test/fixes028.mjs`, `fixes028b.mjs`, `fixes028c.mjs`, `fixes028d.mjs`, `fixes028e.mjs`.
+
 ## 0.2.7
 
 Fixes from a real Capacitor staff-app launch where 0.2.6 reported three false positives, plus one valid gap in the Data safety draft.

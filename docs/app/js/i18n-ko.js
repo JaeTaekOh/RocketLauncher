@@ -43,7 +43,7 @@ window.RL_I18N.ko = {
   'iss.locationConfirm.t': '위치가 기기를 나가는지 확인해 주세요', 'iss.locationConfirm.f': '위치가 서버로 보내지는지 확인',
   'iss.privacyPolicy.t': '개인정보처리방침이 없어요', 'iss.privacyPolicy.w': '두 스토어 모두 개인정보처리방침 주소가 꼭 있어야 해요.', 'iss.privacyPolicy.f': '앱이 실제로 쓰는 정보에 맞춘 방침을 스토어 언어별로 작성',
   'iss.emptyUsage.t': '권한 설명 문구가 비어 있어요 ({key})', 'iss.emptyUsage.w': 'iOS는 권한을 물을 때 보여 줄 이유가 비어 있으면 거절해요 (가이드라인 5.1.1).', 'iss.emptyUsage.f': 'Info.plist에 이유 문구를 채우는 수정안',
-  'iss.missingUsage.t': '권한 설명 문구가 없어요 ({key})', 'iss.missingUsage.w': '이 문구가 없으면 앱이 바로 꺼지고 심사에서 거절돼요.', 'iss.missingUsage.f': 'Info.plist에 이유 문구를 넣는 수정안',
+  'iss.missingUsage.t': '권한 설명 문구가 없어요 ({key})', 'iss.missingUsage.w': '이 권한을 쓰는 것으로 보이는 코드를 찾았어요. 실제로 쓴다면 설명 문구를 넣어요. 문구가 없으면 앱이 바로 꺼지고 심사에서 거절돼요. 쓰지 않는다면 무시해도 돼요.', 'iss.missingUsage.f': 'Info.plist에 이유 문구를 넣는 수정안',
   'iss.privacyManifest.t': 'iOS 개인정보 매니페스트가 없어요', 'iss.privacyManifest.w': 'App Store는 PrivacyInfo.xcprivacy 파일로 수집 데이터와 사용 API를 밝히도록 요구해요.', 'iss.privacyManifest.f': '앱에 맞춘 PrivacyInfo.xcprivacy 파일 생성',
   
   
@@ -143,7 +143,7 @@ window.RL_I18N.ko = {
   'iss.ipadShots.t': 'iPad 를 지원해요: iPad 스크린샷이 필요해요',
   'iss.ipadShots.w': '제출하려면 iPhone 6.7형(1320×2868) 외에 12.9형/13형 iPad 스크린샷(APP_IPAD_PRO_3GEN_129, 2048×2732)이 필요해요. 아니면 iPhone 전용으로 바꾸세요.',
   'iss.carplay.t': 'CarPlay 코드가 있는데 CarPlay 권한(entitlement)이 없어요',
-  'iss.carplay.w': 'CarPlay 는 Apple 에 따로 받는 전용 권한이 필요해요. 제출 전에 신청하거나 이 빌드에서 CarPlay 를 빼세요.',
+  'iss.carplay.w': '빌드에 CarPlay 코드가 들어가요({files}). CarPlay는 Apple에 따로 받는 전용 권한이 필요해요. 제출 전에 신청하거나 이 빌드에서 CarPlay를 빼요.',
   'iss.freeInMeta.t': '부제·키워드에 "무료"나 다른 브랜드 이름이 있어요',
   'iss.freeInMeta.w': '가이드라인 2.3.7: 부제와 키워드에서 가격 표현(Free, 무료, ฟรี, 免费, मुफ़्त…)과 다른 회사 이름을 빼세요 ({files}).',
   'iss.androidInIosCopy.t': 'App Store 문구에 Android 가 나와요',

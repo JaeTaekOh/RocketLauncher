@@ -43,7 +43,7 @@ window.RL_I18N.hi = {
   'iss.locationConfirm.t': 'पुष्टि करें कि लोकेशन डिवाइस से बाहर जाती है या नहीं', 'iss.locationConfirm.f': 'पुष्टि करें कि लोकेशन डिवाइस से बाहर भेजी जाती है या नहीं',
   'iss.privacyPolicy.t': 'कोई गोपनीयता नीति नहीं', 'iss.privacyPolicy.w': 'दोनों स्टोर को गोपनीयता नीति का URL चाहिए।', 'iss.privacyPolicy.f': 'ऐप जो सच में इस्तेमाल करता है उसके अनुसार नीति, हर स्टोर भाषा में',
   'iss.emptyUsage.t': 'अनुमति का कारण खाली है ({key})', 'iss.emptyUsage.w': 'जिस ऐप के अनुमति संदेश में कारण नहीं होता, उसे iOS रिजेक्ट करता है (गाइडलाइन 5.1.1)।', 'iss.emptyUsage.f': 'Info.plist में स्पष्ट कारण जोड़ें',
-  'iss.missingUsage.t': 'अनुमति का कारण मौजूद नहीं ({key})', 'iss.missingUsage.w': 'इसके बिना ऐप क्रैश होता है और रिजेक्ट हो जाता है।', 'iss.missingUsage.f': 'Info.plist में कारण जोड़ें',
+  'iss.missingUsage.t': 'अनुमति का कारण मौजूद नहीं ({key})', 'iss.missingUsage.w': 'ऐसा कोड मिला जो यह अनुमति इस्तेमाल करता लगता है। अगर ऐप सच में इसे इस्तेमाल करता है तो कारण वाला टेक्स्ट जोड़ें, इसके बिना ऐप क्रैश होता है और रिजेक्ट हो जाता है। इस्तेमाल नहीं करता तो इसे अनदेखा कर सकते हैं।', 'iss.missingUsage.f': 'Info.plist में कारण जोड़ें',
   'iss.privacyManifest.t': 'iOS गोपनीयता मैनिफ़ेस्ट नहीं है', 'iss.privacyManifest.w': 'App Store को PrivacyInfo.xcprivacy चाहिए, जिसमें जमा किया गया डेटा और इस्तेमाल किए गए API लिखे हों।', 'iss.privacyManifest.f': 'इस ऐप के लिए PrivacyInfo.xcprivacy बनाएँ',
   
   
@@ -143,7 +143,7 @@ window.RL_I18N.hi = {
   'iss.ipadShots.t': 'ऐप iPad सपोर्ट करता है: iPad स्क्रीनशॉट ज़रूरी हैं',
   'iss.ipadShots.w': 'सबमिट करने के लिए iPhone 6.7-इंच (1320×2868) के साथ 12.9/13-इंच iPad स्क्रीनशॉट (APP_IPAD_PRO_3GEN_129, 2048×2732) चाहिए। या ऐप को सिर्फ़ iPhone के लिए करें।',
   'iss.carplay.t': 'CarPlay कोड है पर CarPlay entitlement नहीं',
-  'iss.carplay.w': 'CarPlay के लिए Apple से अलग entitlement चाहिए। सबमिट से पहले अनुरोध करें, या इस बिल्ड से CarPlay हटाएँ।',
+  'iss.carplay.w': 'CarPlay कोड ऐप में बिल्ड होता है ({files})। CarPlay के लिए Apple से अलग entitlement चाहिए। सबमिट से पहले अनुरोध करें, या इस बिल्ड से CarPlay हटाएँ।',
   'iss.freeInMeta.t': 'सबटाइटल या कीवर्ड में “free” या दूसरे ब्रांड के नाम हैं',
   'iss.freeInMeta.w': 'गाइडलाइन 2.3.7: सबटाइटल और कीवर्ड से कीमत वाले शब्द (Free, मुफ़्त, 무료, ฟรี, 免费…) और दूसरी कंपनियों के नाम हटाएँ ({files})।',
   'iss.androidInIosCopy.t': 'App Store टेक्स्ट में Android का ज़िक्र है',

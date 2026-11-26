@@ -198,6 +198,25 @@ function refreshAuto(st) {
   for (const k of st.auto || []) { const d = list.find(x => x.key === k); if (!d) { delete st.dec[k]; continue; } st.dec[k] = Flow.recValue(d); }
   st.auto = (st.auto || []).filter(k => st.dec[k] !== undefined);
 }
+/* 0.2.8: short notes in the connect report, in the user's language */
+const NOTES = {
+  en: { catOwn: 'The first category comes from {src}. The others are only suggestions; they are not categories you chose.', catGuess: 'All categories are suggestions from the app text; pick one.',
+    earlier: 'Not verified (미확인): this comes from a version number or ID found in the project, not from the store console. It is not proof that an upload happened.',
+    built: 'The built file differs from the source files (differs_from_source lists the source value and the built value). The built values are used; rebuild if the source is newer. A value that matches one of the product flavors is not counted as a difference.' },
+  ko: { catOwn: '첫 번째 카테고리는 {src}에서 가져왔어요. 나머지는 추천일 뿐, 직접 고른 카테고리가 아니에요.', catGuess: '모든 카테고리는 앱 문구를 보고 추천한 거예요. 하나를 골라 주세요.',
+    earlier: '미확인: 스토어 콘솔이 아니라 프로젝트에 있는 버전 번호나 ID에서 나온 힌트예요. 업로드했다는 증거가 아니에요.',
+    built: '빌드 파일이 소스 파일과 달라요(differs_from_source에 소스 값과 빌드 값이 있어요). 빌드 값을 써요. 소스가 더 새로우면 다시 빌드해요. 제품 플레이버 값 중 하나와 같으면 차이로 세지 않아요.' },
+  th: { catOwn: 'หมวดหมู่แรกมาจาก {src} ที่เหลือเป็นเพียงคำแนะนำ ไม่ใช่หมวดหมู่ที่คุณเลือก', catGuess: 'ทุกหมวดหมู่เป็นคำแนะนำจากข้อความในแอป เลือกหนึ่งหมวด',
+    earlier: 'ยังไม่ยืนยัน (미확인): มาจากหมายเลขเวอร์ชันหรือ ID ในโปรเจกต์ ไม่ใช่จากคอนโซลของสโตร์ จึงไม่ได้พิสูจน์ว่าเคยอัปโหลด',
+    built: 'ไฟล์บิลด์ต่างจากซอร์ส (differs_from_source แสดงค่าในซอร์สและค่าในบิลด์) จะใช้ค่าจากบิลด์ ถ้าซอร์สใหม่กว่าให้บิลด์ใหม่ ค่าที่ตรงกับ product flavor ใดก็ตามไม่นับว่าต่าง' },
+  zh: { catOwn: '第一个类别来自 {src}，其余只是建议，不是你选的类别。', catGuess: '所有类别都是根据应用文字给出的建议，请选一个。',
+    earlier: '未确认（미확인）：这来自项目里的版本号或 ID，不是来自商店控制台，不能证明已经上传过。',
+    built: '构建文件与源码不同（differs_from_source 列出了源码值和构建值），以构建值为准；如果源码更新，请重新构建。与某个产品变体（flavor）相同的值不算差异。' },
+  hi: { catOwn: 'पहली कैटेगरी {src} से ली गई है। बाकी सिर्फ़ सुझाव हैं, आपकी चुनी हुई कैटेगरी नहीं।', catGuess: 'सारी कैटेगरी ऐप के टेक्स्ट से सुझाई गई हैं; एक चुनें।',
+    earlier: 'पुष्टि नहीं (미확인): यह प्रोजेक्ट के वर्ज़न नंबर या ID से आया है, स्टोर कंसोल से नहीं। यह अपलोड होने का सबूत नहीं है।',
+    built: 'बिल्ड फ़ाइल सोर्स से अलग है (differs_from_source में सोर्स और बिल्ड दोनों मान हैं)। बिल्ड वाले मान इस्तेमाल होते हैं; सोर्स नया हो तो फिर से बिल्ड करें। किसी product flavor से मेल खाने वाला मान अंतर नहीं गिना जाता।' }
+};
+const note = (L, k, v) => ((NOTES[L] || NOTES.en)[k] || NOTES.en[k]).replace(/\{(\w+)\}/g, (m, x) => (v && v[x] !== undefined ? String(v[x]) : m));
 const EV = { 'play-url': 'Google Play link', 'apple-url': 'App Store link', 'fastlane-play': 'fastlane Play metadata', 'fastlane-apple': 'fastlane App Store metadata', 'fastlane-deliver': 'fastlane deliver', 'play-changelogs': 'Play release notes' };
 function stageInfo(st, L) {
   const t = T(L), o = {};
@@ -206,7 +225,7 @@ function stageInfo(st, L) {
     o[STORE_NAME[k]] = { key: 'stage:' + k, current: cur, current_label: cur ? t('stage.' + cur) : null, recommended: rec,
       recommended_label: rec === 'unknown' ? 'unknown — please confirm' : t('stage.' + rec),
       recorded: cur && st.stageSource && st.stageSource[k] ? st.stageSource[k] : h.recorded ? `${h.recorded.stage} (${h.recorded.source})` : undefined,
-      evidence: h.evidence.map(e => EV[e] || e), earlier_upload_hint: h.weak || undefined, earlier_upload_hint_note: h.weak ? 'Not verified (미확인): this comes from a version number or ID found in the project, not from the store console. It is not proof that an upload happened.' : undefined, store_url: h.url || undefined };
+      evidence: h.evidence.map(e => EV[e] || e), earlier_upload_hint: h.weak || undefined, earlier_upload_hint_note: h.weak ? note(L, 'earlier') : undefined, store_url: h.url || undefined };
   }
   return o;
 }
@@ -230,10 +249,10 @@ export function report(st, lang) {
   const c = { block: 0, warn: 0, check: 0, tip: 0 }; issues.forEach(i => c[i.sev]++);
   return {
     project_id: st.id,
-    summary: msg(L, 'connected', { name: appName(st, L), ready: A.readiness }) + ' ' + msg(L, 'counts', c),
+    summary: msg(L, 'connected', { name: appName(st, L), ready: A.readiness }) + (A.readiness >= 96 ? msg(L, 'readyCap') : '') + ' ' + msg(L, 'counts', c),
     app: { name: appName(st, L), package: A.pkg || null, version: A.version, platforms: Object.keys(A.platforms).filter(k => A.platforms[k]), framework: A.framework,
       targetSdk: (A.android && A.android.targetSdk) || null, categories: A.categories.map(k => Gen.CAT[k] ? `${Gen.CAT[k][L][1]} (${Gen.CAT[k].play})` : k),
-      category_source: A.categorySource || undefined, category_note: /^(project config|store listing)/.test(A.categorySource || '') ? 'The first category comes from ' + A.categorySource + '. The others are only suggestions; they are not categories you chose.' : 'All categories are suggestions from the app text; pick one.',
+      category_source: A.categorySource || undefined, category_note: /^(project config|store listing)/.test(A.categorySource || '') ? note(L, 'catOwn', { src: A.categorySource }) : note(L, 'catGuess'),
       sdks: Object.entries(A.sdk).filter(([, v]) => v).map(([k]) => k), default_language: (A.prepared && A.prepared.defaultLang) || null, languages_in_app: A.locales, icon_found: !!A.icon, screenshots_found: A.screenshots.length,
       source: st.source, privacy_url_found: (A.developer && A.developer.privacyUrl) || null, ...privacyInfo(A), icon_check: A.iconCheck || undefined,
       ads_hint: A.adsHint ? { note: 'An ad SDK name appears only in app code, not in any dependency or native config; not treated as ads.', files: A.adsHint.files } : undefined,
@@ -251,7 +270,7 @@ export function report(st, lang) {
 function extraInfo(A) {
   const P = A.prepared, an = A.android || {}, D = A.deletionInfo || {};
   return {
-    category_source: A.categorySource || 'guessed from the app name, text and libraries (needs confirmation; set "category" in rocketlauncher.json)',
+    category_source: A.categorySource || 'suggested from the app name, text and libraries; no category was found in rocketlauncher.json or a store listing draft (please confirm, or set "category" in rocketlauncher.json)',
     sign_in_required: A.accessRestricted ? { source: A.accessRestricted.source, evidence: A.accessRestricted.text || undefined, note: 'The app is only for approved users, so reviewers need a demo account (App access: restricted).' } : undefined,
     needs_confirmation: (() => { const n = [];
       if (!A.categorySource) n.push('category (guessed)');
@@ -261,7 +280,7 @@ function extraInfo(A) {
       return n.length ? n : undefined; })(),
     category_warning: A.categoryConfigUnknown ? `rocketlauncher.json category "${A.categoryConfigUnknown}" is not a known store category; set it to a Google Play category name such as "Business" or "Maps & Navigation".` : undefined,
     ads_disabled: A.adsDisabled ? { note: 'An ad SDK is mentioned but switched off (or rocketlauncher.json says ads: false); not treated as ads.', source: A.adsDisabled.source, files: A.adsDisabled.files || undefined } : undefined,
-    built_binary: an.built ? { file: an.built.file, kind: an.built.kind, targetSdk: an.built.targetSdk || undefined, package: an.built.package || undefined, versionCode: an.built.versionCode || undefined, versionName: an.built.versionName || undefined, differs_from_source: an.builtMismatch && an.builtMismatch.length ? an.builtMismatch : undefined, note: an.builtMismatch && an.builtMismatch.length ? 'The built file differs from the source files; the built values are used. Rebuild if the source is newer.' : undefined } : undefined,
+    built_binary: an.built ? { file: an.built.file, kind: an.built.kind, targetSdk: an.built.targetSdk || undefined, package: an.built.package || undefined, versionCode: an.built.versionCode || undefined, versionName: an.built.versionName || undefined, differs_from_source: an.builtMismatch && an.builtMismatch.length ? an.builtMismatch : undefined, note: an.builtMismatch && an.builtMismatch.length ? note(L, 'built') : undefined } : undefined,
     form_factors: an.formFactors && an.formFactors.length ? ['phone', ...an.formFactors] : undefined,
     feature_graphic_found: A.featureGraphic ? A.featureGraphic.path : undefined,
     prepared_forms: A.preparedForms && Object.values(A.preparedForms).some(Boolean) ? Object.fromEntries(Object.entries(A.preparedForms).filter(([, v]) => v)) : undefined,

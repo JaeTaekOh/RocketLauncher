@@ -43,7 +43,7 @@ window.RL_I18N.en = {
   'iss.locationConfirm.t': 'Confirm whether location leaves the device', 'iss.locationConfirm.f': 'Confirm whether location is sent off the device',
   'iss.privacyPolicy.t': 'No privacy policy', 'iss.privacyPolicy.w': 'Both stores require a privacy policy URL.', 'iss.privacyPolicy.f': 'Write a policy matching what the app really uses, in each store language',
   'iss.emptyUsage.t': 'Permission reason is empty ({key})', 'iss.emptyUsage.w': 'iOS rejects apps whose permission prompt has no reason (Guideline 5.1.1).', 'iss.emptyUsage.f': 'Patch Info.plist with a clear reason',
-  'iss.missingUsage.t': 'Permission reason is missing ({key})', 'iss.missingUsage.w': 'Without it the app crashes and is rejected.', 'iss.missingUsage.f': 'Patch Info.plist with a reason',
+  'iss.missingUsage.t': 'Permission reason is missing ({key})', 'iss.missingUsage.w': 'Rocket Launcher found code that looks like it uses this permission. If the app really uses it, add the purpose text: without it the app crashes and is rejected. If it does not, you can ignore this.', 'iss.missingUsage.f': 'Patch Info.plist with a reason',
   'iss.privacyManifest.t': 'No iOS privacy manifest', 'iss.privacyManifest.w': 'The App Store requires PrivacyInfo.xcprivacy describing collected data and APIs used.', 'iss.privacyManifest.f': 'Generate PrivacyInfo.xcprivacy for this app',
   
   
@@ -143,7 +143,7 @@ window.RL_I18N.en = {
   'iss.ipadShots.t': 'The app supports iPad: iPad screenshots are required',
   'iss.ipadShots.w': 'Submitting needs 12.9-inch / 13-inch iPad screenshots (APP_IPAD_PRO_3GEN_129, 2048×2732) besides iPhone 6.7-inch (1320×2868). Or make the app iPhone-only.',
   'iss.carplay.t': 'CarPlay code without a CarPlay entitlement',
-  'iss.carplay.w': 'CarPlay needs a dedicated entitlement from Apple. Request it before submitting, or remove CarPlay from this build.',
+  'iss.carplay.w': 'CarPlay code is built into the app ({files}). CarPlay needs a dedicated entitlement from Apple. Request it before submitting, or remove CarPlay from this build.',
   'iss.freeInMeta.t': 'Subtitle or keywords contain “free” or other brand names',
   'iss.freeInMeta.w': 'Guideline 2.3.7: remove price words (Free, 무료, ฟรี, 免费, मुफ़्त…) and other companies’ names from the subtitle and keywords ({files}).',
   'iss.androidInIosCopy.t': 'App Store text mentions Android',

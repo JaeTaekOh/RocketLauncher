@@ -43,7 +43,7 @@ window.RL_I18N.zh = {
   'iss.locationConfirm.t': '请确认位置是否离开设备', 'iss.locationConfirm.f': '确认位置是否被发送到设备外',
   'iss.privacyPolicy.t': '没有隐私政策', 'iss.privacyPolicy.w': '两个商店都要求提供隐私政策网址。', 'iss.privacyPolicy.f': '按应用实际使用的信息，用每种商店语言撰写政策',
   'iss.emptyUsage.t': '权限说明为空（{key}）', 'iss.emptyUsage.w': '权限提示没有说明原因的应用会被 iOS 拒绝（准则 5.1.1）。', 'iss.emptyUsage.f': '在 Info.plist 中补上清楚的原因',
-  'iss.missingUsage.t': '缺少权限说明（{key}）', 'iss.missingUsage.w': '缺少它应用会崩溃并被拒。', 'iss.missingUsage.f': '在 Info.plist 中补上原因',
+  'iss.missingUsage.t': '缺少权限说明（{key}）', 'iss.missingUsage.w': '发现了看起来使用这个权限的代码。如果应用确实使用，请补上说明文字，缺少它应用会崩溃并被拒；如果没有使用，可以忽略。', 'iss.missingUsage.f': '在 Info.plist 中补上原因',
   'iss.privacyManifest.t': '没有 iOS 隐私清单', 'iss.privacyManifest.w': 'App Store 要求提供 PrivacyInfo.xcprivacy，说明收集的数据和使用的 API。', 'iss.privacyManifest.f': '为此应用生成 PrivacyInfo.xcprivacy',
   
   
@@ -143,7 +143,7 @@ window.RL_I18N.zh = {
   'iss.ipadShots.t': '应用支持 iPad：需要 iPad 截图',
   'iss.ipadShots.w': '除 iPhone 6.7 英寸（1320×2868）外，提交还需要 12.9/13 英寸 iPad 截图（APP_IPAD_PRO_3GEN_129，2048×2732）。或者把应用改为仅限 iPhone。',
   'iss.carplay.t': '有 CarPlay 代码，但没有 CarPlay 权限（entitlement）',
-  'iss.carplay.w': 'CarPlay 需要向 Apple 单独申请专用权限。提交前申请，或从此构建中移除 CarPlay。',
+  'iss.carplay.w': 'CarPlay 代码会编译进应用（{files}）。CarPlay 需要向 Apple 单独申请专用权限。提交前申请，或从此构建中移除 CarPlay。',
   'iss.freeInMeta.t': '副标题或关键词中有“免费”或其他品牌名称',
   'iss.freeInMeta.w': '准则 2.3.7：从副标题和关键词中删除价格词（Free、免费、무료、ฟรี、मुफ़्त…）和其他公司名称（{files}）。',
   'iss.androidInIosCopy.t': 'App Store 文案提到了 Android',

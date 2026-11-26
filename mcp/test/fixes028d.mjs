@@ -112,7 +112,7 @@ check(c.report.app.category_source && /rocketlauncher\.json/.test(c.report.app.c
 c = await conn(BGAA({ 'store/listing-ko.md': '# T\n\n- 앱 / 카테고리: **비즈니스 (Business)** (대안: 생산성)\n' }));
 check(c.st.A.categories[0] === 'business' && /not categories you chose|suggestions/.test(c.report.app.category_note), 'a listing draft "비즈니스 (대안: 생산성)" → business first, the alternative is a suggestion', [c.st.A.categories, c.report.app.category_note]);
 c = await conn(BGAA());
-check(/^guessed/.test(c.report.app.category_source) && /suggestions/.test(c.report.app.category_note), 'no stated category → all categories are suggestions', c.report.app);
+check(/^suggested/.test(c.report.app.category_source) && /suggestions/.test(c.report.app.category_note), 'no stated category → all categories are suggestions', c.report.app);
 
 const pol = t => BGAA({ 'privacy.md': '# Privacy\n\n' + t + '\n', 'package.json': NO_ADS_PKG.replace('"@capacitor/core"', '"@capacitor-community/admob": "^6.0.0", "@capacitor/core"') });
 c = await conn(pol('We collect your name and email. We do not use your data for advertising. Your data is never sold.'));

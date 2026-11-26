@@ -43,7 +43,7 @@ window.RL_I18N.th = {
   'iss.locationConfirm.t': 'ยืนยันว่าตำแหน่งออกจากเครื่องหรือไม่', 'iss.locationConfirm.f': 'ยืนยันว่ามีการส่งตำแหน่งออกจากเครื่องหรือไม่',
   'iss.privacyPolicy.t': 'ไม่มีนโยบายความเป็นส่วนตัว', 'iss.privacyPolicy.w': 'ทั้งสองสโตร์ต้องการลิงก์นโยบายความเป็นส่วนตัว', 'iss.privacyPolicy.f': 'เขียนนโยบายตามที่แอปใช้จริง ในทุกภาษาของสโตร์',
   'iss.emptyUsage.t': 'ข้อความเหตุผลการขอสิทธิ์ว่างเปล่า ({key})', 'iss.emptyUsage.w': 'iOS ปฏิเสธแอปที่ไม่มีเหตุผลในหน้าขอสิทธิ์ (แนวทาง 5.1.1)', 'iss.emptyUsage.f': 'แพตช์ Info.plist ใส่เหตุผลที่ชัดเจน',
-  'iss.missingUsage.t': 'ไม่มีข้อความเหตุผลการขอสิทธิ์ ({key})', 'iss.missingUsage.w': 'ถ้าไม่มี แอปจะปิดตัวเองและถูกปฏิเสธ', 'iss.missingUsage.f': 'แพตช์ Info.plist ใส่เหตุผล',
+  'iss.missingUsage.t': 'ไม่มีข้อความเหตุผลการขอสิทธิ์ ({key})', 'iss.missingUsage.w': 'พบโค้ดที่ดูเหมือนใช้สิทธิ์นี้ ถ้าแอปใช้จริง ให้ใส่ข้อความเหตุผล ถ้าไม่มี แอปจะปิดตัวเองและถูกปฏิเสธ ถ้าไม่ได้ใช้ ข้ามข้อนี้ได้', 'iss.missingUsage.f': 'แพตช์ Info.plist ใส่เหตุผล',
   'iss.privacyManifest.t': 'ไม่มี privacy manifest ของ iOS', 'iss.privacyManifest.w': 'App Store ต้องการไฟล์ PrivacyInfo.xcprivacy ที่ระบุข้อมูลที่เก็บและ API ที่ใช้', 'iss.privacyManifest.f': 'สร้าง PrivacyInfo.xcprivacy ให้แอปนี้',
   
   
@@ -143,7 +143,7 @@ window.RL_I18N.th = {
   'iss.ipadShots.t': 'แอปรองรับ iPad: ต้องมีภาพหน้าจอ iPad',
   'iss.ipadShots.w': 'การส่งต้องมีภาพหน้าจอ iPad 12.9/13 นิ้ว (APP_IPAD_PRO_3GEN_129, 2048×2732) นอกจาก iPhone 6.7 นิ้ว (1320×2868) หรือทำให้แอปเป็น iPhone เท่านั้น',
   'iss.carplay.t': 'มีโค้ด CarPlay แต่ไม่มีสิทธิ์ CarPlay (entitlement)',
-  'iss.carplay.w': 'CarPlay ต้องได้รับสิทธิ์เฉพาะจาก Apple ให้ขอก่อนส่ง หรือเอา CarPlay ออกจากบิลด์นี้',
+  'iss.carplay.w': 'มีโค้ด CarPlay อยู่ในบิลด์ ({files}) CarPlay ต้องได้รับสิทธิ์เฉพาะจาก Apple ให้ขอก่อนส่ง หรือเอา CarPlay ออกจากบิลด์นี้',
   'iss.freeInMeta.t': 'คำบรรยายย่อยหรือคีย์เวิร์ดมีคำว่า "ฟรี" หรือชื่อแบรนด์อื่น',
   'iss.freeInMeta.w': 'แนวทาง 2.3.7: ลบคำเกี่ยวกับราคา (Free, ฟรี, 무료, 免费, मुफ़्त…) และชื่อบริษัทอื่นออกจากคำบรรยายย่อยและคีย์เวิร์ด ({files})',
   'iss.androidInIosCopy.t': 'ข้อความ App Store พูดถึง Android',

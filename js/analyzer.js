@@ -1000,7 +1000,7 @@
       if (R.byok) add('byok', 'warn', 'ios', 'info');
       if (io.encryption === undefined && io.plistPath) add('encryption', 'warn', 'ios', 'patch-plist-encryption');
       if (io.ipad && !A.ipadScreenshots) add('ipadShots', 'warn', 'ios', 'info');
-      if (R.carplay && !io.carplayEntitlement) add('carplay', 'warn', 'ios', 'info');
+      if (R.carplay && !io.carplayEntitlement) add('carplay', 'warn', 'ios', 'info', { files: (R.carplayFiles || []).slice(0, 2).join(', ') || 'Info.plist / plugin' });
       if (R.freeInMeta && R.freeInMeta.length) add('freeInMeta', 'warn', 'ios', 'info', { files: R.freeInMeta.join(', ') });
       if (R.androidInIosMeta && R.androidInIosMeta.length) add('androidInIosCopy', 'warn', 'ios', 'info', { files: R.androidInIosMeta.join(', ') });
       if (io.deploymentNum && io.deploymentNum < 15) add('iosDeployment', 'tip', 'ios', 'info', { cur: io.deployment });

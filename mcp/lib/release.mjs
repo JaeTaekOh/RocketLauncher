@@ -1,6 +1,7 @@
 /* Rocket Launcher 0.2.3 — release checks.
    Every function here only reads the connected project and the bundled rule tables, and returns guidance.
    Nothing is submitted, uploaded, deleted or sent to a store. No API keys. */
+import { localizeRow } from './release-rows-i18n.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, Analyzer, Detect, Gen, Flow } from './runtime.mjs';
@@ -26,7 +27,7 @@ export const vcmp = (a, b) => { const x = vnum(a), y = vnum(b); for (let i = 0; 
 const bumpPatch = v => { const n = vnum(v); while (n.length < 3) n.push(0); n[2]++; return n.slice(0, 3).join('.'); };
 const sortRows = rows => rows.sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
 const counts = rows => { const c = { block: 0, warn: 0, check: 0, ok: 0, info: 0 }; rows.forEach(r => c[r.severity]++); return c; };
-const label = (L, rows) => rows.map(r => ({ ...r, severity_label: rx(L, 'sev.' + r.severity) }));
+const label = (L, rows) => rows.map(r => ({ ...localizeRow(L, r), severity_label: rx(L, 'sev.' + r.severity) }));
 
 /* ---------- code scan at connect time (stored as st.X) ---------- */
 const stripComments = s => s.replace(/("(?:\\.|[^"\\])*")|\/\/[^\n]*|\/\*[\s\S]*?\*\//g, (m, q) => q || '');
@@ -176,6 +177,8 @@ export function scanProject(project, A) {
   /* force update and remote flags */
   X.forceUpdate = { code: codeP.filter(p => FORCE_UPDATE.test(text(p))).slice(0, 5), lib: UPDATE_LIBS.test(depHay + gradleTxt + codeP.map(text).join('\n').slice(0, 300000)) };
   X.remoteFlags = REMOTE_FLAGS.test(depHay + gradleTxt + codeP.slice(0, 60).map(text).join('\n'));
+  /* 0.2.8: where the remote flags were found, for the review-notes row */
+  if (X.remoteFlags) X.remoteFlagsWhere = REMOTE_FLAGS.test(depHay) ? 'dependencies' : REMOTE_FLAGS.test(gradleTxt) ? 'Gradle files' : (codeP.slice(0, 60).find(p => REMOTE_FLAGS.test(text(p))) || 'code');
   /* tester opt-in pages in the repo */
   X.optinPages = textP.filter(p => /\.(html?|md)$/i.test(p) && OPTIN_PAGE.test(p.split('/').pop() + ' ' + p)).slice(0, 5).map(p => ({ path: p, ...optinCheck(text(p)) }));
   X.scannedAt = new Date().toISOString();
@@ -232,51 +235,52 @@ export function requirements(st, L, opts = {}) {
       else if (bins.length) add('play.16kb_page_size', 'ok', `The built app contains no native libraries (.so), so 16 KB page size does not apply.${binNote}`);
       else add('play.16kb_page_size', 'ok', 'No native code found (Java/Kotlin only apps already support 16 KB).');
     }
-    add('play.app_registration', 'check', 'Rocket Launcher cannot see Play Console.', 'Open the Play Console home page and register any app it lists as unregistered. The developer account must be verified.');
-    add('play.trader_status', 'check', 'Every developer account must declare trader / non-trader.', 'Play Console > Manage account > Account details > About you. Not distributing in the EEA/UK: non-trader is allowed.');
+    add('play.app_registration', 'check', 'Rocket Launcher cannot see Play Console.', 'Open the Play Console home page and register any app it lists as unregistered. The developer account must be verified.', { _v: {} });
+    add('play.trader_status', 'check', 'Every developer account must declare trader / non-trader.', 'Play Console > Manage account > Account details > About you. Not distributing in the EEA/UK: non-trader is allowed.', { _v: {} });
     /* 0.2.8: foreground services on Android 14+ need a Play Console declaration per type, with a video link */
     { const perms = an.permissions || [], svc = an.services || [];
       const types = [...new Set([...svc.flatMap(x => String(x.fgsType || '').split('|')).filter(Boolean), ...perms.map(p => (p.match(/FOREGROUND_SERVICE_([A-Z_]+)$/) || [])[1]).filter(Boolean).map(t => t.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase()))])].filter(t => t !== 'shortService');
       const tsdk = (an.built && an.built.targetSdk) || an.targetSdk;
       if (types.length && perms.includes('android.permission.FOREGROUND_SERVICE') && (!tsdk || tsdk >= 34))
         add('play.fgs_declaration', 'check', `Foreground service type${types.length > 1 ? 's' : ''}: ${types.join(', ')}.`, `Play Console > App content > Foreground service permissions: for each type, describe the feature, the user impact if the task is deferred or interrupted, and add a link to a video that shows the feature${types.includes('mediaPlayback') ? ' (mediaPlayback: show the user starting playback)' : ''}.`,
-          { store: STORE.play, rule: 'Apps targeting Android 14+ declare each foreground service type in Play Console, with a video link.', source: 'https://support.google.com/googleplay/android-developer/answer/13392821' }); }
+          { _v: { types: types.join(', '), mp: types.includes('mediaPlayback') }, store: STORE.play, rule: 'Apps targeting Android 14+ declare each foreground service type in Play Console, with a video link.', source: 'https://support.google.com/googleplay/android-developer/answer/13392821' }); }
     /* 0.2.8: Advertising ID / Contains ads answers when the build carries no ads and no AD_ID (removed with tools:node, or ads switched off) */
     { const adIdRemoved = (an.removedPermissions || []).some(p => /AD_ID$/.test(p || ''));
       if (!A.sdk.ads && !an.adId && (adIdRemoved || A.adsDisabled || A.adsHint))
         add('play.ads_declaration', 'check', `${adIdRemoved ? 'AD_ID is removed from the manifest (tools:node="remove")' : 'No AD_ID permission in the build'}; ${A.adsDisabled ? `ad code is switched off (${A.adsDisabled.files.slice(0, 2).join(', ')})` : A.adsHint ? `ad-related code without an ads SDK (${A.adsHint.files.slice(0, 2).join(', ')})` : 'no ads SDK'}.`, A.adsHint && !A.adsDisabled && !adIdRemoved ? 'Check what the uploaded build does. If it shows no ads, answer "Contains ads: No" and "Advertising ID: No" in Play Console > App content; if a release step turns ads on (an ads SDK, AD_ID), answer Yes to both.' : 'Play Console > App content: answer "Contains ads: No" and "Advertising ID: No" so the answers match this build. If you turn ads on later, change both answers in the same release.',
-          { store: STORE.play, rule: 'The Contains ads and Advertising ID answers must match what the uploaded build does.', source: 'https://support.google.com/googleplay/android-developer/answer/6048248' }); }
+          { _v: { removed: adIdRemoved, disabled: A.adsDisabled ? A.adsDisabled.files.slice(0, 2).join(', ') : '', hint: A.adsHint ? A.adsHint.files.slice(0, 2).join(', ') : '', hintOnly: !!(A.adsHint && !A.adsDisabled && !adIdRemoved) }, store: STORE.play, rule: 'The Contains ads and Advertising ID answers must match what the uploaded build does.', source: 'https://support.google.com/googleplay/android-developer/answer/6048248' }); }
     /* 0.2.8: closed test testers need the Google account in the tester group, the opt-in, and a country the app is available in */
     if (stage('play') !== 'live') add('play.closed_test_access', 'info', 'A closed test is reachable only by testers who are in the tester group (or Google Group) and signed in to Play with the same Google account.', 'Tell testers: join the group with the account that is on their phone, open the opt-in link while signed in with it, then install from Play. They must be in a country the test track is available in (Play Console > Test and release > Testing > Countries / regions); otherwise Play shows "app not available".',
-      { store: STORE.play, rule: 'Closed test: invite by email list or Google Group; testers opt in through the test link.', source: 'https://support.google.com/googleplay/android-developer/answer/9845334' });
+      { _v: {}, store: STORE.play, rule: 'Closed test: invite by email list or Google Group; testers opt in through the test link.', source: 'https://support.google.com/googleplay/android-developer/answer/9845334' });
     /* 0.2.8: Google sign-in on a Play install uses the Play app signing key; its SHA-1 / SHA-256 must be registered in Firebase / the OAuth client */
     if (A.sdk.googleSignIn || (A.googleServices && A.sdk.auth && /google/i.test(JSON.stringify(A.googleServices) + (A.sdk.authKinds || ''))))
       add('play.app_signing_google_login', 'check', 'The app signs in with Google. Play re-signs the app with its own app signing key, so the upload key\'s fingerprints alone are not enough.', 'Play Console > Test and release > App signing: copy the app signing key certificate SHA-1 and SHA-256 and add them to the Firebase Android app (Project settings) or the Google Cloud OAuth Android client. Rocket Launcher cannot read these values; check them in the consoles.',
-        { store: STORE.play, rule: 'Google sign-in on Play installs needs the app signing certificate fingerprints registered.', source: 'https://developer.android.com/studio/publish/app-signing#manage-key' });
+        { _v: {}, store: STORE.play, rule: 'Google sign-in on Play installs needs the app signing certificate fingerprints registered.', source: 'https://developer.android.com/studio/publish/app-signing#manage-key' });
     /* 0.2.8: Play never lets a deleted app's package name be used again; a leftover name in config files is a trap */
     { const gs = A.googleServices, cand = new Set([an.pkg, ...(an.pkgCandidates || [])].filter(Boolean));
       const stale = gs ? gs.packages.filter(p => ![...cand].some(c => p === c || p.startsWith(c + '.'))) : [];
       if (gs && an.pkg && !gs.packages.some(p => [...cand].some(c => p === c || p.startsWith(c + '.'))))
         add('play.google_services_package', 'warn', `${gs.file} has no client for ${an.pkg} (it lists ${gs.packages.slice(0, 3).join(', ') || 'none'}).`, 'Download google-services.json again for this package from the Firebase console; otherwise Firebase and Google sign-in will not work in this build.',
-          { store: STORE.play, rule: 'google-services.json must contain the app\'s package.', source: 'https://firebase.google.com/docs/android/setup' });
+          { _v: { file: gs.file, pkg: an.pkg, list: gs.packages.slice(0, 3).join(', ') || '-' }, store: STORE.play, rule: 'google-services.json must contain the app\'s package.', source: 'https://firebase.google.com/docs/android/setup' });
       else if (stale.length)
         add('play.old_package_name', 'check', `${gs.file} also lists ${stale.join(', ')}, which is not this app's package (${an.pkg}).`, `If ${stale.length > 1 ? 'those apps were' : 'that app was'} deleted in Play Console, the name can never be used again: do not publish under it. Remove the leftover client from google-services.json when you re-download it for ${an.pkg}.`,
-          { store: STORE.play, rule: 'A package name cannot be reused after the app is deleted from Play Console.', source: 'https://support.google.com/googleplay/android-developer/answer/113469' }); }
+          { _v: { file: gs.file, stale: stale.join(', '), pkg: an.pkg }, store: STORE.play, rule: 'A package name cannot be reused after the app is deleted from Play Console.', source: 'https://support.google.com/googleplay/android-developer/answer/113469' }); }
     /* 0.2.8: a debug-signed APK of this app in the project: devices that installed it cannot be updated from Play (different signing key) */
     { const dbg = (((X && X.natives) || {}).binaries || []).filter(b => b.kind === 'apk' && b.debugSigned && (!b.manifest || !b.manifest.package || !an.pkg || b.manifest.package === an.pkg || String(b.manifest.package).startsWith(an.pkg + '.')));
       if (dbg.length) add('play.debug_apk_signature', 'check', `${dbg.slice(0, 2).map(b => b.path).join(', ')} ${dbg.length > 1 ? 'are' : 'is'} signed with the Android debug key.`, 'A phone that has this debug build installed cannot be updated to the Play version (the signing key differs): uninstall it first. Never upload a debug-signed build to Play.',
-        { store: STORE.play, rule: 'An update must be signed with the same key as the installed app.', source: 'https://developer.android.com/studio/publish/app-signing' }); }
+        { _v: { files: dbg.slice(0, 2).map(b => b.path).join(', ') }, store: STORE.play, rule: 'An update must be signed with the same key as the installed app.', source: 'https://developer.android.com/studio/publish/app-signing' }); }
     /* 0.2.8: the prepared listing names the countries; Play Console must match */
     if (A.prepared && A.prepared.countries) add('play.countries', 'info', `The prepared listing says: ${A.prepared.countries} (${A.prepared.countriesFile}).`, 'Play Console > Production (and each test track) > Countries / regions: keep exactly these. Do not add countries when you submit.',
-      { store: STORE.play, rule: 'Availability is set per track in Play Console.', source: 'https://support.google.com/googleplay/android-developer/answer/7550024' });
+      { _v: { c: A.prepared.countries, file: A.prepared.countriesFile }, store: STORE.play, rule: 'Availability is set per track in Play Console.', source: 'https://support.google.com/googleplay/android-developer/answer/7550024' });
     if (stage('play') !== 'live') add('play.closed_testing_personal', 'info', 'Applies to new personal developer accounts only.', 'Track it with rocketlauncher_closed_test.');
     if (A.sdk.location || A.sdk.contacts) add('play.contacts_location_policy_2027', 'check', `The app uses ${[A.sdk.location && 'location', A.sdk.contacts && 'contacts'].filter(Boolean).join(' and ')}.`, 'Re-check the permission declarations against the updated policy before 2027-01-27.');
   }
   if (io) {
     const hints = (X && X.build.xcodeHints) || [], vers = hints.map(h => h.version), maxV = vers.sort(vcmp).pop();
-    if (maxV && vcmp(maxV, '26') < 0) add('apple.xcode_26', 'block', `Build config uses Xcode ${maxV} (${hints.map(h => h.file).join(', ')}).`, 'Switch the build machine or CI image to Xcode 26 or later.');
-    else if (maxV) add('apple.xcode_26', 'ok', `Build config uses Xcode ${maxV}.`);
-    else add('apple.xcode_26', 'check', `No Xcode version found in the build config${X && X.build.lastUpgradeCheck && vcmp(X.build.lastUpgradeCheck, '14') >= 0 ? ` (project last upgraded in Xcode ${X.build.lastUpgradeCheck}; that is not the build Xcode)` : ''}.`, 'Archive with Xcode 26 or later (iOS 26 SDK). For Expo / EAS, use a build image with Xcode 26.');
+    if (maxV && vcmp(maxV, '26') < 0) add('apple.xcode_26', 'block', `Build config uses Xcode ${maxV} (${hints.map(h => h.file).join(', ')}).`, 'Switch the build machine or CI image to Xcode 26 or later.', { _v: { maxV, files: hints.map(h => h.file).join(', ') }, _k: 'apple.xcode_26#old' });
+    else if (maxV) add('apple.xcode_26', 'ok', `Build config uses Xcode ${maxV}.`, undefined, { _v: { maxV }, _k: 'apple.xcode_26#ok' });
+    else { const luc = X && X.build.lastUpgradeCheck && vcmp(X.build.lastUpgradeCheck, '14') >= 0 ? X.build.lastUpgradeCheck : null;
+      add('apple.xcode_26', 'check', `No Xcode version found in the build config${luc ? ` (project last upgraded in Xcode ${luc}; that only records which Xcode last updated the project settings, and templates such as Capacitor keep an old value, so it is not the build Xcode)` : ''}.`, 'Archive with Xcode 26 or later (iOS 26 SDK). Your CI config or the Mac you archive on decides which Xcode builds the app. For Expo / EAS, use a build image with Xcode 26.', { _v: { luc } }); }
     const dep = io.deploymentNum;
     if (dep && dep < 13) add('apple.min_target_ios13', 'block', `Deployment target is iOS ${io.deployment}.`, 'Raise IPHONEOS_DEPLOYMENT_TARGET to 13 or later (15 is needed from April 2027).');
     else if (dep) add('apple.min_target_ios13', 'ok', `Deployment target is iOS ${io.deployment}.`);
@@ -294,11 +298,11 @@ export function requirements(st, L, opts = {}) {
     /* 0.2.8: CarPlay needs an entitlement Apple grants to the team, in the App ID and a manual provisioning profile; without it iOS hides the app in CarPlay */
     if (io.carplayEntitlement || (A.review && A.review.carplay)) {
       const R0 = A.review || {}, ent = io.carplayEntitlement;
-      if (ent && !R0.carplay) add('apple.carplay', 'warn', 'A CarPlay entitlement is in the .entitlements file, but no CarPlay scene or CarPlay code is in the build.', 'Add the CarPlay scene (CPTemplateApplicationSceneSessionRoleApplication) before submitting, or remove the entitlement.', { store: STORE.apple, rule: 'A CarPlay app needs the entitlement and a CarPlay scene.', source: 'https://developer.apple.com/documentation/carplay/requesting-carplay-entitlements' });
-      else if (ent) add('apple.carplay', 'check', 'CarPlay entitlement and CarPlay scene found.', 'Before uploading: confirm Apple has granted this CarPlay entitlement to your team, that it is on the App ID, and that the build is signed with a manual provisioning profile that includes it; otherwise iOS does not show the app in CarPlay. Describe CarPlay in the review notes.', { store: STORE.apple, rule: 'A CarPlay app needs the entitlement and a CarPlay scene.', source: 'https://developer.apple.com/documentation/carplay/requesting-carplay-entitlements' });
+      if (ent && !R0.carplay) add('apple.carplay', 'warn', 'A CarPlay entitlement is in the .entitlements file, but no CarPlay scene or CarPlay code is in the build.', 'Add the CarPlay scene (CPTemplateApplicationSceneSessionRoleApplication) before submitting, or remove the entitlement.', { _v: {}, _k: 'apple.carplay#noscene', store: STORE.apple, rule: 'A CarPlay app needs the entitlement and a CarPlay scene.', source: 'https://developer.apple.com/documentation/carplay/requesting-carplay-entitlements' });
+      else if (ent) add('apple.carplay', 'check', 'CarPlay entitlement and CarPlay scene found.', 'Before uploading: confirm Apple has granted this CarPlay entitlement to your team, that it is on the App ID, and that the build is signed with a manual provisioning profile that includes it; otherwise iOS does not show the app in CarPlay. Describe CarPlay in the review notes.', { _v: {}, store: STORE.apple, rule: 'A CarPlay app needs the entitlement and a CarPlay scene.', source: 'https://developer.apple.com/documentation/carplay/requesting-carplay-entitlements' });
     }
-    if (X && X.remoteFlags) add('apple.hidden_features', 'warn', 'The app uses remote config / feature flags.', 'List every feature that can be turned on remotely in the review notes (Guideline 2.5.19); keep store graphics free of prices and unverifiable claims (2.3.14).');
-    else add('apple.hidden_features', 'info', 'No remote feature flags found.', 'Describe every feature in the review notes (Guideline 2.5.19).');
+    if (X && X.remoteFlags) add('apple.hidden_features', 'warn', `The app uses remote config / feature flags (${X.remoteFlagsWhere || 'code'}). An empty remote config URL is not counted.`, 'List every feature that can be turned on remotely in the review notes (Guideline 2.5.19); keep store graphics free of prices and unverifiable claims (2.3.14).', { _v: { where: X.remoteFlagsWhere || 'code' }, _k: 'apple.hidden_features#warn' });
+    else add('apple.hidden_features', 'info', 'No remote feature flags found.', 'Describe every feature in the review notes (Guideline 2.5.19).', { _v: {} });
     add('apple.iphone_duo_screenshots', 'info', 'Upcoming screenshot size.', 'When you move to the iOS 27.1 SDK, add iPhone Duo screenshots. Never upload screenshots with an alpha channel.');
   }
   if (A.sdk.auth) {
@@ -373,7 +377,7 @@ function reasonsXml(X) {
 }
 export function privacyCheck(st, L) {
   const A = st.A, X = st.X, an = A.android || null, io = A.ios || null, R = A.review || {}, rows = [];
-  const add = (id, severity, finding, action, source) => rows.push({ id, severity, finding, action: action || undefined, source: source || undefined });
+  const add = (id, severity, finding, action, source, v) => rows.push({ id, severity, finding, action: action || undefined, source: source || undefined, ...(v ? { _v: v, _k: v._k } : {}) });
   const perms = (an && an.permissions) || [], usage = (io && io.usage) || {};
   const fine = perms.some(p => /ACCESS_FINE_LOCATION/.test(p)), coarse = perms.some(p => /ACCESS_COARSE_LOCATION/.test(p)), bg = perms.some(p => /ACCESS_BACKGROUND_LOCATION/.test(p));
   const po = Flow.privacyOpts(A, st.dec);
@@ -396,8 +400,8 @@ export function privacyCheck(st, L) {
     { const reg = u => { try { const h = new URL(u).hostname.toLowerCase().split('.'); return h.slice(-(h.length > 2 && /^(co|com|or|ne|go|ac|org|net)$/.test(h[h.length - 2]) ? 3 : 2)).join('.'); } catch { return null; } };
       const cfg = A.projectConfig || {}, own = new Set([A.listing && A.listing.privacyUrl, A.listing && A.listing.supportUrl, A.deletionInfo && A.deletionInfo.url, A.developer && A.developer.privacyUrl, cfg.privacy_url, cfg.support_url, cfg.website, cfg.api_url].filter(Boolean).map(reg).filter(Boolean));
       const third = ((X && X.location && X.location.hosts) || []).filter(h => !own.has(reg('https://' + h.host)) && !/(^|\.)(firebaseio\.com|firebasedatabase\.app|googleapis\.com|supabase\.co|workers\.dev|pages\.dev|vercel\.app|netlify\.app|herokuapp\.com|amazonaws\.com|azurewebsites\.net|cloudfunctions\.net|run\.app)$/.test(h.host));
-      if (third.length) add('loc.third_party', 'check', `The app sends coordinates directly to ${third.map(h => `${h.host} (${h.file}:${h.line})`).join(', ')}, not to your own server.`, 'In Data safety, declare Location as collected (the data leaves the device), unless it is only processed in memory for the request (ephemeral processing; Google\'s own example is a weather lookup). Data sent to a service provider that works on your behalf, or as a result of an action the user starts and expects, does not count as "shared"; otherwise mark it shared. Say in the privacy policy which service gets the location.', 'https://support.google.com/googleplay/android-developer/answer/10787469'); }
-    if (sent && fine) add('loc.precise', 'warn', 'ACCESS_FINE_LOCATION is declared and location is sent to the server.', 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
+      if (third.length) add('loc.third_party', 'check', `The app sends coordinates directly to ${third.map(h => `${h.host} (${h.file}:${h.line})`).join(', ')}, not to your own server.`, 'In Data safety, declare Location as collected (the data leaves the device), unless it is only processed in memory for the request (ephemeral processing; Google\'s own example is a weather lookup). Data sent to a service provider that works on your behalf, or as a result of an action the user starts and expects, does not count as "shared"; otherwise mark it shared. Say in the privacy policy which service gets the location.', 'https://support.google.com/googleplay/android-developer/answer/10787469', { hosts: third.map(h => `${h.host} (${h.file}:${h.line})`).join(', ') }); }
+    if (sent && fine) add('loc.precise', 'warn', 'ACCESS_FINE_LOCATION is declared and location is sent to the server.', 'In Data safety declare "Precise location" (not only Approximate), or use ACCESS_COARSE_LOCATION if approximate is enough. The Data safety draft below already lists Precise location.', 'https://support.google.com/googleplay/android-developer/answer/10787469', {});
     if (X && X.policy && X.policy.unread) add('loc.policy', 'check', 'Could not verify (미확인): the privacy policy page was not read, so no finding is made about whether it mentions location.', 'Open the live privacy URL and confirm it covers location, or add a local copy of the policy in the project.');
     else if (X && X.policy && !X.policy.location) add('loc.policy', 'warn', 'The privacy policy does not mention location.', 'Say what location is used for, whether it is sent and how long it is kept.');
     if (sent && locConf === 'uncertain' && !locCorr) {
@@ -416,6 +420,9 @@ export function privacyCheck(st, L) {
   }
   if (A.sdk.ads && X && X.policy && X.policy.unread) add('ads.policy', 'check', 'Could not verify (미확인): the privacy policy page was not read, so no finding is made about whether it mentions advertising.', 'Open the live privacy URL and confirm it covers ads, or add a local copy of the policy in the project.');
   else if (A.sdk.ads && X && X.policy && X.policy.read && !X.policy.ads) add('ads.policy', 'warn', 'The app shows ads but the privacy policy does not mention advertising.', 'Mention the ad provider and the advertising ID in the privacy policy.');
+  /* 0.2.8: purpose texts are only checked for presence; their wording must match what the app does now */
+  if (io && Object.keys(usage).length) { const keys = Object.keys(usage).filter(k => /UsageDescription$/.test(k)).join(', ');
+    if (keys) add('perm.purpose_text', 'info', `Info.plist has purpose texts for: ${keys}.`, 'Rocket Launcher only checks that the keys exist. Read each text, and its InfoPlist.strings translations, against what the app does now. Apple asks that the text clearly explain why the app uses the data (Guideline 5.1.1).', 'https://developer.apple.com/app-store/review/guidelines/#data-collection-and-storage', { keys }); }
   /* photos */
   if (perms.some(p => /READ_MEDIA_IMAGES|READ_MEDIA_VIDEO/.test(p))) add('photo.play', 'warn', 'READ_MEDIA_IMAGES / READ_MEDIA_VIDEO are declared.', 'Use the Android photo picker unless photo access is the app\'s core purpose, then remove the permissions (or file the Photo and Video Permissions declaration).', 'https://support.google.com/googleplay/android-developer/answer/14115180');
   if (io && A.sdk.photos && !usage.NSPhotoLibraryUsageDescription && !usage.NSPhotoLibraryAddUsageDescription && perms.some(p => /READ_MEDIA_IMAGES|READ_EXTERNAL_STORAGE/.test(p))) add('photo.ios_string', 'warn', 'Android reads photos but Info.plist has no photo library purpose string.', 'Use PHPicker (no permission) or add NSPhotoLibraryUsageDescription.');
@@ -424,15 +431,15 @@ export function privacyCheck(st, L) {
     const DRAFT_KEY = { loc: 'loc', name: 'name', email: 'email', uid: 'uid', photos: 'photos', audio: 'audio', usage: 'usage', crash: 'crash', diag: 'diag', adid: 'adid', ugc: 'ugc', fin: 'fin' };
     const dk = new Set(Gen.dataSafety(A, 'en', po).rows.map(r => r.id)), fk = new Set(A.preparedDS.rows.map(r => r.key));
     const miss = A.preparedDS.rows.filter(r => !dk.has(DRAFT_KEY[r.key] || r.key)), extra = [...dk].filter(k => !fk.has(k) && !(k === 'ugc' && fk.has('files')));
-    if (miss.length) add('ds.prepared_missing', 'check', `${A.preparedDS.file} lists as collected: ${miss.map(r => r.type).join(', ')}. The generated draft does not have ${miss.length > 1 ? 'them' : 'it'}.`, 'The code cannot show whether staff or users enter this kind of data (phone numbers, addresses, files). If the app stores it, your prepared form is right: keep these rows in Data safety.', A.preparedDS.file);
-    if (extra.length) add('ds.prepared_extra', 'check', `The generated draft lists ${extra.join(', ')}, but ${A.preparedDS.file} does not.`, 'Decide which is right: if the app does collect it, add it to your prepared form; if not, leave it out of Data safety.', A.preparedDS.file);
+    if (miss.length) add('ds.prepared_missing', 'check', `${A.preparedDS.file} lists as collected: ${miss.map(r => r.type).join(', ')}. The generated draft does not have ${miss.length > 1 ? 'them' : 'it'}.`, 'The code cannot show whether staff or users enter this kind of data (phone numbers, addresses, files). If the app stores it, your prepared form is right: keep these rows in Data safety.', A.preparedDS.file, { file: A.preparedDS.file, types: miss.map(r => r.type).join(', ') });
+    if (extra.length) add('ds.prepared_extra', 'check', `The generated draft lists ${extra.join(', ')}, but ${A.preparedDS.file} does not.`, 'Decide which is right: if the app does collect it, add it to your prepared form; if not, leave it out of Data safety.', A.preparedDS.file, { list: extra.join(', '), file: A.preparedDS.file });
   }
   /* Google scanner signals that Data safety does not cover */
   const items = Gen.dataSafety(A, 'en', po), declared = JSON.stringify(items.rows).toLowerCase();
   if (X && X.signals) {
     const map = { CONTACTS: 'contacts', CALENDAR: 'calendar', HEALTH: 'health', FITNESS: 'fitness', SMS_CALL_LOG: 'sms', PHOTOS: 'photo', VIDEOS: 'video', AUDIO: 'audio', PHONE: 'phone' };
     for (const [k, word] of Object.entries(map)) if (k === 'AUDIO' && A.sdk.speechOnly && !declared.includes(word)) add('ds.audio_speech', 'check', `The app only uses speech-to-text (${X.signals.AUDIO[0]}); audio is not stored or sent, so the Data safety draft does not declare audio recordings.`, items.confirm, 'https://support.google.com/googleplay/android-developer/answer/10787469');
-    else if (X.signals[k] && !declared.includes(word)) add('ds.' + k.toLowerCase(), 'warn', `Google's scanner patterns found ${k.toLowerCase().replace(/_/g, ' ')} access (${X.signals[k][0]}), but the Data safety draft does not list it.`, 'If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.', 'https://support.google.com/googleplay/android-developer/answer/10787469');
+    else if (X.signals[k] && !declared.includes(word)) add('ds.' + k.toLowerCase(), 'warn', `Google's scanner patterns matched ${k.toLowerCase().replace(/_/g, ' ')} (${X.signals[k][0]}). A pattern match is not proof that the app uses it; read that line. The Data safety draft does not list it.`, 'If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.', 'https://support.google.com/googleplay/android-developer/answer/10787469', { sig: k.toLowerCase().replace(/_/g, ' '), where: X.signals[k][0], _k: 'ds.signal' });
   }
   /* 0.2.6: every privacy page, including copies bundled inside the app, must name this app and its current operator */
   for (const x of A.privacyPages || []) if (x.stale && x.stale.length && !x.old) add('policy.stale', 'warn', `${x.path}${x.bundled ? ' (bundled inside the app)' : ''}: ${x.stale.join('; ')}.`,
