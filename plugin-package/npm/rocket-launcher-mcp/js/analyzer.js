@@ -676,6 +676,15 @@
       contacts: has(hay, /READ_CONTACTS|NSContacts/i),
       mic: has(hay, /RECORD_AUDIO|NSMicrophone/i)
     };
+    /* 0.2.8: a microphone permission that only feeds the system speech recognizer / Web Speech API (speech-to-text) is not "audio collected".
+       speechToText = such an API is used; audioCapture = anything that records, keeps or returns audio (MediaRecorder, AudioRecord, recorder plugins, getUserMedia audio, audio blobs).
+       speechOnly = speechToText without audioCapture; the owner still has to confirm it (the system recognizer may send audio to the OS vendor). */
+    const SPEECH_RE = /\bSpeechRecognizer\b|\bRecognizerIntent\b|\bRecognitionListener\b|\bwebkitSpeechRecognition\b|\bSpeechRecognition\b|\bSFSpeechRecognizer\b|\bspeech_to_text\b|\bSpeechToText\b|react-native-voice|@react-native-voice\/voice|@capacitor-community\/speech-recognition|expo-speech-recognition|cordova-plugin-speechrecognition/;
+    const AUDIO_CAPTURE_RE = /\bMediaRecorder\b|\bAudioRecord\b|\bAVAudioRecorder\b|\bAVAudioEngine\b|\bAudioRecorder\b|\bflutter_sound\b|\bFlutterSoundRecorder\b|(^|\s)record:\s|react-native-audio-recorder-player|react-native-audio-record|expo-av\b|expo-audio\b|cordova-plugin-media-capture|cordova-plugin-media\b|@capacitor-community\/voice-recorder|capacitor-voice-recorder|\bEXTRA_GET_AUDIO\b|\bcaptureAudio\b|getUserMedia\s*\(\s*\{[^}]*\baudio\s*:\s*(?!false)|new\s+Blob\s*\([^)]*type\s*:\s*['"]audio\/|type\s*:\s*['"]audio\/(webm|wav|mp4|mpeg|ogg)/;
+    const audioHay = declHay + '\n' + codeHay;
+    A.sdk.speechToText = SPEECH_RE.test(audioHay);
+    A.sdk.audioCapture = AUDIO_CAPTURE_RE.test(audioHay);
+    A.sdk.speechOnly = !!(A.sdk.mic && A.sdk.speechToText && !A.sdk.audioCapture);
     A.adsHint = adsCodeFiles.length ? { files: adsCodeFiles } : null;
     /* 0.2.6: a leftover ads config block that is explicitly switched off (adsEnabled: false, ads: { enabled: false }) is not even a hint */
     const ADS_OFF = /\b(ads_?enabled|enable_?ads|show_?ads|ads_?on|use_?ads)\s*[:=]\s*(false|0|['"]false['"])\b|\bads\s*[:=]\s*\{[^{}]*\benabled\s*:\s*false\b|\bADS_ENABLED\s*=\s*false\b/i;

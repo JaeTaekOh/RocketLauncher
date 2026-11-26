@@ -59465,6 +59465,16 @@ var UPDATE_LIBS = /\bupgrader\b|\bin_app_update\b|react-native-version-check|sp-
 var REMOTE_FLAGS = /firebase_remote_config|firebase-config|RemoteConfig|remoteConfig|launchdarkly|growthbook|statsig/;
 var OPTIN_PAGE = /(tester|testing|beta|join|opt-?in)/i;
 var POLICY_FILE = /privacy/i;
+var PERM_TAG = /<uses-permission(?:-sdk-23)?\b[^>]*>/g;
+var permTag = (t) => ({ name: (t.match(/android:name\s*=\s*["']([^"']+)["']/) || [])[1] || null, removed: /tools:node\s*=\s*["'](remove|removeAll)["']/i.test(t) });
+var STORE_PAY_CTX = /BillingClient|StoreKit|SKPaymentQueue|in_app_purchase|inAppPurchase|in-app[ -]purchase|purchaseToken|react-native-iap|RNIap|RevenueCat|purchases_flutter|verifyReceipt|appStoreReceipt|validateReceipt|receipt[-_]?data|Stripe|PayPal|payment_intent|PaymentSheet/i;
+var ORDER_PAY_CTX = /\b(payment|payments|paid|checkout|billing|stripe|paypal|purchase|purchases)\b|결제/i;
+function contextOk(id, pat, c) {
+  if (id !== "PURCHASE_HISTORY") return true;
+  if (pat === "receipt" || pat === "invoice") return STORE_PAY_CTX.test(c);
+  if (pat === "orderId" || pat === "orderHistory") return ORDER_PAY_CTX.test(c);
+  return true;
+}
 function scanProject(project, A) {
   const F = project.files || {}, P = Object.keys(F), text = (p) => F[p] && F[p].text || "";
   const codeP = P.filter((p) => F[p].code), textP = P.filter((p) => F[p].text != null);
@@ -59510,12 +59520,22 @@ function scanProject(project, A) {
   const sig = {}, urls = /* @__PURE__ */ new Set();
   if (PPI.config) {
     const exts = PPI.config.supported_extensions || [];
+    const manifests = P.filter((p) => F[p].text != null && /(^|\/)AndroidManifest\.xml$/.test(p)), isVariant = (p) => /(^|\/)src\/(?!main\/)[^/]+\/AndroidManifest\.xml$/.test(p);
+    const removedPerms = /* @__PURE__ */ new Set();
+    for (const p of manifests) if (!isVariant(p)) for (const t of text(p).replace(/<!--[\s\S]*?-->/g, "").match(PERM_TAG) || []) {
+      const r = permTag(t);
+      if (r.removed && r.name) removedPerms.add(r.name);
+    }
     for (const p of P.filter((p2) => F[p2].text != null && (F[p2].code || /AndroidManifest\.xml$|\.gradle(\.kts)?$/.test(p2)))) {
       let c = text(p);
+      if (/(^|\/)AndroidManifest\.xml$/.test(p) && !isVariant(p)) c = c.replace(PERM_TAG, (t) => {
+        const r = permTag(t);
+        return r.removed || removedPerms.has(r.name) ? "" : t;
+      });
       for (const m of c.matchAll(/"(https?:\/\/[^"]+)"/g)) if (/privacy|support|delete|terms|policy/i.test(m[1])) urls.add(m[1]);
       c = /\.xml$/i.test(p) ? c.replace(/<!--[\s\S]*?-->/g, "") : exts.some((e) => p.toLowerCase().endsWith(e)) || /\.swift$|\.m$/.test(p) ? stripComments(c) : c;
       for (const [cat, signals] of Object.entries(PPI.config.signal_categories || {})) for (const [id, pats] of Object.entries(signals)) {
-        const hit = pats.find((x) => c.includes(x));
+        const hit = pats.find((x) => c.includes(x) && contextOk(id, x, c));
         if (!hit) continue;
         const k = cat === "data_sources" ? id : cat;
         (sig[k] = sig[k] || []).length < 4 && sig[k].push(`${p} (${hit})`);
@@ -59828,7 +59848,8 @@ function privacyCheck(st, L) {
   const items = Gen.dataSafety(A, "en", po), declared = JSON.stringify(items.rows).toLowerCase();
   if (X && X.signals) {
     const map2 = { CONTACTS: "contacts", CALENDAR: "calendar", HEALTH: "health", FITNESS: "fitness", SMS_CALL_LOG: "sms", PHOTOS: "photo", VIDEOS: "video", AUDIO: "audio", PHONE: "phone" };
-    for (const [k, word] of Object.entries(map2)) if (X.signals[k] && !declared.includes(word)) add2("ds." + k.toLowerCase(), "warn", `Google's scanner patterns found ${k.toLowerCase().replace(/_/g, " ")} access (${X.signals[k][0]}), but the Data safety draft does not list it.`, "If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.", "https://support.google.com/googleplay/android-developer/answer/10787469");
+    for (const [k, word] of Object.entries(map2)) if (k === "AUDIO" && A.sdk.speechOnly && !declared.includes(word)) add2("ds.audio_speech", "check", `The app only uses speech-to-text (${X.signals.AUDIO[0]}); audio is not stored or sent, so the Data safety draft does not declare audio recordings.`, items.confirm, "https://support.google.com/googleplay/android-developer/answer/10787469");
+    else if (X.signals[k] && !declared.includes(word)) add2("ds." + k.toLowerCase(), "warn", `Google's scanner patterns found ${k.toLowerCase().replace(/_/g, " ")} access (${X.signals[k][0]}), but the Data safety draft does not list it.`, "If this data leaves the device, add it to Data safety and App Privacy; if it stays on the device, you can leave it out.", "https://support.google.com/googleplay/android-developer/answer/10787469");
   }
   for (const x of A.privacyPages || []) if (x.stale && x.stale.length && !x.old) add2(
     "policy.stale",
@@ -59860,7 +59881,7 @@ ${reasonsXml(X)}
     counts: c,
     rows: label(L, rows),
     drafts: {
-      data_safety: { rows: items.rows, not_collected: items.notCollected, note: 'Paste into Play Console > App content > Data safety. Data that never leaves the device is not "collected".' },
+      data_safety: { rows: items.rows, not_collected: items.notCollected, confirm_with_user: items.confirm || void 0, note: 'Paste into Play Console > App content > Data safety. Data that never leaves the device is not "collected".' },
       app_privacy: io ? { tracking: po.tracking ? "Yes, we track" : "No, we do not track", data: items.rows.map((r) => ({ type: r.label, purposes: r.purposes, linked_to_user: !!r.linked, used_for_tracking: !!r.tracking })) } : void 0,
       privacy_manifest_reasons: io ? Object.fromEntries(Object.entries(X && X.reasons || { NSPrivacyAccessedAPICategoryUserDefaults: { reason: "CA92.1", files: [] } }).map(([k, v]) => [k, { reason: v.reason, found_in: v.files.length ? v.files : v.from_sdk ? ["plugin dependency"] : [] }])) : void 0,
       privacy_manifest: xc
@@ -61084,7 +61105,7 @@ function optionBase(st, d, L, A, t, C) {
       return [{ value: "ok", label: t("opt.approve"), detail: t("dec.privacy.d") + " (" + C.langs.map((l) => `privacy-policy-${l}.html`).join(", ") + ")" }];
     case "safety": {
       const ds = Gen.dataSafety(A, L, Flow.privacyOpts(A, st.dec));
-      return [{ value: "ok", label: t("opt.approve"), detail: ds.rows.map((r) => `${r.label}: ${r.purposes}${r.shared ? " \xB7 shared" : ""}${r.tracking ? " \xB7 tracking" : ""}`).concat(ds.notCollected.map((r) => `${r.label}: ${r.note}`)).join(" / ") }];
+      return [{ value: "ok", label: t("opt.approve"), detail: ds.rows.map((r) => `${r.label}: ${r.purposes}${r.shared ? " \xB7 shared" : ""}${r.tracking ? " \xB7 tracking" : ""}`).concat(ds.notCollected.map((r) => `${r.label}: ${r.note}`)).concat(ds.confirm ? [ds.confirm] : []).join(" / ") }];
     }
     case "access":
     case "location":

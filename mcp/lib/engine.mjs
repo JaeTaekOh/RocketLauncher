@@ -328,7 +328,7 @@ function optionBase(st, d, L, A, t, C) {
     case 'shots': return [...(d.existing ? [{ value: 'existing', label: t('shots.existing'), detail: A.screenshots.map(x => x.path).join(', ') }] : []), { value: 'ok', label: t('opt.useThese'), detail: A.screenshots.length ? t('dec.shots.d', { n: A.screenshots.length }) + ' ' + A.screenshots.map(x => x.path).join(', ') : t('dec.shots.none') }];
     case 'privacy': return [{ value: 'ok', label: t('opt.approve'), detail: t('dec.privacy.d') + ' (' + C.langs.map(l => `privacy-policy-${l}.html`).join(', ') + ')' }];
     case 'safety': { const ds = Gen.dataSafety(A, L, Flow.privacyOpts(A, st.dec));
-      return [{ value: 'ok', label: t('opt.approve'), detail: ds.rows.map(r => `${r.label}: ${r.purposes}${r.shared ? ' · shared' : ''}${r.tracking ? ' · tracking' : ''}`).concat(ds.notCollected.map(r => `${r.label}: ${r.note}`)).join(' / ') }]; }
+      return [{ value: 'ok', label: t('opt.approve'), detail: ds.rows.map(r => `${r.label}: ${r.purposes}${r.shared ? ' · shared' : ''}${r.tracking ? ' · tracking' : ''}`).concat(ds.notCollected.map(r => `${r.label}: ${r.note}`)).concat(ds.confirm ? [ds.confirm] : []).join(' / ') }]; }
     case 'access': case 'location': return d.opts.map(o => ({ value: o, label: t(d.key + '.' + o), detail: t(d.key + '.' + o + '.d') }));
     case 'rating': { const r = Gen.rating(A, L); return [{ value: 'ok', label: t('opt.approve'), detail: `Play: ${r.result.play} · App Store: ${r.result.apple}` }]; }
     case 'track': return d.opts.map(o => ({ value: o, label: t('track.' + o), detail: t('track.' + o + '.d') }));

@@ -142,12 +142,27 @@
     const hasPhotos = !!(s.camera || s.photos || /permission\.CAMERA\b|READ_MEDIA_IMAGES|READ_MEDIA_VIDEO|READ_EXTERNAL_STORAGE|NSCamera|NSPhotoLibrary/.test(perms + ' ' + JSON.stringify((A.ios && A.ios.usage) || {})));
     const hasAudio = !!(s.mic || /RECORD_AUDIO|NSMicrophone/.test(perms + ' ' + JSON.stringify((A.ios && A.ios.usage) || {})));
     if (hasPhotos) D.push({ id: 'photos', play: ['Photos and videos', 'Photos'], apple: ['User Content', 'Photos or Videos'], purposes: ['func'], optional: true, linked: false });
-    if (hasAudio) D.push({ id: 'audio', play: ['Audio files', 'Voice or sound recordings'], apple: ['User Content', 'Audio Data'], purposes: ['func'], optional: true, linked: false });
+    /* 0.2.8: speech-to-text only (system SpeechRecognizer / Web Speech API; audio is neither stored nor sent by the app) is not an "audio recordings" row */
+    if (hasAudio && !s.speechOnly) D.push({ id: 'audio', play: ['Audio files', 'Voice or sound recordings'], apple: ['User Content', 'Audio Data'], purposes: ['func'], optional: true, linked: false });
     return D;
   }
   const PURPOSE = {
     account: { ko: '계정 관리', en: 'Account management', th: 'การจัดการบัญชี', zh: '账号管理', hi: 'अकाउंट प्रबंधन' }, func: { ko: '앱 기능', en: 'App functionality', th: 'ฟังก์ชันของแอป', zh: '应用功能', hi: 'ऐप की कार्यक्षमता' },
     analytics: { ko: '분석', en: 'Analytics', th: 'การวิเคราะห์', zh: '数据分析', hi: 'एनालिटिक्स' }, ads: { ko: '광고 또는 마케팅', en: 'Advertising or marketing', th: 'การโฆษณาหรือการตลาด', zh: '广告或营销', hi: 'विज्ञापन या मार्केटिंग' }
+  };
+  const SPEECH_NOTE = {
+    ko: '음성은 글자로 바꾸는 데만 쓰고, 앱이 오디오를 저장하거나 서버로 보내지 않음 → "음성 녹음 수집" 아님. 입력된 글자는 텍스트 입력으로 봄(저장·전송하면 사용자 콘텐츠로 따로 적기)',
+    en: 'The microphone only feeds speech-to-text; the app does not store or send audio → not "audio recordings collected". The recognized words are text input (if you save or send them, declare them as user-generated content)',
+    th: 'ไมโครโฟนใช้แปลงเสียงเป็นข้อความเท่านั้น แอปไม่เก็บหรือส่งไฟล์เสียง → ไม่ใช่ "เก็บรวบรวมการบันทึกเสียง" ข้อความที่รู้จำได้ถือเป็นข้อความที่ป้อน (ถ้าบันทึกหรือส่งต่อ ให้ระบุเป็นเนื้อหาที่ผู้ใช้สร้าง)',
+    zh: '麦克风仅用于语音转文字，应用不保存也不发送音频 → 不属于“收集录音”。识别出的文字按文本输入处理（若保存或发送，请另行声明为用户生成的内容）',
+    hi: 'माइक्रोफ़ोन सिर्फ़ बोले हुए को टेक्स्ट में बदलने के लिए है; ऐप ऑडियो न सहेजता है न भेजता है → “ऑडियो रिकॉर्डिंग एकत्र” नहीं। पहचाने गए शब्द टेक्स्ट इनपुट हैं (सहेजें या भेजें तो उपयोगकर्ता सामग्री के रूप में घोषित करें)'
+  };
+  const SPEECH_CONFIRM = {
+    ko: '확인 필요: 앱은 음성 인식만 쓰고 오디오를 저장·전송하지 않는 것으로 보여요. 그래서 "음성 녹음"은 수집으로 적지 않았어요. 온라인 음성 인식을 켜 두면 기기 제조사 서버로 음성이 갈 수 있으니, 실제 동작을 확인한 뒤 맞는지 알려 주세요.',
+    en: 'Please confirm: the app appears to use speech recognition only and does not store or send audio, so "audio recordings" is not declared as collected. Online recognition can send audio to the device maker\'s service; check the real behavior and confirm this is right.',
+    th: 'โปรดยืนยัน: แอปดูเหมือนใช้การรู้จำเสียงพูดเท่านั้นและไม่เก็บหรือส่งไฟล์เสียง จึงไม่ได้ระบุว่าเก็บรวบรวม "การบันทึกเสียง" การรู้จำแบบออนไลน์อาจส่งเสียงไปยังบริการของผู้ผลิตอุปกรณ์ โปรดตรวจพฤติกรรมจริงแล้วยืนยันว่าถูกต้อง',
+    zh: '请确认：应用似乎只使用语音识别，不保存也不发送音频，所以没有把“录音”列为已收集。在线识别可能把音频发给设备厂商的服务，请核对实际行为后确认是否正确。',
+    hi: 'कृपया पुष्टि करें: ऐप सिर्फ़ स्पीच रिकग्निशन इस्तेमाल करता दिखता है और ऑडियो न सहेजता है न भेजता है, इसलिए “ऑडियो रिकॉर्डिंग” को एकत्र नहीं लिखा। ऑनलाइन रिकग्निशन डिवाइस निर्माता की सेवा को ऑडियो भेज सकता है; असली व्यवहार जाँचकर पुष्टि करें।'
   };
   const DATA_LABEL = {
     name: { ko: '이름', en: 'Name', th: 'ชื่อ', zh: '姓名', hi: 'नाम' }, email: { ko: '이메일 주소', en: 'Email address', th: 'อีเมล', zh: '电子邮件地址', hi: 'ईमेल पता' }, uid: { ko: '사용자 ID', en: 'User IDs', th: 'รหัสผู้ใช้', zh: '用户 ID', hi: 'यूज़र ID' },
@@ -160,10 +175,11 @@
      Default false: non-personalized ads (npa=1) are not tracking. opts.location: 'device' (never leaves the device → not collected) | 'server'.
      Each data type is its own row with its own purposes; sign-in data (name, email, user ID) is never grouped with location. */
   function dataSafety(A, lang, opts) {
-    const o = opts || {}, D = dataItems(A, o);
+    const o = opts || {}, D = dataItems(A, o), speechOnly = !!(A.sdk && A.sdk.speechOnly);
     return {
       rows: D.map(d => ({ id: d.id, label: DATA_LABEL[d.id][lang], playType: d.play.join(' › '), appleType: d.apple.join(' › '), collected: true, shared: !!d.shared, optional: d.optional, linked: d.linked, tracking: d.id === 'adid' && !!o.tracking, purposes: d.purposes.map(p => PURPOSE[p][lang]).join(', ') })),
-      notCollected: A.sdk.location && o.location === 'device' ? [{ id: 'loc', label: DATA_LABEL.loc[lang], appleType: 'Location', note: { ko: '기기 안에서만 사용, 서버로 보내지 않음 → 수집 안 함', en: 'Used on the device only, never sent to a server → Data Not Collected', th: 'ใช้ในเครื่องเท่านั้น ไม่ส่งไปยังเซิร์ฟเวอร์ → ไม่เก็บรวบรวม', zh: '仅在设备上使用，从不发送到服务器 → 未收集', hi: 'सिर्फ़ डिवाइस पर इस्तेमाल, कभी सर्वर पर नहीं भेजा जाता → एकत्र नहीं' }[lang] }] : [],
+      notCollected: (A.sdk.location && o.location === 'device' ? [{ id: 'loc', label: DATA_LABEL.loc[lang], appleType: 'Location', note: { ko: '기기 안에서만 사용, 서버로 보내지 않음 → 수집 안 함', en: 'Used on the device only, never sent to a server → Data Not Collected', th: 'ใช้ในเครื่องเท่านั้น ไม่ส่งไปยังเซิร์ฟเวอร์ → ไม่เก็บรวบรวม', zh: '仅在设备上使用，从不发送到服务器 → 未收集', hi: 'सिर्फ़ डिवाइस पर इस्तेमाल, कभी सर्वर पर नहीं भेजा जाता → एकत्र नहीं' }[lang] }] : []).concat(speechOnly ? [{ id: 'audio', label: DATA_LABEL.audio[lang], appleType: 'Audio Data', note: SPEECH_NOTE[lang] }] : []),
+      confirm: speechOnly ? SPEECH_CONFIRM[lang] : null,
       encrypted: !(A.android && A.android.cleartext) || true, deletable: !!A.sdk.auth,
       onDevice: A.sdk.ocr ? { ko: '영수증 사진: 기기 안에서만 처리 → "수집" 아님', en: 'Receipt photos: processed on device only → not "collected"', th: 'รูปใบเสร็จ: ประมวลผลในเครื่องเท่านั้น → ไม่ถือว่า "เก็บรวบรวม"', zh: '收据照片：仅在设备上处理 → 不属于“收集”', hi: 'रसीद की फ़ोटो: सिर्फ़ डिवाइस पर प्रोसेस → “संग्रह” नहीं' }[lang] : null
     };
