@@ -70,7 +70,7 @@
       ddReportReview: "Record submitted, rejected, resubmitted, or approved. Returns a fix plan and a reply draft when needed.",
       ddForget: "Remove one review lesson learned on this computer, only when you ask.",
       tgMove: "Move or remove an app",
-      ddMove: "Compare transferring an app with registering it again. AdMob is optional.",
+      ddMove: "Compare transferring an app with registering it again.",
       ddRemove: "How to unpublish or delete an app on each store. Guide only; nothing is removed.",
       footPrivacy: "Privacy",
       footSource: "Source"
@@ -142,7 +142,7 @@
       ddReportReview: "제출, 거절, 재제출, 승인을 기록합니다. 필요할 때 수정 계획과 답변 초안을 돌려 줍니다.",
       ddForget: "이 컴퓨터에 쌓인 심사 교훈 하나를, 요청할 때만 지웁니다.",
       tgMove: "앱 이전 또는 삭제",
-      ddMove: "앱을 양도하는 것과 다시 등록하는 것을 비교합니다. AdMob은 선택입니다.",
+      ddMove: "앱을 양도하는 것과 다시 등록하는 것을 비교합니다.",
       ddRemove: "각 스토어에서 앱 게시를 멈추거나 삭제하는 방법입니다. 안내만 하며, 실제로 지우지는 않습니다.",
       footPrivacy: "개인정보",
       footSource: "소스"
@@ -214,7 +214,7 @@
       ddReportReview: "บันทึกว่าส่งแล้ว ถูกปฏิเสธ ส่งใหม่ หรือได้รับการอนุมัติ เมื่อจำเป็นจะได้แผนแก้และร่างคำตอบ",
       ddForget: "ลบบทเรียนจากการรีวิวที่เก็บในเครื่องนี้ออกหนึ่งรายการ เฉพาะเมื่อคุณขอ",
       tgMove: "ย้ายหรือนำแอปออก",
-      ddMove: "เปรียบเทียบการโอนแอปกับการลงทะเบียนใหม่ AdMob เป็นทางเลือก",
+      ddMove: "เปรียบเทียบการโอนแอปกับการลงทะเบียนใหม่",
       ddRemove: "วิธีหยุดเผยแพร่หรือลบแอปในแต่ละสโตร์ เป็นเพียงคำแนะนำ ไม่ได้ลบอะไรให้",
       footPrivacy: "ความเป็นส่วนตัว",
       footSource: "ซอร์ส"
@@ -286,7 +286,7 @@
       ddReportReview: "记录已提交、被拒、再次提交或已通过。需要时会给出修改计划和回复草稿。",
       ddForget: "按你的要求，删除这台电脑上留下的一条审核经验。",
       tgMove: "转移或下架应用",
-      ddMove: "比较转让应用和重新注册。AdMob 是可选项。",
+      ddMove: "比较转让应用和重新注册。",
       ddRemove: "说明如何在各商店取消发布或删除应用。仅提供指引，不会替你删除。",
       footPrivacy: "隐私",
       footSource: "源码"
@@ -358,7 +358,7 @@
       ddReportReview: "सबमिट, अस्वीकृत, फिर से सबमिट, या मंज़ूर दर्ज करें। ज़रूरत हो तो सुधार योजना और जवाब का मसौदा मिलता है।",
       ddForget: "इस कंप्यूटर पर सीखी गई एक समीक्षा बात हटाएँ, केवल जब आप कहें।",
       tgMove: "ऐप स्थानांतरित करें या हटाएँ",
-      ddMove: "ऐप ट्रांसफ़र करने और उसे फिर से पंजीकृत करने की तुलना करें। AdMob वैकल्पिक है।",
+      ddMove: "ऐप ट्रांसफ़र करने और उसे फिर से पंजीकृत करने की तुलना करें।",
       ddRemove: "हर स्टोर पर ऐप को अनपब्लिश या हटाने का तरीका। केवल गाइड; कुछ हटाया नहीं जाता।",
       footPrivacy: "गोपनीयता",
       footSource: "सोर्स"
